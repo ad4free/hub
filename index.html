@@ -148,12 +148,14 @@
                     // Authentication setup
                     await this.handleAuth();
 
-                    // Initial render (will wait for auth to fully complete)
+                    // Initial render and setup waits for auth to complete its initial check
                     onAuthStateChanged(this.auth, (user) => {
                         this.isAuthReady = true;
                         if (user) {
                             this.userId = user.uid;
                             this.setupFirestoreListeners();
+                            // FIX: Start timers only AFTER user is authenticated and listeners are set
+                            this.startAdRotationTimers();
                         } else {
                             this.userId = 'anonymous'; // Fallback for anonymous state
                             this.state.user = { W_coins: 0, D_coins: 0, Ultra_coins: 0, yt_hours: 0, yt_minutes: 0, yt_seconds: 0, yt_views: 0, referral_commissions: 0 };
@@ -161,11 +163,12 @@
                         }
                     });
 
-                    this.startAdRotationTimers();
 
                 } catch (error) {
                     console.error("Firebase/App initialization error:", error);
                     this.showErrorModal(`App initialization failed: ${error.message}`);
+                    // Ensure a render happens even on error to show the prompt
+                    this.render();
                 }
             }
 
@@ -304,8 +307,10 @@
                             this.updateAdState('Web Traffic');
                         }
                     }
-                    if (document.getElementById('countdown')) {
-                         document.getElementById('countdown').textContent = `Next ad in ${this.state.adCountdown}s`;
+                    // Update countdown display if the element exists
+                    const countdownEl = document.getElementById('countdown');
+                    if (countdownEl) {
+                         countdownEl.textContent = `Next ad in ${this.state.adCountdown}s`;
                     }
                     this.renderHeader(); // Ensure header coin updates are responsive
                 }, 1000);
@@ -392,6 +397,7 @@
             async handleAuthAction(action, email, password) {
                 this.closeModal();
                 try {
+                    // Re-initialize auth instance if needed (for clarity, although getAuth is usually safe)
                     const auth = getAuth(initializeApp(firebaseConfig));
                     let userCredential;
 
@@ -459,6 +465,7 @@
             async handleSignOut() {
                 try {
                     this.stopYoutubeTimer();
+                    this.clearAllIntervals(); // Stop all timers on sign out
                     await this.auth.signOut();
                     this.state.user = null;
                     this.userId = null;
@@ -491,8 +498,11 @@
                 contentDiv.className = 'flex-grow p-4 md:p-8';
 
                 // Check for authentication readiness
-                if (!this.isAuthReady || !this.userId) {
-                    contentDiv.innerHTML = `<div class="text-center py-20"><p class="text-xl text-gray-500">Loading application...</p></div>`;
+                if (!this.isAuthReady) {
+                    contentDiv.innerHTML = `<div class="text-center py-20">
+                        <p class="text-xl text-gray-500 mb-4">Loading application...</p>
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                    </div>`;
                     appDiv.appendChild(contentDiv);
                     return;
                 }
