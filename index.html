@@ -1,795 +1,178 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Full Coin Ad Platform — Single File App</title>
-
-  <!-- Tailwind (CDN for quick prototype) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Boxicons for icons -->
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
-
-  <!-- React & ReactDOM (production builds via CDN) -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Babel for JSX in browser (development mode) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <!-- Firebase (compat libs so we can use firebase.*) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Free Ads Exchange</title>
   <style>
-    html,body,#root { height:100%; }
-    body { background: linear-gradient(180deg,#f8fafc,#eef2ff); font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .nav-active { background: rgba(99,102,241,0.08); border-left: 3px solid #6366F1; }
-    .card { background: white; border-radius: 12px; box-shadow: 0 6px 18px rgba(16,24,40,0.06); padding: 16px; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #fff;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      background: #161b22;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    header h1 {
+      color: #00ffcc;
+      margin: 0;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 12px;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #00ffcc;
+    }
+    .highlight {
+      color: #ff0066;
+      animation: colorchange 2s infinite alternate;
+      font-weight: bold;
+    }
+    @keyframes colorchange {
+      0% { color: #ff0066; }
+      50% { color: #00ffcc; }
+      100% { color: #ffcc00; }
+    }
+    main {
+      padding: 40px;
+      text-align: center;
+    }
+    .card {
+      background: #161b22;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 20px auto;
+      max-width: 600px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    button {
+      background: #00ffcc;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s, background 0.3s;
+    }
+    button:hover {
+      background: #00ccaa;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <header>
+    <h1>Free Ads Exchange</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Website Traffic</a>
+      <a href="#">Link Traffic</a>
+      <a href="#">YouTube Watch Time</a>
+      <a href="#">YouTube Views</a>
+      <a href="#" class="highlight">Ad Run Tool</a>
+      <a href="#">Referral</a>
+      <a href="#">Dashboard</a>
+      <a href="#">Get Premium</a>
+    </nav>
+  </header>
 
-  <!-- Main app script: Babel so we can use JSX -->
-  <script type="text/babel">
-
-/* ============================
-   CONFIG — Replace only if you want to use a different Firebase project
-   (This uses the firebase values you previously provided)
-   ============================ */
-const firebaseConfig = {
-  apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
-  authDomain: "website-5636d.firebaseapp.com",
-  projectId: "website-5636d",
-  storageBucket: "website-5636d.appspot.com",
-  messagingSenderId: "737574321288",
-  appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
-  measurementId: "G-S64W6JR12C"
-};
-
-/* Initialize Firebase */
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* ============
-   Helper utils
-   ============ */
-const { useState, useEffect, useRef } = React;
-
-function formatNum(n){ return (n===undefined||n===null)?0:n; }
-function nowSeconds(){ return Math.floor(Date.now()/1000); }
-
-/* Local storage helpers for cooldowns */
-function setCooldown(key, secondsFromNow){
-  const until = Date.now() + (secondsFromNow*1000);
-  localStorage.setItem(key, String(until));
-}
-function isCooldown(key){
-  const val = localStorage.getItem(key);
-  if(!val) return false;
-  return Date.now() < Number(val);
-}
-
-/* ============================
-   Root App
-   ============================ */
-function App(){
-  const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null);
-  const [page, setPage] = useState('dashboard'); // dashboard, web, direct, ytwatch, ytviews, referral, launch, tx
-  const [ads, setAds] = useState([]);
-  const [directs, setDirects] = useState([]);
-  const [campaigns, setCampaigns] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [activity, setActivity] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Listen auth
-  useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async u => {
-      if(u){
-        setUser(u);
-        // create user record if needed
-        await createOrSyncUser(u);
-        // subscribe to user doc
-        const uref = db.collection('users').doc(u.uid);
-        const unsubUserDoc = uref.onSnapshot(doc => {
-          setUserData(doc.exists?doc.data():null);
-        });
-        // load other collections
-        loadAdsListener();
-        loadDirectsListener();
-        loadCampaignsListener(u.uid);
-        loadTxListener(u.uid);
-        setLoading(false);
-        // return unsubscribe function when logging out
-        return () => {
-          unsubUserDoc();
-        };
-      } else {
-        setUser(null);
-        setUserData(null);
-        setLoading(false);
-      }
-    });
-    return () => unsub();
-  }, []);
-
-  // load ads (public)
-  function loadAdsListener(){
-    // ads collection: { owner, type, title, url/content, budget, impressions, createdAt }
-    db.collection('ads').orderBy('createdAt','desc').limit(200).onSnapshot(snap => {
-      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setAds(arr);
-    });
-  }
-
-  function loadDirectsListener(){
-    db.collection('directs').orderBy('createdAt','desc').limit(200).onSnapshot(snap => {
-      const arr = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-      setDirects(arr);
-    });
-  }
-
-  function loadCampaignsListener(uid){
-    if(!uid) return;
-    db.collection('campaigns').where('owner','==', uid).onSnapshot(snap => {
-      setCampaigns(snap.docs.map(d => ({ id:d.id, ...d.data() })));
-    });
-  }
-
-  function loadTxListener(uid){
-    if(!uid) return;
-    db.collection('transactions').where('user','==', uid).orderBy('ts','desc').limit(100).onSnapshot(snap => {
-      setTransactions(snap.docs.map(d => ({ id:d.id, ...d.data() })));
-    });
-  }
-
-  // activity push
-  function pushActivity(text){
-    setActivity(prev => [{ text, ts: nowSeconds() }, ...prev].slice(0,50));
-  }
-
-  // create or sync user doc
-  async function createOrSyncUser(u){
-    const uref = db.collection('users').doc(u.uid);
-    const doc = await uref.get();
-    if(!doc.exists){
-      // check referral param in URL
-      const qp = new URLSearchParams(window.location.search);
-      const ref = qp.get('ref') || null;
-      await uref.set({
-        name: u.displayName || 'User',
-        email: u.email || '',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        wCoins: 0,
-        dCoins: 0,
-        ytTime: 0,
-        ytViews: 0,
-        referralsCount: 0,
-        referralEarnings: 0,
-        referrer: ref
-      });
-
-      if(ref){
-        // Give inviter the signup bonus and track referrals
-        // NOTE: production: this must be done server-side to avoid forgery.
-        const refRef = db.collection('users').doc(ref);
-        await refRef.update({
-          referralsCount: firebase.firestore.FieldValue.increment(1),
-          referralEarnings: firebase.firestore.FieldValue.increment(10000)
-        }).catch(()=>{});
-        await db.collection('transactions').add({ user: ref, type: 'referral-signup-bonus', amount: 10000, note: `Signup bonus for referring ${u.uid}`, ts: firebase.firestore.FieldValue.serverTimestamp() });
-        pushActivity(`Referrer ${ref} received 10,000 coins (demo)`);
-      }
-    }
-  }
-
-  // Login
-  async function login(){
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      await auth.signInWithPopup(provider);
-      pushActivity('Signed in');
-      // after login, user listeners set
-    } catch(e){
-      alert('Login failed: ' + e.message);
-    }
-  }
-
-  // Logout
-  async function logout(){
-    await auth.signOut();
-    setUser(null);
-    setUserData(null);
-    pushActivity('Signed out');
-  }
-
-  /* ============================
-     Action: Watch Ad (web traffic)
-     - user watches ad inside iframe for 15s -> ++wCoins 500
-     - this prototype credits directly from client (insecure). For production use server validation.
-     ============================ */
-  async function creditView(adId, amount=500){
-    if(!user) { alert('Login required'); return; }
-    if(isCooldown(`imp_${adId}_${user.uid}`)) { alert('Wait before collecting from this ad again'); return; }
-    setCooldown(`imp_${adId}_${user.uid}`, 15); // 15s cooldown per ad per user
-    // credit watcher
-    const uref = db.collection('users').doc(user.uid);
-    await uref.update({ wCoins: firebase.firestore.FieldValue.increment(amount) });
-    // record transaction
-    await db.collection('transactions').add({ user: user.uid, type:'impression', adId, amount, ts: firebase.firestore.FieldValue.serverTimestamp() });
-    pushActivity(`Earned +${amount} W coins for viewing ad`);
-    // Commission: if this user was referred, pay 15% to referrer (client-side demo)
-    const udoc = await uref.get();
-    const udata = udoc.data();
-    if(udata && udata.referrer){
-      const commission = Math.floor(amount * 0.15);
-      const refRef = db.collection('users').doc(udata.referrer);
-      // credit referrer commission (demo)
-      await refRef.update({ referralEarnings: firebase.firestore.FieldValue.increment(commission) }).catch(()=>{});
-      await db.collection('transactions').add({ user: udata.referrer, type:'commission', amount: commission, note:`15% commission from ${user.uid}`, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
-    }
-    // decrement ad budget? (ad owner pays). For prototype, we do not automatically subtract owner — production needs Cloud Functions.
-  }
-
-  /* Direct link click reward */
-  async function creditDirectClick(directId, url){
-    if(!user){ alert('Login to earn'); return; }
-    if(isCooldown(`direct_${directId}_${user.uid}`)){ alert('Please wait before collecting again from this link'); return; }
-    setCooldown(`direct_${directId}_${user.uid}`, 60); // 60s cooldown per direct
-    // open url
-    window.open(url, '_blank');
-    // credit D coins
-    await db.collection('users').doc(user.uid).update({ dCoins: firebase.firestore.FieldValue.increment(1000) });
-    await db.collection('transactions').add({ user: user.uid, type:'direct-click', directId, amount:1000, ts: firebase.firestore.FieldValue.serverTimestamp() });
-    pushActivity('Earned +1000 D coins for clicking direct link');
-    // commission to referrer (demo)
-    const uref = db.collection('users').doc(user.uid);
-    const udoc = await uref.get();
-    const udata = udoc.data();
-    if(udata && udata.referrer){
-      const commission = Math.floor(1000 * 0.15);
-      await db.collection('users').doc(udata.referrer).update({ referralEarnings: firebase.firestore.FieldValue.increment(commission) }).catch(()=>{});
-      await db.collection('transactions').add({ user: udata.referrer, type:'commission', amount: commission, note:`15% commission`, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
-    }
-  }
-
-  /* YouTube watch time counting (simple prototype) */
-  const ytRef = useRef(null);
-  const [ytCounter, setYtCounter] = useState(0);
-  useEffect(() => {
-    let interval;
-    if(ytRef.current && user){
-      // counting state handled by buttons on UI below
-    }
-    return () => clearInterval(interval);
-  }, []);
-
-  async function ytRewardTick(){
-    if(!user) return;
-    // every 15 seconds we credit 15 seconds -> map to coins as you desire; here keep ytTime as seconds
-    await db.collection('users').doc(user.uid).update({ ytTime: firebase.firestore.FieldValue.increment(15) });
-    await db.collection('transactions').add({ user: user.uid, type:'yt_watch', amount:15, ts: firebase.firestore.FieldValue.serverTimestamp() });
-    pushActivity('Credited +15s YouTube watch time');
-    // commission demo
-    const udoc = await db.collection('users').doc(user.uid).get();
-    const udata = udoc.data();
-    if(udata && udata.referrer){
-      const commission = Math.floor(15 * 0.15);
-      await db.collection('users').doc(udata.referrer).update({ referralEarnings: firebase.firestore.FieldValue.increment(commission) }).catch(()=>{});
-      await db.collection('transactions').add({ user: udata.referrer, type:'commission', amount: commission, note:`15% commission on YT time`, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
-    }
-  }
-
-  /* Launch Ad Campaign (deduct coins and create ad doc) */
-  async function launchAd({ title, type, url, budget }){
-    if(!user) return alert('Login first');
-    if(!title || !type || !url || !budget) return alert('Fill all fields');
-    // check user balance (we treat W and D combined for simplicity)
-    const udoc = await db.collection('users').doc(user.uid).get();
-    const d = udoc.data();
-    const totalBalance = (d.wCoins||0) + (d.dCoins||0);
-    if(totalBalance < budget) return alert('Not enough balance');
-    // Deduct coins from wCoins first then dCoins; production: validate server-side
-    let remaining = budget;
-    const updates = {};
-    const w = d.wCoins || 0;
-    if(w >= remaining){
-      updates.wCoins = firebase.firestore.FieldValue.increment(-remaining);
-      remaining = 0;
-    } else {
-      updates.wCoins = firebase.firestore.FieldValue.increment(-w);
-      remaining -= w;
-      updates.dCoins = firebase.firestore.FieldValue.increment(-remaining);
-      remaining = 0;
-    }
-    await db.collection('users').doc(user.uid).update(updates);
-    // create campaign (owner spends budget which will be used to pay watchers)
-    await db.collection('campaigns').add({
-      title, type, url, budget, remainingBudget: budget, owner: user.uid, impressions: 0, status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    // Optionally create ads collection items to rotate
-    await db.collection('ads').add({
-      owner: user.uid, title, url, type, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    pushActivity(`Ad "${title}" launched for ${budget} coins`);
-  }
-
-  /* admin/demo helper: seed an example ad if none */
-  async function seedAdIfEmpty(){
-    const snap = await db.collection('ads').limit(1).get();
-    if(snap.empty){
-      await db.collection('ads').add({ owner: 'system', title:'Welcome Ad', url:'https://example.com', type:'web', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    }
-  }
-  useEffect(()=>{ seedAdIfEmpty(); }, []);
-
-  /* quick UI actions */
-  async function createDirect(url){
-    if(!user) return alert('Login first');
-    if(!url) return alert('URL required');
-    await db.collection('directs').add({ owner: user.uid, url, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    pushActivity('Direct link created');
-  }
-
-  // copy referral link
-  function copyRef(){
-    if(!user) return alert('Login first');
-    const link = `${location.origin}${location.pathname}?ref=${user.uid}`;
-    navigator.clipboard.writeText(link);
-    pushActivity('Referral link copied');
-  }
-
-  /* =======================
-     UI Render
-     ======================= */
-  if(loading) return (<div className="flex items-center justify-center h-full"><div className="text-gray-500">Loading…</div></div>);
-
-  return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white p-5 border-r hidden md:block">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-white font-semibold">CA</div>
-          <div>
-            <div className="font-bold">Coin Ad Platform</div>
-            <div className="text-sm text-gray-500">Free & Paid • Demo</div>
-          </div>
-        </div>
-
-        <nav className="space-y-1">
-          {["dashboard","web","direct","ytwatch","ytviews","referral","launch","tx"].map(p => (
-            <div key={p}
-                 onClick={() => setPage(p)}
-                 className={`p-3 rounded cursor-pointer flex items-center gap-3 ${page=== (p==='web'?'web':(p==='tx'?'transactions':p)) ? 'nav-active':''}`}>
-              <i className='bx bx-right-arrow-alt'></i>
-              <span className="capitalize">{ p === 'web' ? 'Website Traffic' : p==='direct'?'Direct Link':p==='ytwatch'?'YouTube Watch':'YT Views': p==='referral'?'Referrals': p==='launch'?'Launch Ad': p==='tx'?'Transactions':'Dashboard'}</span>
-            </div>
-          ))}
-        </nav>
-
-        <div className="mt-6 text-xs text-gray-500">
-          <div>Referral bonus: <b>10,000 coins</b></div>
-          <div>Commission: <b>15%</b> lifetime</div>
-        </div>
-      </aside>
-
-      {/* Main area */}
-      <div className="flex-1 p-6 overflow-auto">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <div className="text-sm text-gray-500">Welcome to your ad platform</div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-xs text-gray-500">W Coins</div>
-              <div className="font-semibold text-lg">{ userData ? formatNum(userData.wCoins) : 0 }</div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-gray-500">D Coins</div>
-              <div className="font-semibold text-lg">{ userData ? formatNum(userData.dCoins) : 0 }</div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-gray-500">YT Time(s)</div>
-              <div className="font-semibold text-lg">{ userData ? formatNum(userData.ytTime) : 0 }</div>
-            </div>
-
-            <div>
-              {!user
-                ? <button onClick={login} className="bg-indigo-600 text-white px-4 py-2 rounded">Login</button>
-                : <div className="flex items-center gap-3">
-                    <img src={user.photoURL} className="w-8 h-8 rounded-full" alt="" />
-                    <div className="text-sm">
-                      <div className="font-medium">{ user.displayName }</div>
-                      <button onClick={logout} className="text-xs text-red-500">Logout</button>
-                    </div>
-                  </div>
-              }
-            </div>
-          </div>
-        </header>
-
-        {/* Pages */}
-        <main>
-          {/* Dashboard */}
-          {page === 'dashboard' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="card lg:col-span-2">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <div className="text-sm text-gray-500">Welcome back</div>
-                    <div className="text-2xl font-bold">{ userData ? userData.name : (user ? user.displayName : 'Guest') }</div>
-                  </div>
-                  <div>
-                    <button className="bg-green-500 text-white px-3 py-2 rounded mr-2" onClick={() => { setPage('web'); }}>Watch Ads</button>
-                    <button className="bg-blue-500 text-white px-3 py-2 rounded" onClick={() => setPage('launch')}>Launch Ad</button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="p-3 border rounded">
-                    <div className="text-xs text-gray-500">Total</div>
-                    <div className="text-xl font-bold">{ userData ? ((userData.wCoins||0) + (userData.dCoins||0)) : 0 }</div>
-                    <div className="text-xs text-gray-400">Available to launch</div>
-                  </div>
-                  <div className="p-3 border rounded">
-                    <div className="text-xs text-gray-500">Referrals</div>
-                    <div className="text-xl font-bold">{ userData ? (userData.referralsCount||0) : 0 }</div>
-                    <div className="text-xs text-gray-400">Total invited users</div>
-                  </div>
-                  <div className="p-3 border rounded">
-                    <div className="text-xs text-gray-500">Referral Earnings</div>
-                    <div className="text-xl font-bold">{ userData ? (userData.referralEarnings||0) : 0 }</div>
-                    <div className="text-xs text-gray-400">Uncollected (demo)</div>
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <h3 className="font-semibold mb-2">Recent Activity</h3>
-                  <div className="space-y-2 max-h-52 overflow-auto hide-scrollbar">
-                    {activity.length===0 && <div className="text-sm text-gray-400">No activity yet</div>}
-                    {activity.map((a,i) => (
-                      <div key={i} className="p-2 border rounded text-sm">
-                        <div>{a.text}</div>
-                        <div className="text-xs text-gray-400">{ new Date(a.ts*1000).toLocaleString() }</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="card">
-                <h3 className="font-semibold mb-2">Quick Actions</h3>
-                <div className="space-y-2">
-                  <button onClick={() => { if(!user) return alert('Login required'); creditView(ads[0]?.id); }} className="w-full bg-green-500 text-white py-2 rounded">Simulate Watch (+500)</button>
-                  <button onClick={() => copyRef()} className="w-full bg-indigo-600 text-white py-2 rounded">Copy Referral Link</button>
-                  <button onClick={() => setPage('launch')} className="w-full bg-blue-500 text-white py-2 rounded">Create Campaign</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* WEBSITE TRAFFIC */}
-          {page === 'web' && (
-            <div className="card">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold">Website Traffic</h2>
-                <div className="text-sm text-gray-500">Ads rotate every 15s • Earn +500 W coins</div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <div className="border rounded overflow-hidden">
-                    <iframe id="viewerIframe" src="about:blank" className="w-full h-96" title="ad-viewer"></iframe>
-                  </div>
-
-                  <div className="mt-3 flex gap-2">
-                    <button id="startBtn" className="bg-indigo-600 text-white px-4 py-2 rounded">Start</button>
-                    <button id="stopBtn" className="bg-red-500 text-white px-4 py-2 rounded">Stop</button>
-                    <div id="timerBadge" className="text-sm text-gray-500 ml-3">Idle</div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-2">Ad Queue</h3>
-                  <div id="adQueueList" className="space-y-2 max-h-80 overflow-auto hide-scrollbar p-1"></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* DIRECT LINK */}
-          {page === 'direct' && (
-            <div className="card">
-              <h2 className="text-lg font-semibold mb-3">Direct Links</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <div id="directListUI" className="space-y-2"></div>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Create Direct Link</h3>
-                  <input id="directUrl" placeholder="https://example.com" className="w-full border rounded p-2 mb-2" />
-                  <button id="createDirectBtn" className="w-full bg-blue-600 text-white py-2 rounded">Create</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* YT WATCH TIME */}
-          {page === 'ytwatch' && (
-            <div className="card">
-              <h2 className="text-lg font-semibold mb-2">YouTube Watch Time</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <iframe id="ytIframe" className="w-full h-72" src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" title="YouTube"></iframe>
-                  <div className="mt-2 flex gap-2">
-                    <button id="startYt" className="bg-green-500 text-white px-4 py-2 rounded">Start Counting</button>
-                    <button id="stopYt" className="bg-red-500 text-white px-4 py-2 rounded">Stop</button>
-                    <div id="ytTimeUI" className="ml-3 text-sm text-gray-500">0s</div>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold">Your YT Stats</h3>
-                  <div className="mt-2 text-sm text-gray-600">Total watched: { userData ? (userData.ytTime || 0) : 0 } seconds</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* YT VIEWS */}
-          {page === 'ytviews' && (
-            <div className="card">
-              <h2 className="text-lg font-semibold mb-2">YouTube Views</h2>
-              <p className="text-sm text-gray-500 mb-3">Watch video, every 5 seconds counts as 1 view (demo)</p>
-              <div id="ytViewsList" className="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
-            </div>
-          )}
-
-          {/* REFERRAL */}
-          {page === 'referral' && (
-            <div className="card">
-              <h2 className="text-lg font-semibold mb-3">Referral System</h2>
-              <div className="mb-3 text-sm text-gray-600">Share this link to invite users and earn <b>10,000</b> signup bonus and <b>15%</b> lifetime commission (demo)</div>
-              <div className="flex gap-2">
-                <input id="refInput" className="flex-1 border rounded p-2" value={ user ? `${location.origin}${location.pathname}?ref=${user.uid}` : '' } readOnly />
-                <button onClick={() => copyRef()} className="bg-indigo-600 text-white px-4 py-2 rounded">Copy</button>
-              </div>
-              <div className="mt-4">
-                <h3 className="font-semibold">Referral Earnings</h3>
-                <div className="mt-2">{ userData ? (userData.referralEarnings || 0) : 0 } coins</div>
-              </div>
-            </div>
-          )}
-
-          {/* LAUNCH AD */}
-          {page === 'launch' && (
-            <div className="card">
-              <h2 className="text-lg font-semibold mb-3">Launch Ad</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm text-gray-500">Title</label>
-                  <input id="adTitle" className="w-full border rounded p-2 mb-2" placeholder="Short headline" />
-                  <label className="text-sm text-gray-500">URL / Content</label>
-                  <input id="adUrlInput" className="w-full border rounded p-2 mb-2" placeholder="https://example.com or html content" />
-                  <label className="text-sm text-gray-500">Budget (coins)</label>
-                  <input id="adBudgetInput" type="number" className="w-full border rounded p-2 mb-2" placeholder="500" />
-                  <label className="text-sm text-gray-500">Category</label>
-                  <select id="adTypeSel" className="w-full border rounded p-2 mb-2">
-                    <option value="web">Website Traffic (W)</option>
-                    <option value="direct">Direct Link (D)</option>
-                    <option value="youtube">YouTube (views/time)</option>
-                  </select>
-                  <button id="createCampBtn" className="bg-emerald-500 text-white px-4 py-2 rounded">Create Campaign</button>
-                  <div id="launchMsg" className="text-sm text-gray-500 mt-2"></div>
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-2">Your Campaigns</h3>
-                  <div id="campaignListUI" className="space-y-2 max-h-64 overflow-auto hide-scrollbar"></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TRANSACTIONS */}
-          {page === 'tx' && (
-            <div className="card">
-              <h2 className="text-lg font-semibold mb-3">Transactions</h2>
-              <div id="txListUI" className="space-y-2 max-h-72 overflow-auto hide-scrollbar">
-                {transactions.length===0 && <div className="text-sm text-gray-400">No transactions</div>}
-                {transactions.map(t => (
-                  <div key={t.id} className="p-2 border rounded">
-                    <div className="text-sm">{t.type} • {t.amount || ''} • {t.note || ''}</div>
-                    <div className="text-xs text-gray-400">{t.ts ? new Date(t.ts.seconds*1000).toLocaleString() : ''}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </main>
-      </div>
+  <main>
+    <div class="card">
+      <h2>Welcome to Free Ads Exchange 🚀</h2>
+      <p>Watch ads, earn coins, and run your own ads for free.</p>
+      <button id="loginBtn">Login / Signup</button>
     </div>
-  );
-}
 
-/* =============
-   Mount app
-   ============= */
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    <div class="card" id="dashboard" style="display:none;">
+      <h2>Dashboard</h2>
+      <p><strong>Email:</strong> <span id="userEmail"></span></p>
+      <p><strong>Coins:</strong> <span id="userCoins">0</span></p>
+      <p><strong>Referral Earnings:</strong> <span id="userRef">0</span></p>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </main>
 
-/* ============================
-   After mount — wire up some DOM-level controls that are easier to implement outside React for timing/iframe rotation
-   ============================ */
-(function attachPlainDOMLogic(){
-  // start/stop rotate logic uses global ads array in Firestore; we poll every time clicking start/stop
-  let rotateInterval = null;
-  let rotateTimerInterval = null;
-  let rotateIndex = 0;
-  let adDocs = [];
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-  async function refreshAdDocs(){
-    const snap = await db.collection('ads').orderBy('createdAt','desc').limit(200).get();
-    adDocs = snap.docs.map(d=>({ id: d.id, ...d.data() }));
-    // render list
-    const queue = document.getElementById('adQueueList');
-    if(queue){
-      queue.innerHTML = adDocs.map(a => `<div class="p-2 border rounded"><div class="font-semibold">${a.title||'(Ad)'}</div><div class="text-xs text-gray-400">${a.url||a.content||''}</div></div>`).join('') || '<div class="text-sm text-gray-400">No ads</div>';
-    }
-  }
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyC6Ph9DlrlDE3lfzkTbtrmVXWhx2m3baGQ",
+      authDomain: "web-final-8b653.firebaseapp.com",
+      projectId: "web-final-8b653",
+      storageBucket: "web-final-8b653.firebasestorage.app",
+      messagingSenderId: "122516569553",
+      appId: "1:122516569553:web:7fec83336353854e59f4f0",
+      measurementId: "G-17RQF3DL8K"
+    };
 
-  async function showAdAt(i){
-    if(!adDocs.length) return;
-    const ad = adDocs[i % adDocs.length];
-    const iframe = document.getElementById('viewerIframe');
-    if(!iframe) return;
-    if(ad.url && (ad.url.startsWith('http') || ad.url.startsWith('https'))){
-      iframe.src = ad.url;
-    } else if(ad.content){
-      const html = `<html><body style="font-family:Inter,Arial;padding:20px">${ad.content}</body></html>`;
-      iframe.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
-    } else {
-      iframe.src = 'about:blank';
-    }
-    // after 15s credit (client-side demo) if user logged in
-    const currentAdId = ad.id;
-    // set timer to credit after 15s for current viewer
-    setTimeout(async ()=>{
-      try{
-        const u = auth.currentUser;
-        if(u){
-          const key = `imp_${currentAdId}_${u.uid}`;
-          if(!isCooldown(key)){
-            setCooldown(key, 15);
-            await db.collection('users').doc(u.uid).update({ wCoins: firebase.firestore.FieldValue.increment(500) });
-            await db.collection('transactions').add({ user: u.uid, type: 'impression', adId: currentAdId, amount: 500, ts: firebase.firestore.FieldValue.serverTimestamp() });
-            console.log('Credited 500 W coins to', u.uid);
-          }
-        }
-      }catch(e){ console.error(e); }
-    }, 15000);
-  }
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  async function startRotation(){
-    await refreshAdDocs();
-    if(!adDocs.length){ alert('No ads in queue'); return; }
-    stopRotation();
-    rotateIndex = 0;
-    showAdAt(rotateIndex);
-    document.getElementById('timerBadge').innerText = '15s';
-    rotateInterval = setInterval(()=>{ rotateIndex = (rotateIndex+1)%adDocs.length; showAdAt(rotateIndex); }, 15000);
-    let t=15;
-    rotateTimerInterval = setInterval(()=>{ t--; if(t<=0) t=15; document.getElementById('timerBadge').innerText = t + 's'; }, 1000);
-  }
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const dashboard = document.getElementById("dashboard");
 
-  function stopRotation(){
-    if(rotateInterval) clearInterval(rotateInterval);
-    if(rotateTimerInterval) clearInterval(rotateTimerInterval);
-    document.getElementById('timerBadge').innerText = 'Stopped';
-  }
+    // Login with Google
+    loginBtn.addEventListener("click", async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        alert("Login error: " + err.message);
+      }
+    });
 
-  document.addEventListener('click', (e)=>{
-    if(e.target && e.target.id === 'startBtn') startRotation();
-    if(e.target && e.target.id === 'stopBtn') stopRotation();
-    if(e.target && e.target.id === 'createDirectBtn'){
-      const url = document.getElementById('directUrl').value.trim();
-      if(!url) return alert('Enter URL'); createDirect(url);
-      document.getElementById('directUrl').value = '';
-    }
-    if(e.target && e.target.id === 'createCampBtn'){
-      const title = document.getElementById('adTitle').value.trim();
-      const url = document.getElementById('adUrlInput').value.trim();
-      const budget = Number(document.getElementById('adBudgetInput').value);
-      const type = document.getElementById('adTypeSel').value;
-      if(!title || !url || !budget) return alert('Fill fields');
-      // call cloud? here we will call client-side function through Firestore
-      // use window to call React functions via db operations
-      (async ()=>{
-        const u = auth.currentUser;
-        if(!u) return alert('Login first');
-        // deduct & create campaign (client side)
-        const udoc = await db.collection('users').doc(u.uid).get();
-        const d = udoc.data();
-        const total = (d.wCoins||0)+(d.dCoins||0);
-        if(total < budget) return alert('Not enough balance');
-        // Prefer wCoins deduction
-        let remaining = budget;
-        const updates = {};
-        const w = d.wCoins||0;
-        if(w >= remaining){
-          updates.wCoins = firebase.firestore.FieldValue.increment(-remaining);
-          remaining = 0;
+    // Logout
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        document.getElementById("loginBtn").style.display = "none";
+        dashboard.style.display = "block";
+        document.getElementById("userEmail").textContent = user.email;
+
+        // Check if user exists in Firestore
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) {
+          await setDoc(userRef, {
+            email: user.email,
+            coins: 0,
+            referralEarnings: 0
+          });
+          document.getElementById("userCoins").textContent = "0";
+          document.getElementById("userRef").textContent = "0";
         } else {
-          updates.wCoins = firebase.firestore.FieldValue.increment(-w);
-          remaining -= w;
-          updates.dCoins = firebase.firestore.FieldValue.increment(-remaining);
-          remaining = 0;
+          document.getElementById("userCoins").textContent = snap.data().coins;
+          document.getElementById("userRef").textContent = snap.data().referralEarnings;
         }
-        await db.collection('users').doc(u.uid).update(updates);
-        await db.collection('campaigns').add({ title, url, budget, remainingBudget: budget, owner: u.uid, impressions:0, status:'active', category:type, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        await db.collection('ads').add({ owner: u.uid, title, url, type, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        document.getElementById('launchMsg').innerText = 'Campaign created!';
-        setTimeout(()=>document.getElementById('launchMsg').innerText = '',3000);
-      })();
-    }
-    if(e.target && e.target.id === 'startYt'){
-      // start small interval that credits ytRewardTick every 15s
-      if(window._ytCounting) return;
-      if(!auth.currentUser) return alert('Login required');
-      window._ytCounting = setInterval(()=> {
-        (async ()=>{ await ytRewardTick(); })();
-        const el = document.getElementById('ytTimeUI');
-        el.innerText = (Number(el.innerText.replace('s','')) + 15) + 's';
-      }, 15000);
-      document.getElementById('ytTimeUI').innerText = 'Counting...';
-    }
-    if(e.target && e.target.id === 'stopYt'){
-      if(window._ytCounting) clearInterval(window._ytCounting);
-      window._ytCounting = null;
-      document.getElementById('ytTimeUI').innerText = 'Stopped';
-    }
-  });
-
-  // Directs list renderer (polling every 5s)
-  async function refreshDirectListUI(){
-    const snap = await db.collection('directs').orderBy('createdAt','desc').limit(100).get();
-    const arr = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-    const el = document.getElementById('directListUI');
-    if(el){
-      el.innerHTML = arr.map(d => `<div class="p-2 border rounded flex items-center justify-between"><div class="text-sm">${d.url}</div><div><button class="bg-indigo-600 text-white px-3 py-1 rounded" onclick="(function(){ window.open('${d.url}','_blank'); window.creditDirect('${d.id}','${d.url}'); })()">Open & Earn</button></div></div>`).join('') || '<div class="text-sm text-gray-400">No direct links</div>';
-    }
-  }
-  // Make creditDirect callable from window (for button inline)
-  window.creditDirect = creditDirectClick;
-
-  async function refreshCampaignsUI(){
-    const snap = await db.collection('campaigns').where('owner','==', auth.currentUser?.uid || '').get().catch(()=>null);
-    const arr = snap ? snap.docs.map(d=>({ id:d.id, ...d.data() })) : [];
-    const el = document.getElementById('campaignListUI');
-    if(el) el.innerHTML = arr.map(c=>`<div class="p-2 border rounded"><div class="font-semibold">${c.title}</div><div class="text-xs text-gray-400">${c.budget} coins • ${c.status}</div></div>`).join('') || '<div class="text-sm text-gray-400">No campaigns</div>';
-  }
-
-  async function refreshTxUI(){
-    const snap = await db.collection('transactions').where('user','==', auth.currentUser?.uid || '').orderBy('ts','desc').limit(100).get().catch(()=>null);
-    const arr = snap ? snap.docs.map(d=>({ id:d.id, ...d.data() })) : [];
-    const el = document.getElementById('txListUI');
-    if(el) el.innerHTML = arr.map(t => `<div class="p-2 border rounded"><div class="text-sm">${t.type} • ${t.amount || ''} • ${t.note || ''}</div><div class="text-xs text-gray-400">${t.ts ? new Date(t.ts.seconds*1000).toLocaleString() : ''}</div></div>`).join('') || '<div class="text-sm text-gray-400">No transactions</div>';
-  }
-
-  // refresh UI periodically
-  setInterval(()=>{ refreshAdDocs(); refreshDirectListUI(); refreshCampaignsUI(); refreshTxUI(); }, 5000);
-  // initial refresh
-  refreshAdDocs(); refreshDirectListUI(); refreshCampaignsUI(); refreshTxUI();
-
-})(); // end attachPlainDOMLogic
-
+      } else {
+        document.getElementById("loginBtn").style.display = "inline-block";
+        dashboard.style.display = "none";
+      }
+    });
   </script>
 </body>
 </html>
