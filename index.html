@@ -1,174 +1,1253 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Coin Ad Platform</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    body { background: #f9fafb; }
-    .card { @apply bg-white shadow-md rounded-2xl p-6; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Ad Exchange - Free & Paid Traffic</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5',
+                        'secondary': '#10b981',
+                        'dark-bg': '#0f172a',
+                        'card-bg': '#1e293b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        body { background-color: #0f172a; color: #f3f4f6; font-family: 'Inter', sans-serif; }
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: #0f172a; }
+        body::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
+        
+        .ad-iframe {
+            width: 100%;
+            height: 400px;
+            border-radius: 0.5rem;
+            border: 4px solid #334155;
+            background-color: #0f172a;
+        }
+        
+        .nav-link {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .nav-link:hover {
+            transform: translateX(4px);
+            background-color: #374151;
+        }
+    </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center">
+<body class="min-h-screen flex flex-col">
 
-  <!-- Header -->
-  <div class="w-full bg-indigo-600 text-white p-4 text-center text-2xl font-bold shadow">
-    Coin Ad Platform 🚀
-  </div>
+    <!-- Main Header -->
+    <header id="header" class="bg-card-bg shadow-lg sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center flex-wrap">
+            <h1 class="text-2xl font-bold text-primary">Global Traffic Exchange</h1>
+            <div id="balance-display" class="flex flex-wrap gap-4 text-sm mt-2 md:mt-0">
+                <span class="font-semibold text-secondary">
+                    Total W Coins: <span id="w-coins-display" class="font-bold text-lg">0</span>
+                </span>
+                <span class="font-semibold text-yellow-400">
+                    YT Time: <span id="yt-time-display" class="font-bold text-lg">0h 0m 0s</span>
+                </span>
+                <span class="font-semibold text-red-400">
+                    YT Views: <span id="yt-views-display" class="font-bold text-lg">0</span>
+                </span>
+            </div>
+        </div>
+    </header>
 
-  <!-- Auth Section -->
-  <div id="auth-section" class="mt-10 text-center">
-    <button onclick="login()" class="bg-indigo-500 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow-lg">
-      Login with Google
-    </button>
-  </div>
+    <div class="flex flex-grow">
+        <!-- Sidebar Navigation -->
+        <nav id="sidebar" class="w-64 bg-gray-800 p-4 space-y-2 hidden md:block flex-shrink-0">
+            <h3 class="text-lg font-bold text-gray-300 mb-4 border-b border-gray-700 pb-2">Navigation</h3>
+            <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-link w-full text-left p-3 rounded-lg bg-gray-700 text-white font-medium flex items-center gap-2">
+                <!-- SVG Icon --> Dashboard
+            </button>
+            <button onclick="navigateTo('traffic')" id="nav-traffic" class="nav-link w-full text-left p-3 rounded-lg bg-gray-700 text-white font-medium flex items-center gap-2">
+                <!-- SVG Icon --> Website Traffic (W Coins)
+            </button>
+            <button onclick="navigateTo('direct_link')" id="nav-direct_link" class="nav-link w-full text-left p-3 rounded-lg bg-gray-700 text-white font-medium flex items-center gap-2">
+                <!-- SVG Icon --> Direct Link (D Coins)
+            </button>
+            <button onclick="navigateTo('yt_watch_time')" id="nav-yt_watch_time" class="nav-link w-full text-left p-3 rounded-lg bg-gray-700 text-white font-medium flex items-center gap-2">
+                <!-- SVG Icon --> YouTube Watch Time
+            </button>
+            <button onclick="navigateTo('yt_views')" id="nav-yt_views" class="nav-link w-full text-left p-3 rounded-lg bg-gray-700 text-white font-medium flex items-center gap-2">
+                <!-- SVG Icon --> YouTube Views
+            </button>
+            <button onclick="navigateTo('referral')" id="nav-referral" class="nav-link w-full text-left p-3 rounded-lg bg-gray-700 text-white font-medium flex items-center gap-2">
+                <!-- SVG Icon --> Referral System
+            </button>
+            <button onclick="navigateTo('launch_ad')" id="nav-launch_ad" class="nav-link w-full text-left p-3 rounded-lg bg-primary text-white font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-[1.01] transition duration-150">
+                <!-- SVG Icon --> Launch Ad
+            </button>
+        </nav>
 
-  <!-- Dashboard Section -->
-  <div id="dashboard" class="hidden max-w-3xl w-full mt-10 space-y-6">
-    <div class="card flex justify-between items-center">
-      <div>
-        <h2 class="text-xl font-bold" id="username">Welcome User</h2>
-        <p class="text-gray-600">Coins: <span id="coins">0</span></p>
-      </div>
-      <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
-        Logout
-      </button>
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-grow p-4 md:p-8 overflow-y-auto w-full">
+            <!-- Loader/Error for initial Firebase setup -->
+            <div id="loader" class="text-center py-20 text-xl text-primary">Loading application and user data...</div>
+            <div id="content-container" class="hidden">
+                <!-- Dynamic content will be rendered here -->
+            </div>
+        </main>
     </div>
 
-    <!-- Referral -->
-    <div class="card">
-      <h3 class="text-lg font-semibold mb-2">Referral System</h3>
-      <p class="text-gray-700">Share this link with friends:</p>
-      <input id="referral-link" class="w-full border rounded p-2 mt-2" readonly>
+    <!-- Custom Modal for Alerts/Confirms -->
+    <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 items-center justify-center">
+        <div class="bg-card-bg p-6 rounded-xl shadow-2xl w-full max-w-sm text-center">
+            <h4 id="modal-title" class="text-xl font-bold mb-3 text-primary"></h4>
+            <p id="modal-message" class="mb-6 text-gray-300"></p>
+            <button id="modal-close-btn" class="bg-primary hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg transition duration-150">OK</button>
+        </div>
     </div>
 
-    <!-- Watch Ads -->
-    <div class="card">
-      <h3 class="text-lg font-semibold mb-2">Watch Ads & Earn Coins</h3>
-      <p class="text-gray-600">Click below to watch ads and get coins instantly.</p>
-      <button onclick="watchAd()" class="mt-3 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-        Watch Ad → +50 Coins
-      </button>
-    </div>
+    <!-- Firebase SDK Imports (Non-Module) -->
+    <!-- Switched to v8 CDN links for better compatibility in restrictive environments like Blogger -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <!-- Main Application Logic (Non-Module Script Block) -->
+    <script>
+        // Use a function wrapper to scope variables, then immediately call it.
+        (function() {
+            
+            // --- GLOBAL STATE & CONFIGURATION ---
+            
+            // Mandatory Global Variables provided by the Canvas Environment
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-traffic-app';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                // Fallback configuration if global variable is not set (MUST BE VALID for the hosting environment)
+                apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
+                authDomain: "website-5636d.firebaseapp.com",
+                projectId: "website-5636d",
+                storageBucket: "website-5636d.firebasestorage.app",
+                messagingSenderId: "737574321288",
+                appId: "1:737574321288:web:e92da5e5w4d63b87d8b33d"
+            };
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-    <!-- Launch Ads -->
-    <div class="card">
-      <h3 class="text-lg font-semibold mb-2">Launch Your Ad</h3>
-      <textarea id="ad-content" class="w-full border rounded p-2" placeholder="Write your ad..."></textarea>
-      <button onclick="launchAd()" class="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-        Launch Ad (cost: 200 coins)
-      </button>
-      <p id="ad-status" class="mt-2 text-sm text-gray-500"></p>
-    </div>
-  </div>
+            let app;
+            let db;
+            let auth;
+            let userId = null;
+            let isAuthReady = false;
+            
+            let currentPage = window.location.hash.substring(1) || 'dashboard'; 
+            const validPages = ['dashboard', 'traffic', 'direct_link', 'yt_watch_time', 'yt_views', 'referral', 'launch_ad'];
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+            let userBalance = {
+                usableBalance: 0,
+                webTrafficEarnings: 0,
+                directLinkEarnings: 0,
+                ytHours: 0,
+                ytMinutes: 0,
+                ytSeconds: 0,
+                views: 0,
+                referralCode: null,
+                totalReferralCommission: 0
+            };
 
-  <script>
-    // Firebase Config (your details)
-    const firebaseConfig = {
-      apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
-      authDomain: "website-5636d.firebaseapp.com",
-      projectId: "website-5636d",
-      storageBucket: "website-5636d.appspot.com",
-      messagingSenderId: "737574321288",
-      appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
-      measurementId: "G-S64W6JR12C"
-    };
+            let currentAd = null;
+            let adTimer = null;
+            const WEB_TRAFFIC_COIN_REWARD = 500;
+            const DIRECT_LINK_REWARD = 1000;
+            const REFERRAL_BONUS = 5000;
+            const REFERRAL_COMMISSION_RATE = 0.15; // 15%
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+            const SAMPLE_WEB_ADS = [
+                { id: 'sample1', url: 'https://www.google.com/search?q=free+traffic', title: 'Sample Ad 1: Search Engine Traffic', remainingImpressions: 99999 },
+                { id: 'sample2', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1', title: 'Sample Ad 2: Placeholder YouTube', remainingImpressions: 99999 }
+            ];
 
-    let currentUser;
+            const SAMPLE_YT_VIDEOS = [
+                'https://www.youtube.com/embed/k-p_159b3W8?autoplay=1&mute=1&enablejsapi=1',
+                'https://www.youtube.com/embed/jNQXAC9IVRw?autoplay=1&mute=1&enablejsapi=1',
+                'https://www.youtube.com/embed/C2F6v_8407I?autoplay=1&mute=1&enablejsapi=1'
+            ];
+            let currentYTIndex = 0;
+            let ytPlayer = null;
+            let ytTimeInterval = null;
+            let currentVideoSessionPlayTime = 0; // Tracks play time for the current YT video
 
-    // Login
-    async function login() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await auth.signInWithPopup(provider);
-      currentUser = result.user;
-      setupUser(currentUser);
-    }
+            // --- UTILITY FUNCTIONS ---
+            
+            window.customAlert = (title, message) => {
+                document.getElementById('modal-title').innerText = title;
+                document.getElementById('modal-message').innerText = message;
+                document.getElementById('custom-modal').classList.remove('hidden');
+                document.getElementById('custom-modal').classList.add('flex');
+                document.getElementById('modal-close-btn').onclick = () => {
+                    document.getElementById('custom-modal').classList.add('hidden');
+                    document.getElementById('custom-modal').classList.remove('flex');
+                };
+            };
 
-    // Logout
-    async function logout() {
-      await auth.signOut();
-      document.getElementById("dashboard").classList.add("hidden");
-      document.getElementById("auth-section").classList.remove("hidden");
-    }
+            const formatTime = (totalSeconds) => {
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                return `${hours}h ${minutes}m ${seconds}s`;
+            };
 
-    // Setup User
-    async function setupUser(user) {
-      const userRef = db.collection("users").doc(user.uid);
-      const doc = await userRef.get();
+            // --- FIREBASE V8 REFERENCE HELPERS ---
+            // Note: These now use the V8 syntax (db.collection().doc())
+            
+            const getUserProfileDocRef = (uid) => db.collection(`artifacts/${appId}/users/${uid}/profile`).doc('data');
+            const getWebAdsCollectionRef = () => db.collection(`artifacts/${appId}/public/data/web_ads`);
+            const getReferralEarningsCollectionRef = (uid) => db.collection(`artifacts/${appId}/users/${uid}/referral_earnings`);
+            
+            const setupBalanceListener = () => {
+                if (!userId || typeof db === 'undefined') {
+                    console.error("Firestore not initialized or userId missing for listener setup.");
+                    return;
+                }
 
-      if (!doc.exists) {
-        await userRef.set({ name: user.displayName, coins: 1000, referrals: 0 });
-      }
+                // V8 onSnapshot syntax
+                getUserProfileDocRef(userId).onSnapshot((docSnapshot) => {
+                    if (docSnapshot.exists) {
+                        const data = docSnapshot.data();
+                        
+                        userBalance.usableBalance = data.usableBalance || 0;
+                        userBalance.webTrafficEarnings = data.webTrafficEarnings || 0;
+                        userBalance.directLinkEarnings = data.directLinkEarnings || 0;
+                        userBalance.ytHours = data.ytHours || 0;
+                        userBalance.ytMinutes = data.ytMinutes || 0;
+                        userBalance.ytSeconds = data.ytSeconds || 0;
+                        userBalance.views = data.views || 0;
+                        userBalance.referralCode = data.referralCode || userId;
+                        
+                        updateHeaderDisplay();
+                    } else {
+                        console.log('User profile not found. Creating a new one.');
+                        const initialData = {
+                            usableBalance: 0,
+                            webTrafficEarnings: 0,
+                            directLinkEarnings: 0,
+                            ytHours: 0,
+                            ytMinutes: 0,
+                            ytSeconds: 0,
+                            views: 0,
+                            referralCode: userId,
+                            createdAt: new Date().toISOString()
+                        };
+                        // V8 set syntax
+                        getUserProfileDocRef(userId).set(initialData, { merge: true }).catch(err => console.error("Error creating profile:", err));
+                    }
+                }, (error) => {
+                    console.error("Error listening to user balance:", error);
+                });
+            };
 
-      // Live update
-      userRef.onSnapshot(doc => {
-        const data = doc.data();
-        document.getElementById("username").innerText = "Welcome " + data.name;
-        document.getElementById("coins").innerText = data.coins;
-        document.getElementById("referral-link").value =
-          window.location.origin + "/?ref=" + user.uid;
-      });
+            /**
+             * Initializes Firebase and authenticates the user.
+             */
+            const initFirebase = async () => {
+                try {
+                    // Check for the global V8 firebase object
+                    if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
+                        throw new Error("Firebase SDK functions (v8) are not globally available. Check CDN script loading.");
+                    }
+                    
+                    // V8 Initialization
+                    app = firebase.initializeApp(firebaseConfig);
+                    auth = firebase.auth(); 
+                    db = firebase.firestore();
 
-      document.getElementById("auth-section").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
-    }
+                    // V8: Set Firestore Log Level (if available)
+                    if (typeof firebase.firestore.setLogLevel !== 'undefined') {
+                        firebase.firestore.setLogLevel('Debug');
+                    }
 
-    // Watch Ad
-    async function watchAd() {
-      if (!currentUser) return;
-      const userRef = db.collection("users").doc(currentUser.uid);
-      await userRef.update({
-        coins: firebase.firestore.FieldValue.increment(50)
-      });
-      alert("You earned 50 coins!");
-    }
+                    // V8: Wait for auth state to change
+                    auth.onAuthStateChanged(async (user) => {
+                        if (user) {
+                            // SUCCESSFULLY AUTHENTICATED
+                            userId = user.uid;
+                            
+                            // Referral logic (must run after successful auth)
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const referrerCode = urlParams.get('ref');
+                            
+                            const userDocRef = getUserProfileDocRef(userId);
+                            // V8 get syntax
+                            const userDoc = await userDocRef.get();
 
-    // Launch Ad
-    async function launchAd() {
-      if (!currentUser) return;
-      const adText = document.getElementById("ad-content").value;
-      if (!adText) return alert("Write something first!");
+                            if (referrerCode && referrerCode !== userId && (!userDoc.exists || (userDoc.exists && !userDoc.data().referredBy))) {
+                                // V8 set syntax
+                                await userDocRef.set({ referredBy: referrerCode, referralDate: new Date().toISOString() }, { merge: true });
+                                console.log(`User ${userId} referred by ${referrerCode}.`);
+                            }
+                            
+                            isAuthReady = true;
+                            setupBalanceListener();
+                            
+                            // HIDE LOADER AND SHOW CONTENT
+                            document.getElementById('loader').classList.add('hidden');
+                            document.getElementById('content-container').classList.remove('hidden');
+                            
+                            // Render the page now that auth is ready
+                            renderPage();
+                        } else {
+                            // FAILED/ANONYMOUS FALLBACK
+                            if (!userId) {
+                                // Fallback for environments where auth fails but we need a user ID for Firestore
+                                userId = crypto.randomUUID(); 
+                                console.warn("Signed out/Anonymous auth failed. Using temporary ID.");
+                                document.getElementById('loader').classList.add('hidden');
+                                document.getElementById('content-container').classList.remove('hidden');
+                                isAuthReady = true; // Allow basic rendering even without full Firebase connection
+                                renderPage();
+                            }
+                        }
+                    });
 
-      const userRef = db.collection("users").doc(currentUser.uid);
-      const doc = await userRef.get();
-      const coins = doc.data().coins;
+                    // Perform the initial sign-in. V8 syntax.
+                    if (initialAuthToken) {
+                        await auth.signInWithCustomToken(initialAuthToken);
+                    } else {
+                        await auth.signInAnonymously();
+                    }
 
-      if (coins < 200) {
-        document.getElementById("ad-status").innerText = "Not enough coins!";
-        return;
-      }
+                } catch (error) {
+                    console.error("Firebase Auth failed on startup:", error);
+                    // Display the critical error message immediately
+                    const loader = document.getElementById('loader');
+                    loader.classList.remove('text-primary');
+                    loader.classList.add('text-red-500', 'p-6', 'rounded-lg', 'bg-red-900/20', 'border', 'border-red-500');
+                    loader.innerHTML = `
+                        <p class="text-2xl font-bold mb-4">CRITICAL: Authentication Failed!</p>
+                        <p class="mt-4 text-lg">Error: ${error.message}</p>
+                        <p class="text-sm mt-2 font-mono text-gray-400 break-all">Current Origin: ${window.location.origin}</p>
+                    `;
+                }
+            };
 
-      await userRef.update({
-        coins: firebase.firestore.FieldValue.increment(-200)
-      });
+            // --- UI & RENDERING ---
 
-      await db.collection("ads").add({
-        uid: currentUser.uid,
-        content: adText,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+            const updateHeaderDisplay = () => {
+                document.getElementById('w-coins-display').innerText = userBalance.usableBalance.toLocaleString();
+                const totalYtSeconds = userBalance.ytHours * 3600 + userBalance.ytMinutes * 60 + userBalance.ytSeconds;
+                document.getElementById('yt-time-display').innerText = formatTime(totalYtSeconds);
+                document.getElementById('yt-views-display').innerText = userBalance.views.toLocaleString();
+                
+                let header = document.getElementById('header');
+                let userIdSpan = document.getElementById('user-id-display');
+                
+                if (!userIdSpan) {
+                    userIdSpan = document.createElement('span');
+                    userIdSpan.id = 'user-id-display';
+                    userIdSpan.className = 'text-xs text-gray-400 w-full md:w-auto mt-1 md:mt-0';
+                    header.querySelector('div').appendChild(userIdSpan);
+                }
+                userIdSpan.innerHTML = `User ID: <span class='font-mono text-primary break-all'>${userId || 'Authenticating...'}</span>`;
+            };
+            
+            const navigateTo = (page, skipHashUpdate = false) => {
+                if (adTimer) clearInterval(adTimer);
+                
+                if (ytTimeInterval) {
+                    clearInterval(ytTimeInterval);
+                    ytTimeInterval = null;
+                }
+                if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
+                    try {
+                        ytPlayer.stopVideo();
+                    } catch(e) {
+                        console.warn("Could not stop YT player on navigation.", e);
+                    }
+                }
+                
+                if (currentPage.startsWith('yt_')) {
+                    currentVideoSessionPlayTime = 0;
+                }
 
-      document.getElementById("ad-status").innerText = "Ad launched successfully!";
-      document.getElementById("ad-content").value = "";
-    }
+                if (!validPages.includes(page)) {
+                    page = 'dashboard';
+                }
 
-    // Auto login check
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        setupUser(user);
-      }
-    });
-  </script>
+                currentPage = page;
+
+                if (!skipHashUpdate) {
+                    window.location.hash = page;
+                }
+                
+                if (isAuthReady) {
+                     renderPage();
+                }
+            };
+            window.navigateTo = navigateTo; 
+
+            const renderPage = () => {
+                if (!isAuthReady) return;
+
+                const container = document.getElementById('content-container');
+                container.innerHTML = '';
+                let contentHTML = '';
+
+                document.querySelectorAll('.nav-link').forEach(btn => {
+                    const pageId = btn.id.replace('nav-', '');
+                    btn.classList.remove('bg-primary', 'bg-gray-700');
+                    if (pageId === currentPage) {
+                        btn.classList.add('bg-primary');
+                    } else {
+                        btn.classList.add('bg-gray-700');
+                    }
+                });
+
+                switch (currentPage) {
+                    case 'dashboard':
+                        contentHTML = renderDashboard();
+                        break;
+                    case 'traffic':
+                        contentHTML = renderTrafficPage();
+                        break;
+                    case 'direct_link':
+                        contentHTML = renderDirectLinkPage();
+                        break;
+                    case 'yt_watch_time':
+                        contentHTML = renderYoutubeWatchTimePage();
+                        break;
+                    case 'yt_views':
+                        contentHTML = renderYoutubeViewsPage();
+                        break;
+                    case 'referral':
+                        contentHTML = renderReferralPage();
+                        break;
+                    case 'launch_ad':
+                        contentHTML = renderLaunchAdPage();
+                        break;
+                }
+                container.innerHTML = contentHTML;
+
+                if (currentPage === 'traffic') {
+                    loadWebAd();
+                }
+                if (currentPage === 'yt_watch_time' || currentPage === 'yt_views') {
+                    loadYoutubeAPI();
+                }
+                if (currentPage === 'referral') {
+                    loadReferralCommissions();
+                }
+                if (currentPage === 'launch_ad') {
+                    loadMyAds();
+                }
+            };
+
+            // --- PAGE RENDERING FUNCTIONS ---
+            
+            const renderDashboard = () => {
+                const totalEarnings = userBalance.webTrafficEarnings + userBalance.directLinkEarnings;
+                return `
+                    <div class="space-y-8">
+                        <h2 class="text-3xl font-extrabold text-primary border-b border-gray-700 pb-3">Dashboard Overview</h2>
+                        
+                        <!-- Balance Summary -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div class="bg-card-bg p-6 rounded-xl shadow-xl border-t-4 border-secondary">
+                                <p class="text-sm text-gray-400">Usable Balance (W Coins)</p>
+                                <p class="text-4xl font-bold text-white">${userBalance.usableBalance.toLocaleString()}</p>
+                                <p class="text-xs text-secondary mt-1">Total coins for launching ads.</p>
+                            </div>
+                            <div class="bg-card-bg p-6 rounded-xl shadow-xl border-t-4 border-yellow-400">
+                                <p class="text-sm text-gray-400">Traffic Earnings (W)</p>
+                                <p class="text-4xl font-bold text-white">${userBalance.webTrafficEarnings.toLocaleString()}</p>
+                                <p class="text-xs text-yellow-400 mt-1">Earned from Website Traffic.</p>
+                            </div>
+                            <div class="bg-card-bg p-6 rounded-xl shadow-xl border-t-4 border-blue-400">
+                                <p class="text-sm text-gray-400">Direct Link Earnings (D)</p>
+                                <p class="text-4xl font-bold text-white">${userBalance.directLinkEarnings.toLocaleString()}</p>
+                                <p class="text-xs text-blue-400 mt-1">Earned from Direct Links.</p>
+                            </div>
+                            <div class="bg-card-bg p-6 rounded-xl shadow-xl border-t-4 border-red-400">
+                                <p class="text-sm text-gray-400">Total YT Views Earned</p>
+                                <p class="text-4xl font-bold text-white">${userBalance.views.toLocaleString()}</p>
+                                <p class="text-xs text-red-400 mt-1">Earned for your YouTube campaigns.</p>
+                            </div>
+                        </div>
+
+                        <!-- Plan & Instruction Details -->
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl">
+                            <h3 class="text-2xl font-bold text-primary mb-4">Our Service Program Details</h3>
+                            
+                            <div class="p-4 rounded-lg bg-indigo-900/30 border border-primary/50 mb-4">
+                                <p class="text-lg font-extrabold text-white mb-2">
+                                    <span class="bg-secondary px-2 py-1 rounded-md text-dark-bg mr-2">!</span>
+                                    <span class="font-black text-yellow-300">WANT SPECIAL COUNTRY TRAFFIC?</span>
+                                </p>
+                                <p class="text-gray-300">
+                                    You need to <span class="font-bold text-xl text-red-400">Use PC</span> and <span class="font-bold text-xl text-red-400">Follow this link Instruction</span> (coming soon) after following this you can get any country traffic in your Link. This feature is part of our **Paid Service Program**.
+                                </p>
+                            </div>
+                            
+                            <div class="space-y-4 text-gray-300">
+                                <p>This platform offers two types of programs: a **Free Service** where you earn coins by performing actions (watching ads, clicking links) and a **Paid Service** where you can buy coins or advanced geo-targeting features for your campaigns.</p>
+                                <p><span class="font-bold text-lg text-secondary">Website Traffic (W Coins):</span> Earn 500 W Coins for every 15 seconds you view another user's ad. These W Coins are your primary usable currency.</p>
+                                <p><span class="font-bold text-lg text-blue-400">Direct Links (D Coins):</span> Earn 1000 D Coins for opening and verifying a direct link. D Coins are instantly converted to Usable W Coins.</p>
+                                <p><span class="font-bold text-lg text-yellow-400">YouTube Watch Time/Views:</span> Earn actual H:M:S and Views which are dedicated currencies for running your own YouTube campaigns. No money conversion—it's pure time/view exchange!</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const renderTrafficPage = () => {
+                return `
+                    <div class="space-y-6">
+                        <h2 class="text-3xl font-extrabold text-primary border-b border-gray-700 pb-3">Website Traffic Exchange (Earn W Coins)</h2>
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl space-y-4">
+                            <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+                                <p class="text-lg text-gray-300">Time Remaining to Earn:</p>
+                                <p id="traffic-timer" class="text-4xl font-bold text-secondary">15</p>
+                            </div>
+                            
+                            <iframe id="ad-iframe" class="ad-iframe" frameborder="0" allowfullscreen></iframe>
+                            
+                            <div class="text-center pt-2">
+                                <p class="text-sm text-gray-400">You earn ${WEB_TRAFFIC_COIN_REWARD.toLocaleString()} W Coins for every 15 seconds of viewing.</p>
+                                <p class="text-sm text-yellow-400 font-bold">Please keep this page focused and visible to ensure accurate coin crediting.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const loadWebAd = async () => {
+                const container = document.getElementById('ad-iframe');
+                const timerDisplay = document.getElementById('traffic-timer');
+                let ads = SAMPLE_WEB_ADS;
+
+                try {
+                    // V8 Query Syntax
+                    const qRef = getWebAdsCollectionRef().where("remainingImpressions", ">", 0);
+                    const snapshot = await qRef.get(); // .get() for V8
+                    if (!snapshot.empty) {
+                        ads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    }
+                } catch (error) {
+                    console.warn("Could not fetch live ads from Firestore. Using samples.", error);
+                }
+
+                ads.sort(() => Math.random() - 0.5);
+
+                let adIndex = 0;
+                let countdown = 15;
+
+                const updateTimerAndIframe = async () => {
+                    if (adIndex >= ads.length) {
+                        adIndex = 0;
+                        ads.sort(() => Math.random() - 0.5);
+                    }
+                    
+                    currentAd = ads[adIndex];
+                    container.src = currentAd.url;
+                    countdown = 15;
+                    timerDisplay.innerText = countdown;
+                };
+
+                const intervalTick = async () => {
+                    countdown--;
+                    timerDisplay.innerText = countdown;
+
+                    if (countdown <= 0) {
+                        await rewardUser('webTrafficEarnings', WEB_TRAFFIC_COIN_REWARD);
+
+                        if (currentAd && currentAd.id.length > 10) {
+                            await trackImpression(currentAd.id);
+                        }
+                        
+                        adIndex++;
+                        await updateTimerAndIframe();
+                    }
+                };
+
+                const trackImpression = async (adId) => {
+                    // V8 DocRef + Update Syntax
+                    const adRef = getWebAdsCollectionRef().doc(adId);
+                    try {
+                        await adRef.update({
+                            remainingImpressions: currentAd.remainingImpressions - 1
+                        });
+                    } catch (error) {
+                        console.error("Failed to track impression for ad:", adId, error);
+                    }
+                };
+
+                await updateTimerAndIframe();
+                adTimer = setInterval(intervalTick, 1000);
+            };
+            
+            const renderDirectLinkPage = () => {
+                return `
+                    <div class="space-y-6">
+                        <h2 class="text-3xl font-extrabold text-primary border-b border-gray-700 pb-3">Direct Link Exchange (Earn D Coins)</h2>
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl text-center">
+                            <p class="text-lg mb-4 text-gray-300">Click the button below to open a direct sponsor link. Once the link is fully loaded, you will be rewarded.</p>
+                            <p class="text-2xl font-bold text-secondary mb-6">Reward: ${DIRECT_LINK_REWARD.toLocaleString()} D Coins</p>
+                            
+                            <button onclick="earnDirectLinkCoins()" class="bg-primary hover:bg-indigo-600 text-white font-extrabold py-3 px-8 rounded-xl shadow-lg transition duration-200 transform hover:scale-105">
+                                Open Direct Link & Earn D Coins
+                            </button>
+                            
+                            <div class="mt-8 p-4 bg-gray-700/50 rounded-lg">
+                                <p class="text-sm text-gray-400">Current D Coins Earned:</p>
+                                <p class="text-3xl font-bold text-white">${userBalance.directLinkEarnings.toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const earnDirectLinkCoins = async () => {
+                window.open('https://www.google.com/search?q=direct+link+sponsor', '_blank');
+                
+                await rewardUser('directLinkEarnings', DIRECT_LINK_REWARD);
+                
+                customAlert("Success!", `${DIRECT_LINK_REWARD.toLocaleString()} D Coins earned and added to your Total W Coins balance!`);
+                renderPage();
+            };
+            window.earnDirectLinkCoins = earnDirectLinkCoins;
+
+            const loadYoutubeAPI = () => {
+                if (document.getElementById('youtube-api-script')) return;
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                tag.id = "youtube-api-script";
+                // Insert the script at the beginning of the body or head for quickest load
+                document.body.appendChild(tag);
+            }
+
+            window.onYouTubeIframeAPIReady = () => {
+                console.log("[YT API] IFrame API Ready.");
+                if (currentPage === 'yt_watch_time' || currentPage === 'yt_views') {
+                    currentVideoSessionPlayTime = 0;
+                    loadYoutubeVideo(SAMPLE_YT_VIDEOS[currentYTIndex]);
+                }
+            };
+
+            const loadYoutubeVideo = (videoUrl) => {
+                const videoContainer = document.getElementById('yt-player-container');
+                if (!videoContainer) return;
+
+                if (ytTimeInterval) clearInterval(ytTimeInterval);
+                ytTimeInterval = null; 
+                if (ytPlayer && typeof ytPlayer.destroy === 'function') ytPlayer.destroy();
+                
+                videoContainer.innerHTML = '<div id="yt-player"></div>';
+                
+                currentVideoSessionPlayTime = 0;
+
+                const url = new URL(videoUrl);
+                const videoId = url.searchParams.get('v') || url.pathname.split('/').pop().split('?')[0]; 
+
+                if (typeof YT !== 'undefined' && YT.Player) {
+                    ytPlayer = new YT.Player('yt-player', {
+                        height: '400',
+                        width: '100%',
+                        videoId: videoId,
+                        playerVars: {
+                            'playsinline': 1,
+                            'autoplay': 1,
+                            'mute': 1,
+                            'controls': 1,
+                            'enablejsapi': 1,
+                            'origin': window.location.origin 
+                        },
+                        events: {
+                            'onReady': onPlayerReady,
+                            'onStateChange': onPlayerStateChange
+                        }
+                    });
+                } else {
+                     console.error("YouTube Player API not fully loaded yet or YT is undefined.");
+                     videoContainer.innerHTML = '<div class="ad-iframe flex items-center justify-center text-gray-400">Error loading player. Please try navigating to another tab and back.</div>';
+                }
+            };
+            
+            const onPlayerReady = (event) => {
+                console.log("[YT Ready] Player initialized. Attempting to play.");
+                event.target.playVideo();
+            };
+
+            const onPlayerStateChange = (event) => {
+                const state = event.data;
+
+                // State 1: PLAYING
+                if (state === YT.PlayerState.PLAYING) { 
+                    if (!ytTimeInterval) {
+                        if (currentPage === 'yt_watch_time') {
+                            startWatchTimeCounter();
+                        } else if (currentPage === 'yt_views') {
+                            startViewsCounter();
+                        }
+                    }
+                } else {
+                    // All other states (0=ENDED, 2=PAUSED, 3=BUFFERING, -1=UNSTARTED, 5=CUED)
+                    if (ytTimeInterval) {
+                        clearInterval(ytTimeInterval);
+                        ytTimeInterval = null;
+                    }
+                }
+            };
+
+            const startWatchTimeCounter = () => {
+                ytTimeInterval = setInterval(async () => {
+                    userBalance.ytSeconds++;
+                    if (userBalance.ytSeconds >= 60) {
+                        userBalance.ytSeconds = 0;
+                        userBalance.ytMinutes++;
+                        if (userBalance.ytMinutes >= 60) {
+                            userBalance.ytMinutes = 0;
+                            userBalance.ytHours++;
+                        }
+                    }
+                    
+                    updateHeaderDisplay();
+                    if (userBalance.ytSeconds % 10 === 0) {
+                        await updateYTBalance('watchTime');
+                    }
+                }, 1000);
+            };
+            
+            const startViewsCounter = () => {
+                const nextButton = document.getElementById('yt-next-btn');
+                
+                if (nextButton) {
+                    nextButton.disabled = true;
+                    nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+                    nextButton.classList.remove('bg-secondary');
+                }
+                
+                ytTimeInterval = setInterval(async () => {
+                    currentVideoSessionPlayTime++;
+                    
+                    const timeRemainingDisplay = document.getElementById('views-time-remaining');
+                    if (timeRemainingDisplay) {
+                        const remaining = 5 - currentVideoSessionPlayTime; // Only need 5 seconds total
+                        timeRemainingDisplay.innerText = currentVideoSessionPlayTime < 5 ? `(${remaining}s remaining to earn)` : `Ready to Earn!`;
+                    }
+                    
+                    if (currentVideoSessionPlayTime >= 5 && nextButton && nextButton.disabled) {
+                        nextButton.disabled = false;
+                        nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                        nextButton.classList.add('bg-secondary');
+                    }
+                }, 1000);
+            };
+
+            const nextYoutubeAd = async (isViewEarn) => {
+                // Stop current interval and player, then load next
+                if (ytTimeInterval) clearInterval(ytTimeInterval);
+                ytTimeInterval = null;
+                if (ytPlayer && typeof ytPlayer.destroy === 'function') ytPlayer.destroy(); // Use destroy for clean reset
+
+                if (isViewEarn) {
+                     const nextButton = document.getElementById('yt-next-btn');
+                     if (nextButton && nextButton.disabled) {
+                         customAlert("Wait!", "You must watch for at least 5 seconds before moving to the next video and earning a view.");
+                         return;
+                     }
+                     userBalance.views++;
+                     await updateYTBalance('views');
+                }
+                
+                currentVideoSessionPlayTime = 0; 
+                currentYTIndex = (currentYTIndex + 1) % SAMPLE_YT_VIDEOS.length;
+                loadYoutubeVideo(SAMPLE_YT_VIDEOS[currentYTIndex]);
+            };
+            window.nextYoutubeAd = nextYoutubeAd;
+
+            const prevYoutubeAd = () => {
+                if (ytTimeInterval) clearInterval(ytTimeInterval);
+                ytTimeInterval = null;
+                if (ytPlayer && typeof ytPlayer.destroy === 'function') ytPlayer.destroy(); 
+                
+                currentVideoSessionPlayTime = 0; 
+
+                if (currentYTIndex === 0) {
+                    currentYTIndex = SAMPLE_YT_VIDEOS.length - 1;
+                } else {
+                    currentYTIndex--;
+                }
+                loadYoutubeVideo(SAMPLE_YT_VIDEOS[currentYTIndex]);
+            };
+            window.prevYoutubeAd = prevYoutubeAd;
+
+
+            const renderYoutubeWatchTimePage = () => {
+                return `
+                    <div class="space-y-6">
+                        <h2 class="text-3xl font-extrabold text-primary border-b border-gray-700 pb-3">YouTube Watch Time Exchange (Earn H:M:S)</h2>
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl space-y-4">
+                            <div class="text-center p-3 bg-gray-800 rounded-lg">
+                                <p class="text-sm text-gray-400">Total Earned Watch Time</p>
+                                <p id="live-watch-time" class="text-3xl font-bold text-yellow-400">${userBalance.ytHours}h ${userBalance.ytMinutes}m ${userBalance.ytSeconds}s</p>
+                            </div>
+                            
+                            <!-- YouTube Player Container -->
+                            <div id="yt-player-container">
+                                <div class="ad-iframe flex items-center justify-center text-gray-400">Loading YouTube Player...</div>
+                            </div>
+                            
+                            <div class="flex justify-center gap-4 pt-2">
+                                <button onclick="prevYoutubeAd(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-150">
+                                    < Back Ad
+                                </button>
+                                <button onclick="nextYoutubeAd(false)" class="bg-primary hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition duration-150">
+                                    Next Ad >
+                                </button>
+                            </div>
+                            
+                            <p class="text-sm text-gray-400 pt-4">*Time is counted live only when the video is actively playing. Earnings are saved automatically every 10 seconds.</p>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const renderYoutubeViewsPage = () => {
+                return `
+                    <div class="space-y-6">
+                        <h2 class="text-3xl font-extrabold text-primary border-b border-gray-700 pb-3">YouTube Views Exchange (Earn Views)</h2>
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl space-y-4">
+                            <div class="text-center p-3 bg-gray-800 rounded-lg">
+                                <p class="text-sm text-gray-400">Total Earned Views</p>
+                                <p id="live-views" class="text-3xl font-bold text-red-400">${userBalance.views.toLocaleString()}</p>
+                                <p id="views-time-remaining" class="text-sm text-secondary font-semibold mt-1">Ready to Earn!</p>
+                            </div>
+                            
+                            <!-- YouTube Player Container -->
+                            <div id="yt-player-container">
+                                 <div class="ad-iframe flex items-center justify-center text-gray-400">Loading YouTube Player...</div>
+                            </div>
+                            
+                            <div class="flex justify-center gap-4 pt-2">
+                                <button onclick="prevYoutubeAd(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-150">
+                                    < Back Ad
+                                </button>
+                                <!-- The next button is the earning mechanism here -->
+                                <button id="yt-next-btn" onclick="nextYoutubeAd(true)" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-150 opacity-50 cursor-not-allowed" disabled>
+                                    Next Ad & Earn View >
+                                </button>
+                            </div>
+                            
+                            <p class="text-sm text-gray-400 pt-4">*You must watch 5 seconds before earning a view credit by clicking 'Next Ad & Earn View'.</p>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const renderReferralPage = () => {
+                const referralLink = `${window.location.origin}/?ref=${userBalance.referralCode || userId}`;
+                return `
+                    <div class="space-y-6">
+                        <h2 class="text-3xl font-extrabold text-primary border-b border-gray-700 pb-3">Referral System (15% Lifetime Commission)</h2>
+                        
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl">
+                            <h3 class="text-xl font-bold text-white mb-4">Your Referral Link</h3>
+                            <div class="flex flex-col md:flex-row gap-2">
+                                <input id="referral-link-input" type="text" readonly value="${referralLink}" class="flex-grow p-3 mt-1 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., https://mysite.com">
+                                <button onclick="copyReferralLink()" class="bg-secondary hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition duration-150 flex-shrink-0">
+                                    Copy Link
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-400 mt-2">Referral Code: <span class="font-mono text-primary">${userBalance.referralCode || userId}</span></p>
+                            <p class="text-sm mt-3 text-yellow-400 font-bold">You and your invitee both get <span class="text-lg">${REFERRAL_BONUS.toLocaleString()} W Coins</span> when they join!</p>
+                        </div>
+
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl">
+                            <h3 class="text-xl font-bold text-white mb-4">Commission Earnings (<span class="text-secondary">${REFERRAL_COMMISSION_RATE * 100}%</span> Lifetime)</h3>
+                            <p class="text-sm mb-4 text-gray-300">Earn 15% commission on all W/D Coins, YT Views, and YT Watch Time earned by your referred users. Commissions must be collected below.</p>
+                            
+                            <div id="referral-commission-list" class="space-y-3">
+                                <p class="text-gray-500">Loading commissions...</p>
+                            </div>
+                            
+                            <button onclick="collectAllCommissions()" id="collect-all-btn" class="mt-6 bg-primary hover:bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-200 w-full disabled:opacity-50" disabled>
+                                Collect All Available Commissions
+                            </button>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const copyReferralLink = () => {
+                const copyText = document.getElementById("referral-link-input");
+                copyText.select();
+                copyText.setSelectionRange(0, 99999);
+                try {
+                    document.execCommand('copy');
+                    customAlert("Copied!", "Referral link copied to clipboard.");
+                } catch (err) {
+                    customAlert("Error", "Could not copy link. Please manually copy the text.");
+                }
+            };
+            window.copyReferralLink = copyReferralLink;
+            
+            const loadReferralCommissions = async () => {
+                if (!userId) return;
+
+                const commissionsRef = getReferralEarningsCollectionRef(userId);
+                // V8 Query Syntax
+                const q = commissionsRef.where("collected", "!=", true);
+                const commissionsSnapshot = await q.get(); 
+                const listContainer = document.getElementById('referral-commission-list');
+                listContainer.innerHTML = '';
+                
+                let totalCollectableCoins = 0;
+                let totalCollectableTime = 0;
+                let totalCollectableViews = 0;
+
+                if (commissionsSnapshot.empty) {
+                    listContainer.innerHTML = '<p class="text-gray-500 p-4 bg-gray-800 rounded-lg">No collectable commissions found yet.</p>';
+                    document.getElementById('collect-all-btn').disabled = true;
+                    return;
+                }
+
+                commissionsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const coins = data.coins || 0;
+                    const views = data.views || 0;
+                    const seconds = data.seconds || 0;
+                    const referredUser = data.referredUser || 'N/A';
+                    
+                    if (!data.collected) {
+                        totalCollectableCoins += coins;
+                        totalCollectableTime += seconds;
+                        totalCollectableViews += views;
+                    }
+
+                    const commissionItem = document.createElement('div');
+                    commissionItem.className = 'p-3 bg-gray-700 rounded-lg flex justify-between items-center';
+                    commissionItem.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-white">From User: <span class="font-mono text-xs text-primary break-all">${referredUser}</span></p>
+                            <p class="text-sm text-gray-300">
+                                +${coins.toLocaleString()} W Coins, +${formatTime(seconds)} Time, +${views.toLocaleString()} Views
+                            </p>
+                        </div>
+                    `;
+                    listContainer.appendChild(commissionItem);
+                });
+                
+                if (totalCollectableCoins > 0 || totalCollectableTime > 0 || totalCollectableViews > 0) {
+                     const totalSummary = document.createElement('div');
+                     totalSummary.className = 'p-4 bg-secondary/20 rounded-lg border border-secondary mt-4';
+                     totalSummary.innerHTML = `
+                         <p class="text-lg font-bold text-secondary">Total Available to Collect:</p>
+                         <p class="text-xl font-bold text-white">${totalCollectableCoins.toLocaleString()} W Coins</p>
+                         <p class="text-lg font-bold text-yellow-400">${formatTime(totalCollectableTime)} YT Time</p>
+                         <p class="text-lg font-bold text-red-400">${totalCollectableViews.toLocaleString()} YT Views</p>
+                     `;
+                     listContainer.prepend(totalSummary);
+                     document.getElementById('collect-all-btn').disabled = false;
+                } else {
+                     document.getElementById('collect-all-btn').disabled = true;
+                     if (listContainer.children.length === 0) {
+                         listContainer.innerHTML = '<p class="text-gray-500 p-4 bg-gray-800 rounded-lg">No collectable commissions found yet.</p>';
+                     }
+                }
+            };
+
+            const collectAllCommissions = async () => {
+                 if (!userId) return;
+                 
+                 const commissionsRef = getReferralEarningsCollectionRef(userId);
+                 // V8 Query Syntax
+                 const q = commissionsRef.where("collected", "!=", true); 
+                 const commissionsSnapshot = await q.get();
+                 
+                 let totalCoins = 0;
+                 let totalSeconds = 0;
+                 let totalViews = 0;
+                 let batch = db.batch(); // V8 batch
+
+                 commissionsSnapshot.forEach(doc => {
+                     const data = doc.data();
+                     totalCoins += data.coins || 0;
+                     totalSeconds += data.seconds || 0;
+                     totalViews += data.views || 0;
+                     // V8 batch update
+                     batch.set(doc.ref, { collected: true, collectedAt: new Date().toISOString() }, { merge: true });
+                 });
+
+                 if (totalCoins === 0 && totalSeconds === 0 && totalViews === 0) {
+                     customAlert("Wait", "No commissions to collect!");
+                     return;
+                 }
+                 
+                 const userRef = getUserProfileDocRef(userId);
+                 const totalYTSeconds = userBalance.ytHours * 3600 + userBalance.ytMinutes * 60 + userBalance.ytSeconds;
+                 const newTotalSeconds = totalYTSeconds + totalSeconds;
+
+                 const newHours = Math.floor(newTotalSeconds / 3600);
+                 const newMinutes = Math.floor((newTotalSeconds % 3600) / 60);
+                 const newSeconds = newTotalSeconds % 60;
+                 
+                 try {
+                     // V8 update syntax
+                     await userRef.update({
+                         usableBalance: userBalance.usableBalance + totalCoins,
+                         ytHours: newHours,
+                         ytMinutes: newMinutes,
+                         ytSeconds: newSeconds,
+                         views: userBalance.views + totalViews
+                     });
+                     
+                     await batch.commit(); // Commit the batch updates
+
+                     customAlert("Collection Success!", `Collected: ${totalCoins.toLocaleString()} W Coins, ${formatTime(totalSeconds)} YT Time, and ${totalViews.toLocaleString()} Views!`);
+                     loadReferralCommissions();
+                     
+                 } catch (error) {
+                     console.error("Error collecting commissions:", error);
+                     customAlert("Error", "Failed to collect commissions. Please check console.");
+                 }
+            };
+            window.collectAllCommissions = collectAllCommissions;
+
+            const renderLaunchAdPage = () => {
+                return `
+                    <div class="space-y-8">
+                        <h2 class="text-3xl font-extrabold text-primary border-b border-gray-700 pb-3">Launch Your Ad Campaign</h2>
+
+                        <!-- Ad Creation Form -->
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl">
+                            <h3 class="text-2xl font-bold text-secondary mb-4">Create New Web Traffic Ad</h3>
+                            <p class="text-lg text-white mb-4">Cost per Impression: <span class="font-bold text-yellow-400">500 W Coins</span></p>
+
+                            <form id="launch-ad-form" onsubmit="handleAdLaunch(event)">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="ad-link" class="block text-sm font-medium text-gray-300">Website URL (Must be a direct link, e.g., https://example.com)</label>
+                                        <input type="url" id="ad-link" required class="w-full p-3 mt-1 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., https://mysite.com">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="ad-budget" class="block text-sm font-medium text-gray-300">Total Budget (W Coins)</label>
+                                        <input type="number" id="ad-budget" required min="500" step="500" oninput="calculateImpressions()" class="w-full p-3 mt-1 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Min 500 Coins">
+                                    </div>
+                                    
+                                    <div class="p-3 bg-indigo-900/30 rounded-lg">
+                                        <p class="text-sm text-gray-300">Estimated Impressions:</p>
+                                        <p id="estimated-impressions" class="text-xl font-bold text-yellow-300">0</p>
+                                    </div>
+                                    
+                                    <p class="text-sm font-bold text-red-400">Your Current Usable Balance: ${userBalance.usableBalance.toLocaleString()} W Coins</p>
+                                    
+                                    <button type="submit" class="bg-primary hover:bg-indigo-600 text-white font-extrabold py-3 px-8 rounded-xl shadow-lg transition duration-200 w-full transform hover:scale-[1.01]">
+                                        Launch Campaign
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- My Running Ads List -->
+                        <div class="bg-card-bg p-6 rounded-xl shadow-xl">
+                            <h3 class="text-2xl font-bold text-white mb-4">Your Running Ads</h3>
+                            <div id="my-ads-list" class="space-y-4">
+                                <p class="text-gray-500">Loading your ads...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const calculateImpressions = () => {
+                const budgetInput = document.getElementById('ad-budget');
+                const impressionsDisplay = document.getElementById('estimated-impressions');
+                
+                const budget = parseInt(budgetInput.value) || 0;
+                const impressions = Math.floor(budget / 500);
+                
+                impressionsDisplay.innerText = impressions.toLocaleString();
+            };
+            window.calculateImpressions = calculateImpressions;
+
+            const handleAdLaunch = async (event) => {
+                event.preventDefault();
+                
+                const link = document.getElementById('ad-link').value;
+                const budget = parseInt(document.getElementById('ad-budget').value);
+                
+                if (budget > userBalance.usableBalance) {
+                    customAlert("Error", "Your budget exceeds your current usable W Coins balance.");
+                    return;
+                }
+                if (budget < 500) {
+                    customAlert("Error", "Minimum budget is 500 W Coins (1 impression).");
+                    return;
+                }
+
+                const impressions = Math.floor(budget / 500);
+
+                const userRef = getUserProfileDocRef(userId);
+                const newBalance = userBalance.usableBalance - budget;
+                
+                try {
+                    // V8 update syntax
+                    await userRef.update({ usableBalance: newBalance });
+                } catch (error) {
+                    console.error("Failed to deduct balance:", error);
+                    customAlert("Error", "Failed to deduct coins. Please try again.");
+                    return;
+                }
+
+                const adData = {
+                    url: link,
+                    totalBudget: budget,
+                    costPerImpression: 500,
+                    remainingImpressions: impressions,
+                    launchedBy: userId,
+                    launchDate: new Date().toISOString(),
+                    status: 'Active'
+                };
+                
+                try {
+                    // V8 Add Doc syntax
+                    await getWebAdsCollectionRef().add(adData);
+                    customAlert("Success!", `Ad launched successfully! ${impressions.toLocaleString()} impressions secured for ${budget.toLocaleString()} W Coins.`);
+                    document.getElementById('launch-ad-form').reset();
+                    calculateImpressions();
+                    loadMyAds();
+                } catch (error) {
+                    console.error("Failed to launch ad:", error);
+                    // Attempt to refund coins if ad launch fails (V8 update syntax)
+                    await userRef.update({ usableBalance: userBalance.usableBalance }); 
+                    customAlert("Error", "Ad creation failed. Coins refunded. Error: " + error.message);
+                }
+            };
+            window.handleAdLaunch = handleAdLaunch;
+            
+            const loadMyAds = async () => {
+                if (!userId) return;
+                
+                const adsRef = getWebAdsCollectionRef();
+                // V8 Query Syntax
+                const q = adsRef.where("launchedBy", "==", userId);
+                const snapshot = await q.get();
+                
+                const listContainer = document.getElementById('my-ads-list');
+                listContainer.innerHTML = '';
+
+                if (snapshot.empty) {
+                    listContainer.innerHTML = '<p class="text-gray-500 p-4 bg-gray-800 rounded-lg">You have not launched any ads yet.</p>';
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const isActive = data.remainingImpressions > 0;
+                    const statusText = isActive ? 'Ad Active' : 'Ad Balance Expired';
+                    const statusColor = isActive ? 'text-secondary bg-secondary/10' : 'text-red-400 bg-red-400/10';
+                    
+                    const adItem = document.createElement('div');
+                    adItem.className = 'p-4 bg-gray-700 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center shadow-md';
+                    adItem.innerHTML = `
+                        <div class="space-y-1 mb-3 md:mb-0">
+                            <p class="text-lg font-semibold text-white truncate max-w-xs md:max-w-md">${data.url}</p>
+                            <p class="text-sm text-gray-400">Total Budget: ${data.totalBudget.toLocaleString()} W Coins</p>
+                            <p class="text-sm text-gray-400">Remaining Impressions: <span class="font-bold text-yellow-400">${data.remainingImpressions.toLocaleString()}</span></p>
+                        </div>
+                        <span class="px-4 py-1 rounded-full font-bold text-sm ${statusColor}">
+                            ${statusText}
+                        </span>
+                    `;
+                    listContainer.appendChild(adItem);
+                });
+            };
+            
+            const rewardUser = async (type, amount) => {
+                if (!userId) {
+                    customAlert("Error", "User not logged in. Cannot save coins.");
+                    return;
+                }
+                
+                const userRef = getUserProfileDocRef(userId);
+                let updateData = {};
+
+                if (type === 'webTrafficEarnings' || type === 'directLinkEarnings') {
+                    updateData = {
+                        usableBalance: userBalance.usableBalance + amount,
+                        [type]: userBalance[type] + amount
+                    };
+                } else {
+                     updateData[type] = userBalance[type] + amount;
+                }
+
+                try {
+                    // V8 update syntax
+                    await userRef.update(updateData);
+                } catch (error) {
+                    console.error("Error rewarding user:", error);
+                    customAlert("Error", "Could not save earnings. Check console for details.");
+                }
+            };
+            
+            const updateYTBalance = async (type) => {
+                 if (!userId) return;
+
+                 const userRef = getUserProfileDocRef(userId);
+                 let updateData = {};
+                 
+                 if (type === 'watchTime') {
+                     updateData = {
+                         ytHours: userBalance.ytHours,
+                         ytMinutes: userBalance.ytMinutes,
+                         ytSeconds: userBalance.ytSeconds,
+                     };
+                 } else if (type === 'views') {
+                     updateData = {
+                         views: userBalance.views
+                     };
+                 }
+
+                 try {
+                    // V8 update syntax
+                    await userRef.update(updateData);
+                 } catch (error) {
+                     console.error("Error updating YT balance:", error);
+                 }
+            };
+
+            // --- INITIALIZATION ---
+            
+            window.addEventListener('hashchange', () => {
+                const hash = window.location.hash.substring(1);
+                navigateTo(hash, true);
+            });
+
+            window.onload = () => {
+                 // 1. Initialize Firebase
+                 initFirebase();
+                 
+                 // 2. Set the initial page from the hash
+                 if (!validPages.includes(currentPage)) {
+                     currentPage = 'dashboard';
+                     window.location.hash = currentPage;
+                 }
+            };
+
+        })(); // End of IIFE for script scoping
+    </script>
+    
+    <!-- Script for YouTube Iframe API (Must be a separate script tag) -->
+    <script>
+        // Placeholder to ensure the global function exists before the API script loads
+        window.onYouTubeIframeAPIReady = window.onYouTubeIframeAPIReady || function() { console.log("YouTube API Ready Global Placeholder"); };
+    </script>
 </body>
 </html>
