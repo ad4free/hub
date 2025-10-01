@@ -1,80 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Coin Ad Platform</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    nav a { margin: 10px; font-weight: bold; cursor: pointer; }
-    .page { display: none; }
-    .active { display: block; }
-    #header { margin-bottom: 20px; }
-    button { padding: 10px 20px; margin: 5px; }
+    body { background: #f9fafb; }
+    .card { @apply bg-white shadow-md rounded-2xl p-6; }
   </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center">
+
+  <!-- Header -->
+  <div class="w-full bg-indigo-600 text-white p-4 text-center text-2xl font-bold shadow">
+    Coin Ad Platform 🚀
+  </div>
+
+  <!-- Auth Section -->
+  <div id="auth-section" class="mt-10 text-center">
+    <button onclick="login()" class="bg-indigo-500 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow-lg">
+      Login with Google
+    </button>
+  </div>
+
+  <!-- Dashboard Section -->
+  <div id="dashboard" class="hidden max-w-3xl w-full mt-10 space-y-6">
+    <div class="card flex justify-between items-center">
+      <div>
+        <h2 class="text-xl font-bold" id="username">Welcome User</h2>
+        <p class="text-gray-600">Coins: <span id="coins">0</span></p>
+      </div>
+      <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+        Logout
+      </button>
+    </div>
+
+    <!-- Referral -->
+    <div class="card">
+      <h3 class="text-lg font-semibold mb-2">Referral System</h3>
+      <p class="text-gray-700">Share this link with friends:</p>
+      <input id="referral-link" class="w-full border rounded p-2 mt-2" readonly>
+    </div>
+
+    <!-- Watch Ads -->
+    <div class="card">
+      <h3 class="text-lg font-semibold mb-2">Watch Ads & Earn Coins</h3>
+      <p class="text-gray-600">Click below to watch ads and get coins instantly.</p>
+      <button onclick="watchAd()" class="mt-3 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+        Watch Ad → +50 Coins
+      </button>
+    </div>
+
+    <!-- Launch Ads -->
+    <div class="card">
+      <h3 class="text-lg font-semibold mb-2">Launch Your Ad</h3>
+      <textarea id="ad-content" class="w-full border rounded p-2" placeholder="Write your ad..."></textarea>
+      <button onclick="launchAd()" class="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+        Launch Ad (cost: 200 coins)
+      </button>
+      <p id="ad-status" class="mt-2 text-sm text-gray-500"></p>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
-</head>
-<body>
-  <div id="header">
-    <h1>🚀 Coin Ad Platform</h1>
-    <button id="loginBtn">Login with Google</button>
-    <span id="userInfo"></span>
-    <p><b>Total Coins:</b> <span id="coins">0</span></p>
-  </div>
-
-  <!-- Navigation -->
-  <nav>
-    <a onclick="showPage('dashboard')">Dashboard</a>
-    <a onclick="showPage('webtraffic')">Website Traffic</a>
-    <a onclick="showPage('directlink')">Direct Link</a>
-    <a onclick="showPage('ytwatch')">YouTube Watch Time</a>
-    <a onclick="showPage('ytviews')">YouTube Views</a>
-    <a onclick="showPage('referrals')">Referrals</a>
-    <a onclick="showPage('adlaunch')">Ad Launch</a>
-  </nav>
-
-  <!-- Pages -->
-  <div id="dashboard" class="page active">
-    <h2>Dashboard</h2>
-    <p>Here you will see your stats, earnings, and instructions.</p>
-  </div>
-
-  <div id="webtraffic" class="page">
-    <h2>Website Traffic</h2>
-    <iframe src="https://example.com" width="400" height="300"></iframe>
-    <p>Watch websites and earn <b>500 coins</b> per 15 sec.</p>
-  </div>
-
-  <div id="directlink" class="page">
-    <h2>Direct Link</h2>
-    <p>Click links and earn <b>1000 coins</b>.</p>
-  </div>
-
-  <div id="ytwatch" class="page">
-    <h2>YouTube Watch Time</h2>
-    <iframe width="400" height="300" src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>
-    <p>Earn minutes and coins while watching.</p>
-  </div>
-
-  <div id="ytviews" class="page">
-    <h2>YouTube Views</h2>
-    <p>Watch videos and earn views/coins.</p>
-  </div>
-
-  <div id="referrals" class="page">
-    <h2>Referral System</h2>
-    <p>Your referral link: <span id="refLink"></span></p>
-    <p>You earn <b>10,000 coins</b> per invite + 15% lifetime commission.</p>
-  </div>
-
-  <div id="adlaunch" class="page">
-    <h2>Ad Launch</h2>
-    <p>Launch ads using your coins.</p>
-  </div>
 
   <script>
-    // ✅ Firebase Config
+    // Firebase Config (your details)
     const firebaseConfig = {
       apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
       authDomain: "website-5636d.firebaseapp.com",
@@ -84,45 +79,96 @@
       appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
       measurementId: "G-S64W6JR12C"
     };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let currentUser = null;
+    let currentUser;
 
-    // ✅ Google Login
-    document.getElementById("loginBtn").onclick = async () => {
+    // Login
+    async function login() {
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await auth.signInWithPopup(provider);
       currentUser = result.user;
-      document.getElementById("userInfo").innerText = "Welcome " + currentUser.displayName;
+      setupUser(currentUser);
+    }
 
-      // Firestore user check
-      const userRef = db.collection("users").doc(currentUser.uid);
-      const docSnap = await userRef.get();
-      if (!docSnap.exists) {
-        await userRef.set({ coins: 1000, referrals: 0 });
+    // Logout
+    async function logout() {
+      await auth.signOut();
+      document.getElementById("dashboard").classList.add("hidden");
+      document.getElementById("auth-section").classList.remove("hidden");
+    }
+
+    // Setup User
+    async function setupUser(user) {
+      const userRef = db.collection("users").doc(user.uid);
+      const doc = await userRef.get();
+
+      if (!doc.exists) {
+        await userRef.set({ name: user.displayName, coins: 1000, referrals: 0 });
       }
-      loadUserData();
-    };
 
-    // ✅ Load User Data
-    async function loadUserData() {
+      // Live update
+      userRef.onSnapshot(doc => {
+        const data = doc.data();
+        document.getElementById("username").innerText = "Welcome " + data.name;
+        document.getElementById("coins").innerText = data.coins;
+        document.getElementById("referral-link").value =
+          window.location.origin + "/?ref=" + user.uid;
+      });
+
+      document.getElementById("auth-section").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+    }
+
+    // Watch Ad
+    async function watchAd() {
+      if (!currentUser) return;
       const userRef = db.collection("users").doc(currentUser.uid);
-      const docSnap = await userRef.get();
-      const data = docSnap.data();
-      document.getElementById("coins").innerText = data.coins;
-
-      // Referral link (example)
-      document.getElementById("refLink").innerText = 
-        window.location.origin + "?ref=" + currentUser.uid;
+      await userRef.update({
+        coins: firebase.firestore.FieldValue.increment(50)
+      });
+      alert("You earned 50 coins!");
     }
 
-    // ✅ Page Switcher
-    function showPage(id) {
-      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
+    // Launch Ad
+    async function launchAd() {
+      if (!currentUser) return;
+      const adText = document.getElementById("ad-content").value;
+      if (!adText) return alert("Write something first!");
+
+      const userRef = db.collection("users").doc(currentUser.uid);
+      const doc = await userRef.get();
+      const coins = doc.data().coins;
+
+      if (coins < 200) {
+        document.getElementById("ad-status").innerText = "Not enough coins!";
+        return;
+      }
+
+      await userRef.update({
+        coins: firebase.firestore.FieldValue.increment(-200)
+      });
+
+      await db.collection("ads").add({
+        uid: currentUser.uid,
+        content: adText,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      document.getElementById("ad-status").innerText = "Ad launched successfully!";
+      document.getElementById("ad-content").value = "";
     }
+
+    // Auto login check
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        setupUser(user);
+      }
+    });
   </script>
 </body>
 </html>
