@@ -1,178 +1,777 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Free Ads Exchange</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coin Ad Platform — Demo</title>
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+  <!-- Firebase compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0d1117;
-      color: #fff;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 30px;
-      background: #161b22;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    header h1 {
-      color: #00ffcc;
-      margin: 0;
-    }
-    nav a {
-      color: #fff;
-      text-decoration: none;
-      margin: 0 12px;
-      font-weight: bold;
-      transition: color 0.3s;
-    }
-    nav a:hover {
-      color: #00ffcc;
-    }
-    .highlight {
-      color: #ff0066;
-      animation: colorchange 2s infinite alternate;
-      font-weight: bold;
-    }
-    @keyframes colorchange {
-      0% { color: #ff0066; }
-      50% { color: #00ffcc; }
-      100% { color: #ffcc00; }
-    }
-    main {
-      padding: 40px;
-      text-align: center;
-    }
-    .card {
-      background: #161b22;
-      border-radius: 12px;
-      padding: 25px;
-      margin: 20px auto;
-      max-width: 600px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    }
-    button {
-      background: #00ffcc;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: transform 0.2s, background 0.3s;
-    }
-    button:hover {
-      background: #00ccaa;
-      transform: scale(1.05);
-    }
+    html,body { height:100%; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(180deg,#f8fafc,#eef2ff); }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 6px 18px rgba(2,6,23,0.06); padding: 18px; }
+    .nav-active { background: rgba(99,102,241,0.08); border-left: 3px solid #6366F1; }
+    .small-muted { font-size: 12px; color: #6b7280; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Free Ads Exchange</h1>
-    <nav>
-      <a href="#">Home</a>
-      <a href="#">Website Traffic</a>
-      <a href="#">Link Traffic</a>
-      <a href="#">YouTube Watch Time</a>
-      <a href="#">YouTube Views</a>
-      <a href="#" class="highlight">Ad Run Tool</a>
-      <a href="#">Referral</a>
-      <a href="#">Dashboard</a>
-      <a href="#">Get Premium</a>
-    </nav>
-  </header>
+  <!-- ROOT -->
+  <div id="app" class="min-h-screen flex">
 
-  <main>
-    <div class="card">
-      <h2>Welcome to Free Ads Exchange 🚀</h2>
-      <p>Watch ads, earn coins, and run your own ads for free.</p>
-      <button id="loginBtn">Login / Signup</button>
-    </div>
+    <!-- Sidebar -->
+    <aside id="sidebar" class="hidden md:block w-72 p-5">
+      <div class="mb-6 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-white text-xl font-semibold">CA</div>
+        <div>
+          <div class="text-lg font-semibold">Coin Ad Platform</div>
+          <div class="text-sm text-gray-500">Free & Paid • Demo</div>
+        </div>
+      </div>
 
-    <div class="card" id="dashboard" style="display:none;">
-      <h2>Dashboard</h2>
-      <p><strong>Email:</strong> <span id="userEmail"></span></p>
-      <p><strong>Coins:</strong> <span id="userCoins">0</span></p>
-      <p><strong>Referral Earnings:</strong> <span id="userRef">0</span></p>
-      <button id="logoutBtn">Logout</button>
-    </div>
-  </main>
+      <nav id="nav" class="space-y-2 text-sm">
+        <button class="w-full text-left p-3 rounded nav-btn nav-active" data-page="dashboard"><i class='bx bx-home mr-2'></i> Dashboard</button>
+        <button class="w-full text-left p-3 rounded nav-btn" data-page="webtraffic"><i class='bx bx-window-open mr-2'></i> Website Traffic</button>
+        <button class="w-full text-left p-3 rounded nav-btn" data-page="directlink"><i class='bx bx-link-alt mr-2'></i> Direct Link</button>
+        <button class="w-full text-left p-3 rounded nav-btn" data-page="ytwatch"><i class='bx bx-time mr-2'></i> YouTube Watch Time</button>
+        <button class="w-full text-left p-3 rounded nav-btn" data-page="ytviews"><i class='bx bx-video mr-2'></i> YouTube Views</button>
+        <button class="w-full text-left p-3 rounded nav-btn" data-page="referral"><i class='bx bx-user-plus mr-2'></i> Referral</button>
+        <button class="w-full text-left p-3 rounded nav-btn" data-page="adlaunch"><i class='bx bx-rocket mr-2'></i> Launch Ad</button>
+        <button class="w-full text-left p-3 rounded nav-btn" data-page="transactions"><i class='bx bx-history mr-2'></i> Transactions</button>
+      </nav>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    // Import Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+      <div class="mt-6 text-xs text-gray-500">
+        <div>Referral bonus: <b>10,000 coins</b></div>
+        <div>Commission: <b>15%</b> lifetime</div>
+      </div>
+    </aside>
 
-    // Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyC6Ph9DlrlDE3lfzkTbtrmVXWhx2m3baGQ",
-      authDomain: "web-final-8b653.firebaseapp.com",
-      projectId: "web-final-8b653",
-      storageBucket: "web-final-8b653.firebasestorage.app",
-      messagingSenderId: "122516569553",
-      appId: "1:122516569553:web:7fec83336353854e59f4f0",
-      measurementId: "G-17RQF3DL8K"
-    };
+    <!-- Main -->
+    <main class="flex-1 p-6">
 
-    // Init Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+      <!-- Header -->
+      <header class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+          <button id="menuToggle" class="md:hidden p-2 rounded bg-white shadow"><i class='bx bx-menu'></i></button>
+          <div>
+            <h1 class="text-2xl font-bold">Coin Ad Platform</h1>
+            <div class="small-muted">Watch / Launch ads • Earn coins • Invite friends</div>
+          </div>
+        </div>
 
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const dashboard = document.getElementById("dashboard");
+        <div class="flex items-center gap-5">
+          <div class="text-right">
+            <div class="small-muted">W Coins</div>
+            <div id="wCoins" class="font-semibold">0</div>
+          </div>
+          <div class="text-right">
+            <div class="small-muted">D Coins</div>
+            <div id="dCoins" class="font-semibold">0</div>
+          </div>
+          <div class="text-right">
+            <div class="small-muted">YT Time (s)</div>
+            <div id="ytTime" class="font-semibold">0</div>
+          </div>
 
-    // Login with Google
-    loginBtn.addEventListener("click", async () => {
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (err) {
-        alert("Login error: " + err.message);
+          <div id="authArea" class="flex items-center gap-3">
+            <button id="loginBtn" class="bg-indigo-600 text-white px-4 py-2 rounded">Login with Google</button>
+
+            <div id="userCard" class="hidden items-center gap-3">
+              <img id="avatar" src="" class="w-10 h-10 rounded-full shadow" alt="avatar"/>
+              <div class="text-sm">
+                <div id="displayName" class="font-medium">User</div>
+                <button id="logoutBtn" class="text-xs text-red-500">Logout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Pages -->
+      <section id="pages" class="space-y-6">
+
+        <!-- Dashboard -->
+        <div class="page card" data-page="dashboard">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="lg:col-span-2">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <div class="small-muted">Welcome back</div>
+                  <div id="welcomeName" class="text-2xl font-bold">Guest</div>
+                </div>
+                <div>
+                  <button id="quickWatchBtn" class="bg-green-500 text-white px-4 py-2 rounded">Quick Watch +500</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="p-3 border rounded">
+                  <div class="small-muted">Total Balance</div>
+                  <div id="totalBalance" class="text-2xl font-bold">0</div>
+                  <div class="small-muted">Available to use</div>
+                </div>
+                <div class="p-3 border rounded">
+                  <div class="small-muted">Referrals</div>
+                  <div id="refCount" class="text-2xl font-bold">0</div>
+                </div>
+                <div class="p-3 border rounded">
+                  <div class="small-muted">Active Ads</div>
+                  <div id="activeAdCount" class="text-2xl font-bold">0</div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <h3 class="font-semibold mb-2">Activity Feed</h3>
+                <div id="activityFeed" class="max-h-48 overflow-auto hide-scrollbar space-y-2 p-2"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="p-4 border rounded">
+                <div class="small-muted">Referral Link</div>
+                <input id="refLink" class="w-full border rounded p-2 mt-2" readonly/>
+                <button id="copyRefBtn" class="mt-2 w-full bg-indigo-600 text-white py-2 rounded">Copy Link</button>
+              </div>
+
+              <div class="mt-4 p-4 border rounded">
+                <div class="small-muted">Quick Actions</div>
+                <button id="openLaunch" class="mt-3 w-full bg-blue-600 text-white py-2 rounded">Launch Ad</button>
+                <button id="viewTx" class="mt-2 w-full bg-gray-100 py-2 rounded">View Transactions</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Website Traffic -->
+        <div class="page card hidden" data-page="webtraffic">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-semibold">Website Traffic (W)</h2>
+            <div class="small-muted">Each 15s view → +500 W coins</div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+              <div class="border rounded overflow-hidden">
+                <iframe id="adIframe" class="w-full h-96" src="about:blank"></iframe>
+              </div>
+
+              <div class="mt-3 flex items-center gap-2">
+                <button id="startRotate" class="bg-indigo-600 text-white px-4 py-2 rounded">Start</button>
+                <button id="stopRotate" class="bg-red-500 text-white px-4 py-2 rounded">Stop</button>
+                <div id="rotateTimer" class="small-muted ml-3">Idle</div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-semibold mb-2">Ad Queue</h3>
+              <div id="adQueue" class="max-h-80 overflow-auto hide-scrollbar p-1 border rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct Link -->
+        <div class="page card hidden" data-page="directlink">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-semibold">Direct Link (D)</h2>
+            <div class="small-muted">Each click → +1000 D coins</div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+              <div id="directList" class="space-y-2"></div>
+            </div>
+
+            <div>
+              <h3 class="font-semibold mb-2">Create Direct Link</h3>
+              <input id="newDirectUrl" placeholder="https://example.com" class="w-full border rounded p-2 mb-2"/>
+              <button id="createDirectBtn" class="w-full bg-blue-600 text-white py-2 rounded">Create</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- YouTube Watch Time -->
+        <div class="page card hidden" data-page="ytwatch">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-semibold">YouTube Watch Time</h2>
+            <div class="small-muted">Counting while playing → reward every 15s</div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <iframe id="ytIframe" class="w-full h-72" src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" allow="autoplay; encrypted-media"></iframe>
+              <div class="mt-2 flex gap-2">
+                <button id="ytStart" class="bg-green-500 text-white px-4 py-2 rounded">Start</button>
+                <button id="ytStop" class="bg-red-500 text-white px-4 py-2 rounded">Stop</button>
+                <div id="ytCounter" class="small-muted ml-3">0s</div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-semibold">Your YT Stats</h3>
+              <div class="mt-2 small-muted">Watched seconds: <span id="userYtTime">0</span></div>
+              <div class="mt-4"><small>Tip: keep playing to earn seconds which can be converted in the ad launch logic later.</small></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- YouTube Views -->
+        <div class="page card hidden" data-page="ytviews">
+          <h2 class="text-lg font-semibold mb-3">YouTube Views</h2>
+          <p class="small-muted mb-3">Each 5s of play counts as 1 view (demo).</p>
+          <div id="ytViewsList" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+        </div>
+
+        <!-- Referral -->
+        <div class="page card hidden" data-page="referral">
+          <h2 class="text-lg font-semibold">Referral System</h2>
+          <p class="small-muted mb-2">Invite users. Signup bonus: 10,000 coins. Lifetime commission: 15% of earnings.</p>
+
+          <div class="mt-2">
+            <input id="myRef" class="w-full border rounded p-2" readonly/>
+            <div class="mt-2">
+              <button id="copyRef" class="bg-indigo-600 text-white px-4 py-2 rounded">Copy Referral Link</button>
+            </div>
+            <div class="mt-4">
+              <div class="small-muted">Referral earnings (demo): <b id="refEarnings">0</b> coins</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ad Launch -->
+        <div class="page card hidden" data-page="adlaunch">
+          <h2 class="text-lg font-semibold">Launch Ad Campaign</h2>
+          <p class="small-muted">Create ad campaigns. Budget will be deducted from your balance.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label class="small-muted">Title</label>
+              <input id="adTitle" class="w-full border rounded p-2 mb-2" placeholder="Short headline"/>
+              <label class="small-muted">URL or HTML content</label>
+              <input id="adUrl" class="w-full border rounded p-2 mb-2" placeholder="https://example.com or plain html"/>
+              <label class="small-muted">Budget (coins)</label>
+              <input id="adBudget" type="number" class="w-full border rounded p-2 mb-2" placeholder="500"/>
+              <label class="small-muted">Category</label>
+              <select id="adCategory" class="w-full border rounded p-2 mb-2">
+                <option value="web">Website Traffic (W)</option>
+                <option value="direct">Direct Link (D)</option>
+                <option value="youtube">YouTube (views/time)</option>
+              </select>
+              <button id="createAdBtn" class="bg-emerald-500 text-white px-4 py-2 rounded">Create Campaign</button>
+              <div id="adMsg" class="small-muted mt-2"></div>
+            </div>
+
+            <div>
+              <h3 class="font-semibold">Your Campaigns</h3>
+              <div id="campaignList" class="mt-3 space-y-2 max-h-64 overflow-auto hide-scrollbar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="page card hidden" data-page="transactions">
+          <h2 class="text-lg font-semibold">Transactions</h2>
+          <div id="txList" class="mt-3 space-y-2 max-h-72 overflow-auto hide-scrollbar"></div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Script: Main application logic -->
+  <script>
+  /*************************************************************************
+   * Single-file vanilla JS SPA with Firebase Auth + Firestore
+   * - Prototype implementation: client-side coin operations for demo only
+   * - Production MUST use Cloud Functions + Security Rules to validate
+   *************************************************************************/
+
+  // ---------- Firebase init (uses your provided config) ----------
+  const firebaseConfig = {
+    apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
+    authDomain: "website-5636d.firebaseapp.com",
+    projectId: "website-5636d",
+    storageBucket: "website-5636d.appspot.com",
+    messagingSenderId: "737574321288",
+    appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
+    measurementId: "G-S64W6JR12C"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // ---------- DOM helpers & page system ----------
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const navBtns = Array.from(document.querySelectorAll('.nav-btn'));
+  function showPage(id){
+    pages.forEach(p => p.classList.add('hidden'));
+    const el = pages.find(p => p.getAttribute('data-page') === id);
+    if(el) el.classList.remove('hidden');
+    navBtns.forEach(b => b.classList.remove('nav-active'));
+    navBtns.filter(b => b.getAttribute('data-page') === id).forEach(b => b.classList.add('nav-active'));
+  }
+  navBtns.forEach(b => b.addEventListener('click', ()=> showPage(b.getAttribute('data-page'))));
+  // mobile menu
+  document.getElementById('menuToggle').addEventListener('click', ()=> {
+    const sb = document.getElementById('sidebar');
+    if(sb.classList.contains('hidden')) sb.classList.remove('hidden'); else sb.classList.add('hidden');
+  });
+
+  // ---------- UI elements ----------
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const authArea = document.getElementById('authArea');
+  const userCard = document.getElementById('userCard');
+  const avatar = document.getElementById('avatar');
+  const displayName = document.getElementById('displayName');
+  const wCoinsEl = document.getElementById('wCoins');
+  const dCoinsEl = document.getElementById('dCoins');
+  const ytTimeEl = document.getElementById('ytTime');
+  const totalBalanceEl = document.getElementById('totalBalance');
+  const refLinkInput = document.getElementById('refLink');
+  const myRefInput = document.getElementById('myRef');
+  const refEarningsEl = document.getElementById('refEarnings');
+
+  const adQueueEl = document.getElementById('adQueue');
+  const adIframe = document.getElementById('adIframe');
+  const rotateTimerEl = document.getElementById('rotateTimer');
+
+  const directListEl = document.getElementById('directList');
+  const newDirectUrl = document.getElementById('newDirectUrl');
+  const createDirectBtn = document.getElementById('createDirectBtn');
+
+  const adTitleInput = document.getElementById('adTitle');
+  const adUrlInput = document.getElementById('adUrl');
+  const adBudgetInput = document.getElementById('adBudget');
+  const adCategorySel = document.getElementById('adCategory');
+  const createAdBtn = document.getElementById('createAdBtn');
+  const campaignListEl = document.getElementById('campaignList');
+  const adMsgEl = document.getElementById('adMsg');
+
+  const txListEl = document.getElementById('txList');
+  const activityFeedEl = document.getElementById('activityFeed');
+  const refCountEl = document.getElementById('refCount');
+  const activeAdCountEl = document.getElementById('activeAdCount');
+
+  // activity helper
+  function pushActivity(text){
+    const el = document.createElement('div');
+    el.className = 'p-2 border rounded text-sm';
+    el.innerHTML = `<div>${text}</div><div class="small-muted mt-1">${new Date().toLocaleString()}</div>`;
+    activityFeedEl.prepend(el);
+  }
+
+  // ---------- state ----------
+  let currentUser = null;
+  let currentUserUnsub = null;
+  let adDocs = [];
+  let rotateInterval = null;
+  let rotateIndex = 0;
+  let rotateTimerInterval = null;
+
+  // ---------- cooldown helpers (client-side) ----------
+  function setCooldown(key, seconds){
+    localStorage.setItem(key, String(Date.now() + (seconds*1000)));
+  }
+  function isCooldown(key){
+    const val = localStorage.getItem(key);
+    if(!val) return false;
+    return Date.now() < Number(val);
+  }
+
+  // ---------- Auth ----------
+  async function onLogin(){
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      const res = await auth.signInWithPopup(provider);
+      // user created or signed in
+    } catch(e){
+      console.error('Login error', e);
+      alert('Login failed: ' + e.message);
+    }
+  }
+  loginBtn.addEventListener('click', onLogin);
+
+  logoutBtn && logoutBtn.addEventListener('click', async ()=> {
+    await auth.signOut();
+    // UI will be updated in onAuthStateChanged
+  });
+
+  // ---------- create user doc if not exists & handle referral param ----------
+  async function createUserDocIfMissing(u){
+    const uref = db.collection('users').doc(u.uid);
+    const snap = await uref.get();
+    if(!snap.exists){
+      // check referral param
+      const qp = new URLSearchParams(location.search);
+      const ref = qp.get('ref') || null;
+      await uref.set({
+        name: u.displayName || 'User',
+        email: u.email || '',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        wCoins: 0,
+        dCoins: 0,
+        ytTime: 0,
+        ytViews: 0,
+        referralsCount: 0,
+        referralEarnings: 0,
+        referrer: ref
+      });
+      // credit referrer signup bonus (demo ONLY) - production must be server-side
+      if(ref){
+        const refRef = db.collection('users').doc(ref);
+        await refRef.update({ referralsCount: firebase.firestore.FieldValue.increment(1), referralEarnings: firebase.firestore.FieldValue.increment(10000) }).catch(()=>{});
+        await db.collection('transactions').add({ user: ref, type: 'referral-signup-bonus', amount: 10000, note: `Signup bonus for referring ${u.uid}`, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+        pushActivity(`Signup: referrer ${ref} given 10,000 coins (demo)`);
       }
+    }
+  }
+
+  // ---------- auth state listener ----------
+  auth.onAuthStateChanged(async u => {
+    if(u){
+      currentUser = u;
+      // create doc if missing and handle referral param
+      await createUserDocIfMissing(u);
+      // show UI
+      loginBtn.style.display = 'none';
+      userCard.style.display = 'flex';
+      avatar.src = u.photoURL || '';
+      displayName.innerText = u.displayName || u.email;
+      // subscribe to user doc for live updates
+      currentUserUnsub && currentUserUnsub();
+      const uref = db.collection('users').doc(u.uid);
+      currentUserUnsub = uref.onSnapshot(doc => {
+        const d = doc.data();
+        if(!d) return;
+        wCoinsEl.innerText = d.wCoins || 0;
+        dCoinsEl.innerText = d.dCoins || 0;
+        ytTimeEl.innerText = d.ytTime || 0;
+        totalBalanceEl.innerText = ( (d.wCoins||0) + (d.dCoins||0) );
+        refLinkInput.value = `${location.origin}${location.pathname}?ref=${u.uid}`;
+        myRefInput && (myRefInput.value = `${location.origin}${location.pathname}?ref=${u.uid}`);
+        refEarningsEl.innerText = d.referralEarnings || 0;
+        refCountEl.innerText = d.referralsCount || 0;
+        // update transactions and campaigns UI after this
+        refreshCampaignsForUser(u.uid);
+        refreshTransactionsForUser(u.uid);
+      });
+
+      // load ads/queue
+      loadAdsQueue();
+      loadDirects();
+      loadCampaignsCount();
+      loadTransactionsGlobal();
+      pushActivity('Logged in: ' + (u.displayName||u.email));
+    } else {
+      // signed out
+      currentUserUnsub && currentUserUnsub();
+      currentUser = null;
+      loginBtn.style.display = 'inline-block';
+      userCard.style.display = 'none';
+      wCoinsEl.innerText = '0';
+      dCoinsEl.innerText = '0';
+      ytTimeEl.innerText = '0';
+      totalBalanceEl.innerText = '0';
+      refLinkInput.value = '';
+      myRefInput && (myRefInput.value = '');
+    }
+  });
+
+  // ---------- Ads queue load ----------
+  async function loadAdsQueue(){
+    const snapshot = await db.collection('ads').orderBy('createdAt','desc').limit(200).get();
+    adDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderAdQueue();
+  }
+
+  function renderAdQueue(){
+    adQueueEl.innerHTML = '';
+    if(adDocs.length === 0) adQueueEl.innerHTML = '<div class="text-sm text-gray-400">No ads available</div>';
+    adDocs.forEach(ad => {
+      const el = document.createElement('div');
+      el.className = 'p-2 border rounded';
+      el.innerHTML = `<div class="font-semibold">${escapeHtml(ad.title || '(Ad)')}</div><div class="small-muted">${escapeHtml(ad.url || ad.content || '')}</div>`;
+      adQueueEl.appendChild(el);
     });
+  }
 
-    // Logout
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-    });
+  // ---------- Rotation logic ----------
+  function startRotate(){
+    if(adDocs.length === 0){ alert('No ads to show'); return; }
+    stopRotate();
+    rotateIndex = 0;
+    showAd(adDocs[rotateIndex]);
+    rotateInterval = setInterval(()=> {
+      rotateIndex = (rotateIndex + 1) % adDocs.length;
+      showAd(adDocs[rotateIndex]);
+    },15000);
+    // timer UI
+    let t = 15;
+    rotateTimerEl.innerText = t + 's';
+    rotateTimerInterval = setInterval(()=> { t--; if(t<=0) t=15; rotateTimerEl.innerText = t + 's'; }, 1000);
+  }
+  function stopRotate(){
+    if(rotateInterval) clearInterval(rotateInterval);
+    if(rotateTimerInterval) clearInterval(rotateTimerInterval);
+    rotateTimerEl.innerText = 'Stopped';
+  }
 
-    // Auth State
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        document.getElementById("loginBtn").style.display = "none";
-        dashboard.style.display = "block";
-        document.getElementById("userEmail").textContent = user.email;
+  async function showAd(ad){
+    if(!ad) return;
+    // show url or content
+    if(ad.url && (ad.url.startsWith('http') || ad.url.startsWith('https'))){
+      adIframe.src = ad.url;
+    } else if(ad.content){
+      const html = `<html><body style="font-family:Inter,Arial;padding:20px">${ad.content}</body></html>`;
+      adIframe.src = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+    } else {
+      adIframe.src = 'about:blank';
+    }
 
-        // Check if user exists in Firestore
-        const userRef = doc(db, "users", user.uid);
-        const snap = await getDoc(userRef);
-        if (!snap.exists()) {
-          await setDoc(userRef, {
-            email: user.email,
-            coins: 0,
-            referralEarnings: 0
-          });
-          document.getElementById("userCoins").textContent = "0";
-          document.getElementById("userRef").textContent = "0";
-        } else {
-          document.getElementById("userCoins").textContent = snap.data().coins;
-          document.getElementById("userRef").textContent = snap.data().referralEarnings;
+    // schedule credit after 15s for current logged in user (client-side prototype)
+    const currentAdId = ad.id;
+    setTimeout(async ()=>{
+      try{
+        const u = auth.currentUser;
+        if(!u) return;
+        const cooldownKey = `imp_${currentAdId}_${u.uid}`;
+        if(isCooldown(cooldownKey)) return;
+        setCooldown(cooldownKey, 15); // 15s per ad
+        // credit watcher wCoins
+        const uref = db.collection('users').doc(u.uid);
+        await uref.update({ wCoins: firebase.firestore.FieldValue.increment(500) });
+        await db.collection('transactions').add({ user: u.uid, type: 'impression', adId: currentAdId, amount: 500, ts: firebase.firestore.FieldValue.serverTimestamp() });
+        pushActivity('You earned +500 W coins for viewing an ad');
+        // client-side commission: add 15% to referrer if exists (DEMO)
+        const udoc = await uref.get();
+        const udata = udoc.data();
+        if(udata && udata.referrer){
+          const commission = Math.floor(500 * 0.15);
+          await db.collection('users').doc(udata.referrer).update({ referralEarnings: firebase.firestore.FieldValue.increment(commission) }).catch(()=>{});
+          await db.collection('transactions').add({ user: udata.referrer, type:'commission', amount:commission, note:`15% commission from ${u.uid}`, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
         }
-      } else {
-        document.getElementById("loginBtn").style.display = "inline-block";
-        dashboard.style.display = "none";
-      }
+        // NOTE: production: validate impressions server-side, decrement ad budget, pay owner or reduce owner budget via Cloud Functions
+      } catch(e){ console.error(e); }
+    },15000);
+  }
+
+  // ---------- Direct link logic ----------
+  async function loadDirects(){
+    const snap = await db.collection('directs').orderBy('createdAt','desc').limit(200).get();
+    const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderDirects(arr);
+  }
+  function renderDirects(arr){
+    directListEl.innerHTML = arr.length ? arr.map(d => {
+      return `<div class="p-2 border rounded flex items-center justify-between"><div class="text-sm">${escapeHtml(d.url)}</div><div><button class="openDirectBtn bg-indigo-600 text-white px-3 py-1 rounded" data-id="${d.id}" data-url="${escapeAttr(d.url)}">Open & Earn</button></div></div>`;
+    }).join('') : '<div class="text-sm text-gray-400">No direct links</div>';
+    // bind buttons
+    Array.from(document.getElementsByClassName('openDirectBtn')).forEach(btn => {
+      btn.addEventListener('click', async (ev) => {
+        const id = btn.getAttribute('data-id');
+        const url = btn.getAttribute('data-url');
+        await openDirectAndCredit(id, url);
+      });
     });
+  }
+
+  async function openDirectAndCredit(id, url){
+    if(!auth.currentUser) return alert('Login required to earn');
+    const key = `direct_${id}_${auth.currentUser.uid}`;
+    if(isCooldown(key)) return alert('Please wait before collecting again from this link.');
+    window.open(url, '_blank');
+    setCooldown(key, 60); // 60s cooldown
+    await db.collection('users').doc(auth.currentUser.uid).update({ dCoins: firebase.firestore.FieldValue.increment(1000) });
+    await db.collection('transactions').add({ user: auth.currentUser.uid, type: 'direct_click', directId: id, amount: 1000, ts: firebase.firestore.FieldValue.serverTimestamp() });
+    pushActivity('Earned +1000 D coins for clicking a direct link');
+    // commission demo
+    const udoc = await db.collection('users').doc(auth.currentUser.uid).get();
+    const udata = udoc.data();
+    if(udata && udata.referrer){
+      const commission = Math.floor(1000 * 0.15);
+      await db.collection('users').doc(udata.referrer).update({ referralEarnings: firebase.firestore.FieldValue.increment(commission) }).catch(()=>{});
+      await db.collection('transactions').add({ user: udata.referrer, type:'commission', amount:commission, note:`15% commission`, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+    }
+  }
+
+  // create direct link
+  createDirectBtn && createDirectBtn.addEventListener('click', async () => {
+    if(!auth.currentUser) return alert('Login first');
+    const url = newDirectUrl.value.trim();
+    if(!url) return alert('Enter URL');
+    await db.collection('directs').add({ owner: auth.currentUser.uid, url, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    newDirectUrl.value = '';
+    pushActivity('Direct link created');
+    loadDirects();
+  });
+
+  // ---------- YouTube watch time counting (client-side demo) ----------
+  let ytInterval = null;
+  let ytSeconds = 0;
+  document.getElementById('ytStart').addEventListener('click', ()=> {
+    if(!auth.currentUser) return alert('Login to count watch time');
+    if(ytInterval) return;
+    ytInterval = setInterval(async ()=> {
+      ytSeconds += 1;
+      document.getElementById('ytCounter').innerText = ytSeconds + 's';
+      if(ytSeconds % 15 === 0){
+        // reward every 15 seconds
+        await db.collection('users').doc(auth.currentUser.uid).update({ ytTime: firebase.firestore.FieldValue.increment(15) });
+        await db.collection('transactions').add({ user: auth.currentUser.uid, type:'yt_watch', amount:15, ts: firebase.firestore.FieldValue.serverTimestamp() });
+        pushActivity('Credited +15s YouTube watch time');
+        // commission demo
+        const udoc = await db.collection('users').doc(auth.currentUser.uid).get();
+        const udata = udoc.data();
+        if(udata && udata.referrer){
+          const commission = Math.floor(15 * 0.15);
+          await db.collection('users').doc(udata.referrer).update({ referralEarnings: firebase.firestore.FieldValue.increment(commission) }).catch(()=>{});
+          await db.collection('transactions').add({ user: udata.referrer, type:'commission', amount:commission, note:`15% commission`, ts: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+        }
+      }
+    }, 1000);
+  });
+  document.getElementById('ytStop').addEventListener('click', ()=> {
+    if(ytInterval) clearInterval(ytInterval);
+    ytInterval = null;
+    document.getElementById('ytCounter').innerText = 'Stopped';
+  });
+
+  // ---------- Launch Ad / Campaigns ----------
+  createAdBtn && createAdBtn.addEventListener('click', async ()=>{
+    if(!auth.currentUser) return alert('Login first');
+    const title = adTitleInput.value.trim();
+    const url = adUrlInput.value.trim();
+    const budget = Number(adBudgetInput.value);
+    const cat = adCategorySel.value;
+    if(!title || !url || !budget) return alert('Fill all fields');
+    // check balance (simple client-side check)
+    const udoc = await db.collection('users').doc(auth.currentUser.uid).get();
+    const d = udoc.data();
+    const totalBal = (d.wCoins||0) + (d.dCoins||0);
+    if(totalBal < budget) return alert('Not enough coins');
+    // deduct coins (wCoins first then dCoins)
+    let remaining = budget;
+    const updates = {};
+    const w = d.wCoins||0;
+    if(w >= remaining){
+      updates.wCoins = firebase.firestore.FieldValue.increment(-remaining);
+      remaining = 0;
+    } else {
+      updates.wCoins = firebase.firestore.FieldValue.increment(-w);
+      remaining -= w;
+      updates.dCoins = firebase.firestore.FieldValue.increment(-remaining);
+      remaining = 0;
+    }
+    await db.collection('users').doc(auth.currentUser.uid).update(updates);
+    // create campaign and ad record
+    await db.collection('campaigns').add({ title, url, budget, remainingBudget: budget, owner: auth.currentUser.uid, category: cat, impressions:0, status:'active', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await db.collection('ads').add({ owner: auth.currentUser.uid, title, url, type: cat, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    adMsgEl.innerText = 'Campaign created!';
+    adTitleInput.value=''; adUrlInput.value=''; adBudgetInput.value='';
+    setTimeout(()=> adMsgEl.innerText='',3000);
+    loadAdsQueue();
+    refreshCampaignsForUser(auth.currentUser.uid);
+  });
+
+  // fetch user's campaigns
+  async function refreshCampaignsForUser(uid){
+    if(!uid) return;
+    const snap = await db.collection('campaigns').where('owner','==', uid).orderBy('createdAt','desc').get().catch(()=>null);
+    const arr = snap ? snap.docs.map(d=>({ id:d.id, ...d.data() })) : [];
+    campaignListEl.innerHTML = arr.length ? arr.map(c => `<div class="p-2 border rounded"><div class="font-semibold">${escapeHtml(c.title)}</div><div class="small-muted">${c.budget} coins • ${c.status}</div></div>`).join('') : '<div class="text-sm text-gray-400">No campaigns</div>';
+    activeAdCountEl.innerText = arr.filter(c=>c.status==='active').length;
+  }
+
+  async function loadCampaignsCount(){
+    const snap = await db.collection('campaigns').where('status','==','active').get().catch(()=>null);
+    activeAdCountEl.innerText = snap ? snap.size : 0;
+  }
+
+  // ---------- Transactions ----------
+  async function refreshTransactionsForUser(uid){
+    if(!uid) return;
+    const snap = await db.collection('transactions').where('user','==', uid).orderBy('ts','desc').limit(200).get().catch(()=>null);
+    const arr = snap ? snap.docs.map(d=>({ id:d.id, ...d.data() })) : [];
+    txList.innerHTML = arr.length ? arr.map(t => `<div class="p-2 border rounded"><div class="text-sm">${escapeHtml(t.type)} • ${t.amount || ''} • ${escapeHtml(t.note || '')}</div><div class="small-muted">${t.ts ? new Date(t.ts.seconds*1000).toLocaleString() : ''}</div></div>`).join('') : '<div class="text-sm text-gray-400">No transactions</div>';
+  }
+
+  async function loadTransactionsGlobal(){
+    const snap = await db.collection('transactions').orderBy('ts','desc').limit(20).get().catch(()=>null);
+    const arr = snap ? snap.docs.map(d=>({ id:d.id, ...d.data() })) : [];
+    // we don't render global; kept for admin ideas
+  }
+
+  // ---------- helpers ----------
+  function escapeHtml(str){ if(!str) return ''; return String(str).replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s])); }
+  function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+  // ---------- seed example ad (demo) ----------
+  async function seedExampleAdIfEmpty(){
+    const snap = await db.collection('ads').limit(1).get();
+    if(snap.empty){
+      await db.collection('ads').add({ owner: 'system', title: 'Welcome — Demo Ad', url: 'https://example.com', type: 'web', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      loadAdsQueue();
+    }
+  }
+  seedExampleAdIfEmpty();
+
+  // ---------- UI actions binding ----------
+  document.getElementById('startRotate').addEventListener('click', ()=> { loadAdsQueue().then(()=> startRotate()); });
+  document.getElementById('stopRotate').addEventListener('click', stopRotate);
+  document.getElementById('quickWatchBtn').addEventListener('click', async ()=> {
+    if(!auth.currentUser) return alert('Login required');
+    // quick demo: credit 500
+    if(isCooldown(`quick_watch_${auth.currentUser.uid}`)) return alert('Please wait before quick collecting again');
+    setCooldown(`quick_watch_${auth.currentUser.uid}`, 15);
+    await db.collection('users').doc(auth.currentUser.uid).update({ wCoins: firebase.firestore.FieldValue.increment(500) });
+    await db.collection('transactions').add({ user: auth.currentUser.uid, type:'quick_watch', amount:500, ts: firebase.firestore.FieldValue.serverTimestamp() });
+    pushActivity('Quick watch: +500 W coins');
+  });
+
+  document.getElementById('openLaunch').addEventListener('click', ()=> showPage('adlaunch'));
+  document.getElementById('viewTx').addEventListener('click', ()=> showPage('transactions'));
+
+  document.getElementById('copyRefBtn').addEventListener('click', ()=> {
+    if(!auth.currentUser) return alert('Login first');
+    const link = `${location.origin}${location.pathname}?ref=${auth.currentUser.uid}`;
+    navigator.clipboard.writeText(link);
+    alert('Copied referral link');
+  });
+  document.getElementById('copyRef')?.addEventListener('click', ()=> {
+    if(!auth.currentUser) return alert('Login first');
+    const link = `${location.origin}${location.pathname}?ref=${auth.currentUser.uid}`;
+    navigator.clipboard.writeText(link);
+    alert('Copied referral link');
+  });
+
+  // ---------- refresh loops for UI lists ----------
+  async function refreshAllLists(){
+    await loadAdsQueue();
+    await loadDirects();
+    await loadCampaignsCount();
+    const u = auth.currentUser;
+    if(u){
+      refreshCampaignsForUser(u.uid);
+      refreshTransactionsForUser(u.uid);
+    }
+  }
+  // periodic refresh
+  setInterval(refreshAllLists, 7000);
+  refreshAllLists();
+
+  // ---------- DOM-ready: show dashboard by default ----------
+  showPage('dashboard');
+
   </script>
 </body>
 </html>
