@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Coin Ad Platform</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    nav a { margin: 10px; font-weight: bold; cursor: pointer; }
+    .page { display: none; }
+    .active { display: block; }
+    #header { margin-bottom: 20px; }
+    button { padding: 10px 20px; margin: 5px; }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+</head>
+<body>
+  <div id="header">
+    <h1>🚀 Coin Ad Platform</h1>
+    <button id="loginBtn">Login with Google</button>
+    <span id="userInfo"></span>
+    <p><b>Total Coins:</b> <span id="coins">0</span></p>
+  </div>
+
+  <!-- Navigation -->
+  <nav>
+    <a onclick="showPage('dashboard')">Dashboard</a>
+    <a onclick="showPage('webtraffic')">Website Traffic</a>
+    <a onclick="showPage('directlink')">Direct Link</a>
+    <a onclick="showPage('ytwatch')">YouTube Watch Time</a>
+    <a onclick="showPage('ytviews')">YouTube Views</a>
+    <a onclick="showPage('referrals')">Referrals</a>
+    <a onclick="showPage('adlaunch')">Ad Launch</a>
+  </nav>
+
+  <!-- Pages -->
+  <div id="dashboard" class="page active">
+    <h2>Dashboard</h2>
+    <p>Here you will see your stats, earnings, and instructions.</p>
+  </div>
+
+  <div id="webtraffic" class="page">
+    <h2>Website Traffic</h2>
+    <iframe src="https://example.com" width="400" height="300"></iframe>
+    <p>Watch websites and earn <b>500 coins</b> per 15 sec.</p>
+  </div>
+
+  <div id="directlink" class="page">
+    <h2>Direct Link</h2>
+    <p>Click links and earn <b>1000 coins</b>.</p>
+  </div>
+
+  <div id="ytwatch" class="page">
+    <h2>YouTube Watch Time</h2>
+    <iframe width="400" height="300" src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>
+    <p>Earn minutes and coins while watching.</p>
+  </div>
+
+  <div id="ytviews" class="page">
+    <h2>YouTube Views</h2>
+    <p>Watch videos and earn views/coins.</p>
+  </div>
+
+  <div id="referrals" class="page">
+    <h2>Referral System</h2>
+    <p>Your referral link: <span id="refLink"></span></p>
+    <p>You earn <b>10,000 coins</b> per invite + 15% lifetime commission.</p>
+  </div>
+
+  <div id="adlaunch" class="page">
+    <h2>Ad Launch</h2>
+    <p>Launch ads using your coins.</p>
+  </div>
+
+  <script>
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
+      authDomain: "website-5636d.firebaseapp.com",
+      projectId: "website-5636d",
+      storageBucket: "website-5636d.appspot.com",
+      messagingSenderId: "737574321288",
+      appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
+      measurementId: "G-S64W6JR12C"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+
+    // ✅ Google Login
+    document.getElementById("loginBtn").onclick = async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await auth.signInWithPopup(provider);
+      currentUser = result.user;
+      document.getElementById("userInfo").innerText = "Welcome " + currentUser.displayName;
+
+      // Firestore user check
+      const userRef = db.collection("users").doc(currentUser.uid);
+      const docSnap = await userRef.get();
+      if (!docSnap.exists) {
+        await userRef.set({ coins: 1000, referrals: 0 });
+      }
+      loadUserData();
+    };
+
+    // ✅ Load User Data
+    async function loadUserData() {
+      const userRef = db.collection("users").doc(currentUser.uid);
+      const docSnap = await userRef.get();
+      const data = docSnap.data();
+      document.getElementById("coins").innerText = data.coins;
+
+      // Referral link (example)
+      document.getElementById("refLink").innerText = 
+        window.location.origin + "?ref=" + currentUser.uid;
+    }
+
+    // ✅ Page Switcher
+    function showPage(id) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+  </script>
+</body>
+</html>
