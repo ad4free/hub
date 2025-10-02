@@ -102,7 +102,7 @@
         { name: 'Premium', icon: '<i class="fas fa-dollar-sign"></i>' },
     ];
 
-    // --- Firebase Pathing Helpers (CRITICAL FIX) ---
+    // --- Firebase Pathing Helpers ---
     // User data is private: artifacts/{appId}/users/{userId}/profile/{documentId}
     const getUserDocRef = (uid) => {
         return doc(db, `artifacts/${appId}/users/${uid}/profile`, 'main');
@@ -137,8 +137,8 @@
 
     const renderHeader = () => {
         const headerEl = document.getElementById('header');
+        // Handle case where currentUserData might be null during loading
         const usableBalance = formatNumber(currentUserData?.balance?.usable);
-        // Only show full ID if authenticated, otherwise use a generic label
         const userIdDisplay = currentUserId ? (currentUserId.substring(0, 8) + '...') : 'Guest';
         const isPremium = currentUserData?.role === 'premium';
         
@@ -181,7 +181,7 @@
         const contentEl = document.getElementById('main-content');
         if (!isAuthReady) {
             contentEl.innerHTML = renderLoadingScreen();
-        } else if (currentUserId === 'anonymous' || !currentUserId) { // Allow anonymous users to see sign-in screen
+        } else if (currentUserId === 'anonymous' || !currentUserId) { 
             contentEl.innerHTML = renderAuthScreen();
             attachAuthListener();
         } else {
@@ -638,31 +638,34 @@
 
         // Real-time Ad List Listener (Uses Public Data Path)
         const activeAdsList = document.getElementById('activeAdsList');
-        const adsQ = query(getAdsCollectionRef(), where('ownerId', '==', currentUserId));
-        
-        onSnapshot(adsQ, (snapshot) => {
-            if (snapshot.empty) {
-                activeAdsList.innerHTML = '<p class="text-gray-400">You have no active or completed campaigns.</p>';
-                return;
-            }
+        // Ensure currentUserId is not null before querying
+        if (currentUserId) {
+            const adsQ = query(getAdsCollectionRef(), where('ownerId', '==', currentUserId));
+            
+            onSnapshot(adsQ, (snapshot) => {
+                if (snapshot.empty) {
+                    activeAdsList.innerHTML = '<p class="text-gray-400">You have no active or completed campaigns.</p>';
+                    return;
+                }
 
-            activeAdsList.innerHTML = snapshot.docs.map(doc => {
-                const ad = doc.data();
-                const adTypeMap = { web: 'Web Traffic', direct: 'Direct Link', youtube_watch: 'YT Watch Time', youtube_view: 'YT Views' };
-                const isActive = ad.budget_coins > 0 && ad.is_active;
-                return `
-                    <div class="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 flex justify-between items-center">
-                        <div>
-                            <p class="text-lg font-semibold text-white">${adTypeMap[ad.type]} - ${ad.targetUrl.substring(0, 40)}...</p>
-                            <p class="text-sm text-gray-400">Budget Left: ${formatNumber(ad.budget_coins)} / Run: ${formatNumber(ad.impressions_run)} of ${formatNumber(ad.impressions_goal)}</p>
+                activeAdsList.innerHTML = snapshot.docs.map(doc => {
+                    const ad = doc.data();
+                    const adTypeMap = { web: 'Web Traffic', direct: 'Direct Link', youtube_watch: 'YT Watch Time', youtube_view: 'YT Views' };
+                    const isActive = ad.budget_coins > 0 && ad.is_active;
+                    return `
+                        <div class="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 flex justify-between items-center">
+                            <div>
+                                <p class="text-lg font-semibold text-white">${adTypeMap[ad.type]} - ${ad.targetUrl.substring(0, 40)}...</p>
+                                <p class="text-sm text-gray-400">Budget Left: ${formatNumber(ad.budget_coins)} / Run: ${formatNumber(ad.impressions_run)} of ${formatNumber(ad.impressions_goal)}</p>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-bold rounded-full ${isActive ? 'bg-green-500 text-green-900' : 'bg-red-500 text-red-900'}">
+                                ${isActive ? 'AD ACTIVE' : 'EXPIRED'}
+                            </span>
                         </div>
-                        <span class="px-3 py-1 text-xs font-bold rounded-full ${isActive ? 'bg-green-500 text-green-900' : 'bg-red-500 text-red-900'}">
-                            ${isActive ? 'AD ACTIVE' : 'EXPIRED'}
-                        </span>
-                    </div>
-                `;
-            }).join('');
-        });
+                    `;
+                }).join('');
+            });
+        }
     };
 
     // 3. Ad Earning Screen (Heartbeat)
@@ -690,16 +693,14 @@
             heartbeatStatus.textContent = 'Ready to start.';
 
             try {
-                // FIX: Removed the second 'where' clause (budget_coins > COST_PER_IMPRESSION)
-                // This avoids the "query requires an index" error.
-                // We will filter client-side instead.
+                // FIX: Single-field query to avoid index requirement
                 const adsQ = query(getAdsCollectionRef(), where('type', '==', props.type));
                 const adsSnap = await getDocs(adsQ);
 
                 // Filter the results client-side to ensure sufficient budget
                 const activeAds = adsSnap.docs
                     .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .filter(ad => ad.budget_coins > COST_PER_IMPRESSION); // <-- Filtering here
+                    .filter(ad => ad.budget_coins > COST_PER_IMPRESSION); 
 
                 if (activeAds.length === 0) {
                     adStatusEl.textContent = 'No active ads available. Check back later.';
@@ -710,7 +711,6 @@
                 currentAd = activeAds[Math.floor(Math.random() * activeAds.length)];
                 
                 // --- SIMULATED START SESSION VIA NETLIFY FUNCTION ---
-                // In the real system, this call starts a secure session ID and verifies user eligibility.
                 const sessionResponse = await fetch('/.netlify/functions/ad-heartbeat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -818,8 +818,7 @@
             collectCommissionBtn.disabled = true;
 
             try {
-                // --- SECURE SERVERLESS FUNCTION CALL (CRITICAL FIX) ---
-                // Delegation to a serverless function prevents client-side manipulation of the balance.
+                // --- SECURE SERVERLESS FUNCTION CALL ---
                 const response = await fetch('/.netlify/functions/collect-commission', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -841,7 +840,6 @@
                 referralMessageEl.textContent = "Network error during collection. Try again later.";
             } finally {
                 // Re-render will update the button state via onSnapshot
-                // We reset the button label for better UX if the fetch failed quickly
                 collectCommissionBtn.textContent = `Collect ${formatNumber(currentCommission)} Coins`;
             }
         });
@@ -926,7 +924,7 @@
     // --- Core Application Setup ---
 
     const setupAuthAndDataListeners = () => {
-        // 1. Initial Auth check and custom token login or anonymous fallback (CRITICAL FIX)
+        // 1. Initial Auth check and custom token login or anonymous fallback
         const authenticate = async () => {
             try {
                 if (initialAuthToken) {
@@ -937,7 +935,6 @@
                 }
             } catch (error) {
                 console.warn("Initial authentication failed:", error.message);
-                // If everything fails, user remains unauthenticated
             }
         };
 
@@ -945,16 +942,19 @@
 
         // 2. Auth State Listener
         onAuthStateChanged(auth, async (user) => {
+            // Set readiness flag immediately after the first auth state check
+            if (!isAuthReady) isAuthReady = true; 
+
             if (user && !user.isAnonymous) {
                 currentUserId = user.uid;
                 
-                // 3. Firestore Real-time Listener for User Data (Uses fixed private path)
+                // 3. Firestore Real-time Listener for User Data
                 const userRef = getUserDocRef(user.uid);
                 onSnapshot(userRef, (docSnap) => {
                     if (docSnap.exists()) {
                         currentUserData = { ...docSnap.data(), userId: docSnap.id };
                     } else {
-                        // User is authenticated but profile doesn't exist (e.g., first login, manual sign-in)
+                        // User is authenticated but profile doesn't exist
                         currentUserData = { 
                             userId: user.uid, 
                             balance: { usable: 0 }, 
@@ -962,11 +962,12 @@
                             referrals: { invitedCount: 0, commission_balance: 0 },
                             role: 'free'
                         };
-                        // Note: The manual Google sign-in handles the creation of this doc.
                     }
-                    if (!isAuthReady) isAuthReady = true;
-                    render();
-                }, (error) => console.error("Firestore user data error:", error));
+                    render(); // Re-render with fetched data
+                }, (error) => {
+                    console.error("Firestore user data error:", error);
+                    render(); // Render even on error to show app state
+                });
 
             } else if (user && user.isAnonymous) {
                 currentUserId = 'anonymous';
@@ -977,13 +978,11 @@
                     referrals: { invitedCount: 0, commission_balance: 0 },
                     role: 'free'
                 };
-                if (!isAuthReady) isAuthReady = true;
-                render();
+                render(); // Render Auth screen for anonymous user
             } else {
                 currentUserId = null;
                 currentUserData = null;
-                if (!isAuthReady) isAuthReady = true;
-                render();
+                render(); // Render Auth screen for unauthenticated user
             }
         });
     };
@@ -991,8 +990,12 @@
     // Expose navigateTo to the global scope for onclick events
     window.navigateTo = navigateTo;
 
-    // Start the application
+    // Start the application setup
     setupAuthAndDataListeners();
+    
+    // CRITICAL FIX: Render immediately to show the loading screen 
+    // before the asynchronous Firebase setup completes.
+    render();
 
 </script>
 
