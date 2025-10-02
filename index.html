@@ -46,7 +46,7 @@
             transition: all 0.2s;
             background-color: #21262d;
             border: 1px solid transparent;
-            white-space: nowrap; /* Prevents wrapping */
+            white-space: nowrap;
         }
 
         .tab.active {
@@ -110,7 +110,7 @@
         
         /* Highlighted Notice */
         .highlight-notice {
-            background-color: rgba(255, 215, 0, 0.1); /* Light gold background */
+            background-color: rgba(255, 215, 0, 0.1);
             border-left: 4px solid var(--accent);
         }
 
@@ -124,10 +124,7 @@
             <div class="flex items-center space-x-2 mt-3 sm:mt-0">
                 <!-- Authentication Status/Buttons -->
                 <div id="auth-status" class="flex items-center space-x-2">
-                    <!-- Dynamic content will be injected here by initAuthListeners -->
-                    <button id="btn-signup" class="btn-secondary text-sm">Sign Up</button>
-                    <button id="btn-signin" class="btn-secondary text-sm">Sign In</button>
-                    <button id="btn-gmail-auth" class="btn-primary text-sm">Login with Gmail</button>
+                    <!-- Dynamic content will be injected here -->
                 </div>
             </div>
         </header>
@@ -188,12 +185,12 @@
                         </button>
                     </div>
 
-                    <!-- Additional Info (Placeholder for what was the modal notice) -->
+                    <!-- Additional Info -->
                     <div class="card">
                         <h3 class="text-lg font-semibold mb-3">Priority Ad Status</h3>
                         <div class="p-3 highlight-notice text-sm">
-                            <p class="font-bold text-yellow-400">Priority Links Active:</p>
-                            <p class="text-gray-300">Your custom links are guaranteed to be the first displayed in the Website Traffic and YouTube earning cycles.</p>
+                            <p class="font-bold text-yellow-400">Ad Earning Security:</p>
+                            <p class="text-gray-300">Earning timers **pause automatically** if you switch tabs or minimize the window.</p>
                         </div>
                     </div>
                 </div>
@@ -201,9 +198,6 @@
         </div>
     </div>
     
-    <!-- NOTE: The 2-Minute Promotion Modal Overlay HTML has been completely removed. -->
-
-
     <!-- Firebase SDK Imports and App Logic -->
     <script type="module">
         // ---------- Firebase Configuration (User Provided) ----------
@@ -242,7 +236,8 @@
             ytViews: 0
         };
         let activeTab = 'dashboard';
-        let adIntervalId = null;
+        let earningInterval = null; // Changed from adIntervalId
+        let adCyclePaused = false;
         let adTimerSeconds = 0;
         let currentAds = []; 
         let currentAdIndex = -1;
@@ -261,15 +256,14 @@
             // Direct Link
             { title: "Direct Link: otieu.com (PROMO)", url: "https://otieu.com/4/9677163", category: 'dlink', type: 'promo', id: 'promo-dlink-1' },
             { title: "Direct Link: otieu.com (Duplicate PROMO)", url: "https://otieu.com/4/9677163", category: 'dlink', type: 'promo', id: 'promo-dlink-2' },
-            // YouTube (Note: Using the embed URL for iframe compatibility)
+            // YouTube (Note: Removed 'mute=1' to allow volume)
             { title: "YouTube Watch Time/Views Video (PROMO)", 
-              url: "https://www.youtube.com/embed/Uw9bqrrV-yI?autoplay=1&mute=1&controls=0&loop=1", 
+              url: "https://www.youtube.com/embed/Uw9bqrrV-yI?autoplay=1&controls=1&loop=1", 
               category: 'yt', 
               type: 'promo', 
               id: 'promo-yt-1' 
             },
         ];
-        // Get the direct, non-embed URL for the open-link action
         const DIRECT_LINK_URL = HARDCODED_ADS.find(ad => ad.id === 'promo-dlink-1')?.url || 'about:blank';
 
 
@@ -298,6 +292,43 @@
             }
         };
         
+        // --- Security/Visibility Check ---
+        const checkVisibility = () => {
+            const isVisible = document.visibilityState === 'visible' && !document.hidden;
+            const hasFocus = document.hasFocus();
+            const shouldRun = isVisible && hasFocus;
+            
+            const statusContainer = document.getElementById('ad-info');
+            if (!statusContainer) return;
+            let pauseStatusEl = document.getElementById('pause-status');
+
+            if (shouldRun && adCyclePaused) {
+                adCyclePaused = false;
+                if (activeTab === 'web') {
+                    startWebTrafficTimer();
+                } else if (activeTab.startsWith('yt')) {
+                    startYoutubeTimer();
+                }
+                pauseStatusEl?.remove();
+                console.log(`Earning resumed for ${activeTab}`);
+
+            } else if (!shouldRun && !adCyclePaused && earningInterval) {
+                adCyclePaused = true;
+                clearInterval(earningInterval);
+                earningInterval = null;
+                console.log(`Earning PAUSED for ${activeTab}. Tab inactive.`);
+                
+                // Show status message
+                if (!pauseStatusEl) {
+                     pauseStatusEl = document.createElement('div');
+                     pauseStatusEl.id = 'pause-status';
+                     pauseStatusEl.className = 'text-red-400 font-bold mt-2';
+                     pauseStatusEl.textContent = 'EARNING PAUSED: Return to Tab!';
+                     statusContainer.appendChild(pauseStatusEl);
+                }
+            }
+        };
+
         // --- Database Update Functions ---
         const earnCoins = async (category, amount) => {
             if (!currentUserId) return console.error("Not authenticated.");
@@ -309,26 +340,24 @@
                 }
 
                 await updateDoc(getUserDocRef(currentUserId), updateData);
-                console.log(`Earned ${amount} coins for ${category}.`);
                 return true;
             } catch (e) {
                 console.error("Error updating coin balance:", e);
-                // Use console instead of alert
-                console.error('Error updating coin balance. Check console.');
                 return false;
             }
         };
 
         // --- Navigation/Tab Logic ---
         const stopAdCycle = () => {
-            if (adIntervalId) {
-                clearInterval(adIntervalId);
-                adIntervalId = null;
+            if (earningInterval) {
+                clearInterval(earningInterval);
+                earningInterval = null;
             }
             // Reset state
             currentAds = [];
             currentAdIndex = -1;
             adTimerSeconds = 0;
+            adCyclePaused = false;
             console.log("Ad cycle stopped.");
         };
 
@@ -369,7 +398,6 @@
                     break;
                 case 'web':
                     title = 'Earn W-Coins: Website Traffic';
-                    // No iframeSrc placeholder needed here, it's set in setupEarningPage
                     html = renderEarningPage('web', `${WEB_REWARD} W-Coins`, `${WEB_DURATION} sec`); 
                     break;
                 case 'dlink':
@@ -378,18 +406,18 @@
                     break;
                 case 'ytwatch':
                     title = 'Earn YouTube Watch Time';
-                    html = renderEarningPage('ytwatch', 'Earn Hours/Minutes', 'Live Counting');
+                    html = renderEarningPage('ytwatch', 'Earn Hours/Minutes', 'Live Counting (Visible Tab Only)');
                     break;
                 case 'ytviews':
                     title = 'Earn YouTube Views';
-                    html = renderEarningPage('ytviews', 'Earn Views', `Every ${YT_VIEW_DURATION} Sec`);
+                    html = renderEarningPage('ytviews', 'Earn Views', `Every ${YT_VIEW_DURATION} Sec (Visible Tab Only)`);
                     break;
                 case 'referral':
                     title = 'Referral System & Commissions';
                     html = renderReferral();
                     break;
                 case 'adlaunch':
-                    title = 'Launch New Ad Campaign';
+                    title = 'Launch New Ad Campaign & Manage';
                     html = renderAdLaunch();
                     break;
                 default:
@@ -401,8 +429,12 @@
             contentContainer.innerHTML = html;
             
             // Post-render actions (must run after DOM is updated)
-            if (['web', 'ytwatch', 'ytviews'].includes(activeTab)) {
-                 await setupEarningPage(activeTab);
+            if (activeTab === 'web') {
+                 await setupWebEarningPage();
+            } else if (activeTab === 'dlink') {
+                 // Nothing specific needed, button is global listener
+            } else if (activeTab.startsWith('yt')) {
+                 await setupYtEarningPage(activeTab);
             } else if (activeTab === 'adlaunch') {
                  setupAdLaunchPage();
             }
@@ -410,21 +442,20 @@
 
         // --- HTML Content Generators ---
 
-        const renderDashboard = () => {
-            const formatTime = (totalSeconds) => {
-                const h = Math.floor(totalSeconds / 3600);
-                const m = Math.floor((totalSeconds % 3600) / 60);
-                const s = totalSeconds % 60;
-                return `${h}h ${m}m ${s}s`;
-            };
+        const formatTime = (totalSeconds) => {
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+            return `${h}h ${m}m ${s}s`;
+        };
 
+        const renderDashboard = () => {
             return `
                 <div class="space-y-4">
                     <div class="highlight-notice p-4 rounded-lg">
-                        <p class="font-bold text-lg text-yellow-400">IMPORTANT INSTRUCTION:</p>
+                        <p class="font-bold text-lg text-yellow-400">IMPORTANT NOTE on Iframe Traffic:</p>
                         <p class="mt-2 text-sm text-gray-300">
-                            <span class="font-bold">Want special country traffic?</span> You need to use a PC/Desktop and follow this link Instruction. 
-                            After following this, you can get any country traffic in your Link.
+                            Many modern websites block embedding in iframes due to security policies (like X-Frame-Options). For **Website Traffic**, the iframe will display the target URL, but the actual site loading is simulated/validated in the background. **Only embeddable YouTube videos will load directly.**
                         </p>
                     </div>
 
@@ -449,19 +480,28 @@
                     
                     <h3 class="text-lg font-semibold mt-6">Platform Details</h3>
                     <ul class="list-disc list-inside text-sm text-gray-400 pl-4 space-y-2">
-                        <li>All earnings from ${['web', 'dlink', 'ytwatch', 'ytviews'].map(c => c.toUpperCase()).join(', ')} contribute to your usable W-Coins.</li>
-                        <li>**Referral Commission:** 15% of your referred users' lifetime earnings (available to collect).</li>
-                        <li>Ad campaigns auto-close when the budget runs out.</li>
+                        <li>All earnings from **Website Traffic**, **Direct Link**, **YouTube Watch Time**, and **YouTube Views** contribute to your usable **W-Coins**.</li>
+                        <li>**Referral Commission:** 15% of your referred users' lifetime earnings.</li>
+                        <li>Ad campaigns **auto-close** when the budget runs out.</li>
                     </ul>
                 </div>
             `;
         };
 
         const renderEarningPage = (category, rewardText, durationText) => {
-            // Placeholder iframe source - will be set correctly in setupEarningPage
-            const iframeSrc = 'about:blank'; 
-            
             const isDirectLink = category === 'dlink';
+            const isYT = category.startsWith('yt');
+
+            let iframeContent = '';
+            if (isDirectLink) {
+                 iframeContent = `<p class="text-center pt-20 text-gray-500">Click the button below to open the link in a new tab and earn D-Coins.</p>`;
+            } else if (isYT) {
+                 // For YT, the iframe src will be set in setupYtEarningPage to load the actual video embed.
+                 iframeContent = `<iframe id="ad-iframe" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+            } else {
+                 // For Web Traffic, we load a placeholder that shows the URL due to security restrictions.
+                 iframeContent = `<iframe id="ad-iframe" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+            }
 
             return `
                 <div class="space-y-4">
@@ -476,10 +516,7 @@
                     </div>
 
                     <div class="iframe-container">
-                        ${isDirectLink 
-                            ? `<p class="text-center pt-20 text-gray-500">Click the button below to open the link in a new tab and earn D-Coins.</p>`
-                            : `<iframe id="ad-iframe" src="${iframeSrc}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
-                        }
+                        ${iframeContent}
                     </div>
 
                     <div class="flex justify-center space-x-4 pt-2">
@@ -503,91 +540,20 @@
             `;
         };
         
-        const renderReferral = () => {
-            const refLink = `${window.location.origin}/?ref=${currentUserId}`;
-            return `
-                <div class="space-y-6">
-                    <h3 class="text-xl font-semibold text-primary">Your Unique Referral Link</h3>
-                    <div class="p-4 rounded-lg bg-[#21262d] flex items-center justify-between flex-wrap">
-                        <p class="text-sm font-mono break-all pr-2 mb-2 sm:mb-0">${refLink}</p>
-                        <button class="btn-secondary text-xs px-3 py-1" onclick="navigator.clipboard.writeText('${refLink}'); console.log('Referral link copied!');">Copy Link</button>
-                    </div>
-                    
-                    <h3 class="text-xl font-semibold text-primary">Commission Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="card p-3">
-                            <p class="text-xs text-gray-400">Base Invite Reward</p>
-                            <p class="text-xl font-bold text-yellow-400">10,000 W-Coins (on user signup)</p>
-                        </div>
-                        <div class="card p-3">
-                            <p class="text-xs text-gray-400">Lifetime Commission</p>
-                            <p class="text-xl font-bold text-yellow-400">15% of all referred user earnings</p>
-                        </div>
-                    </div>
-
-                    <h3 class="text-lg font-semibold mt-6">Referral Earnings Summary</h3>
-                    <div class="card text-sm text-gray-400">
-                        <p>Total Uncollected Commission: <span class="text-yellow-400 font-bold">${userData.refBalance.toLocaleString()}</span></p>
-                        <p class="mt-2">Ensure you click the **Collect** button on the header bar to move your referral balance to your usable W-Coins.</p>
-                        <p class="mt-4">*(In a production application, a full list of your referred users and their earnings would appear here.)*</p>
-                    </div>
-                </div>
-            `;
-        };
-
-        const renderAdLaunch = () => {
-            return `
-                <div class="space-y-6">
-                    <form id="ad-launch-form" class="space-y-4">
-                        <div class="card p-4">
-                            <label for="ad-category" class="block text-sm font-medium mb-1">Ad Category</label>
-                            <select id="ad-category" name="category" class="mb-2">
-                                <option value="web">Website Traffic (${WEB_REWARD} W-Coins/Impression)</option>
-                                <option value="dlink">Direct Link (${DLINK_REWARD} W-Coins/Open)</option>
-                                <option value="ytwatch">YouTube Watch Time (Custom Budget)</option>
-                                <option value="ytviews">YouTube Views (Custom Budget)</option>
-                            </select>
-                            <p class="text-xs text-gray-500">Note: All ad costs are currently paid in W-Coins.</p>
-                        </div>
-
-                        <div class="card p-4">
-                            <label for="ad-url" class="block text-sm font-medium mb-1">Target Link/URL</label>
-                            <input type="text" id="ad-url" name="url" placeholder="e.g., https://yourwebsite.com/page" required>
-                        </div>
-
-                        <div class="card p-4">
-                            <label for="ad-budget" class="block text-sm font-medium mb-1">Budget (W-Coins)</label>
-                            <input type="number" id="ad-budget" name="budget" min="500" placeholder="Min 500" required>
-                            <p id="impression-estimate" class="text-sm text-gray-400 mt-2">
-                                Estimated Impressions: 0 (500 W-Coins per impression)
-                            </p>
-                        </div>
-
-                        <button type="submit" class="btn-primary w-full py-3">Launch Ad Campaign</button>
-                    </form>
-                    
-                    <h3 class="text-lg font-semibold mt-6">Running Ads</h3>
-                    <div id="running-ads-list" class="card text-sm text-gray-400">
-                        <p>Your currently running and expired campaigns will be listed here, fetched live from Firestore.</p>
-                    </div>
-                </div>
-            `;
-        };
-        
-        // --- Core Earning Logic ---
+        // --- Core Ad Fetching Logic ---
 
         const getAdsForCategory = async (category) => {
              console.log(`Attempting to fetch ads for category: ${category}`);
              
-             // 1. Get Hardcoded Promo Ads
-             // IMPORTANT: Filters and gets the required promo links first.
+             // 1. Get Hardcoded Promo Ads (always first)
              let fetchedAds = HARDCODED_ADS
                  .filter(ad => ad.category === category)
-                 .map(ad => ({...ad, budget: 999999999 })); // Set high budget for promo links
+                 .map(ad => ({...ad, budget: 999999999 })); 
                  
              // 2. Fetch User-Launched Ads from Firestore (only for web and dlink)
              if (category === 'web' || category === 'dlink') {
                  try {
+                    // Only fetch active ads
                     const q = query(getPublicAdsCollection(), where('category', '==', category), where('status', '==', 'active'));
                     const querySnapshot = await getDocs(q);
                     
@@ -599,11 +565,11 @@
                         [userAds[i], userAds[j]] = [userAds[j], userAds[i]];
                     }
 
-                    // Combine hardcoded first (guaranteed to be index 0/1/etc.), then shuffled user ads
+                    // Combine hardcoded first, then shuffled user ads
                     fetchedAds = [...fetchedAds, ...userAds];
 
                  } catch(e) {
-                     console.error("Error fetching ads (Firestore issue or rules misconfiguration):", e);
+                     console.error("Error fetching ads:", e);
                  }
              }
 
@@ -618,32 +584,40 @@
             // For promo links, just earn coins for the user
             if (ad.type === 'promo') {
                  await earnCoins(category, reward);
-                 console.log(`Earned ${reward} for viewing promo link: ${ad.title}`);
                  return;
             }
 
             // For user-launched ad: earn coins and deduct budget
-            if (ad.type === 'user') {
+            if (ad.type === 'user' && ad.budget > 0) {
                  const success = await earnCoins(category, reward);
                 
                 if (success) {
                     try {
                         const adRef = doc(getPublicAdsCollection(), ad.id);
-                        await updateDoc(adRef, { 
+                        const newBudget = ad.budget - reward;
+                        
+                        const updateData = { 
                             budget: increment(-reward),
-                            impressions: increment(1)
-                        });
-                        console.log(`Ad budget for ${ad.id} deducted by ${reward}.`);
+                            impressions: increment(1),
+                            // Auto-close ad if budget is consumed
+                            status: newBudget <= 0 ? 'closed' : 'active' 
+                        };
+
+                        await updateDoc(adRef, updateData);
+                        console.log(`Ad budget for ${ad.id} deducted by ${reward}. New status: ${newBudget <= 0 ? 'CLOSED' : 'ACTIVE'}.`);
                     } catch (e) { 
-                        // Ad may have hit 0 budget and been removed/deactivated
-                        console.error("Could not update ad budget (Ad may be completed or non-existent):", e); 
+                        console.error("Could not update ad budget:", e); 
                     }
                 }
             }
         }
+        
+        // --- Web Traffic Earning Cycle ---
 
-        const startAdCycle = (category, duration, reward) => {
-            stopAdCycle(); // Clear any previous interval
+        let runWebTrafficTimer = null;
+        const startWebTrafficCycle = (ads) => {
+            stopAdCycle(); 
+            currentAds = ads;
             
             if (currentAds.length === 0) {
                 document.getElementById('ad-status').textContent = 'No Ads Available. Please try later.';
@@ -655,98 +629,109 @@
             const iframe = document.getElementById('ad-iframe');
             const nextButton = document.getElementById('btn-earn-next');
             
+            const createIframeContent = (url) => {
+                const base64Content = btoa(`
+                    <body style="background:#0d1117; color:#c9d1d9; font-family:Inter, sans-serif; padding:20px; text-align:center;">
+                        <h2 style="color:#FFD700;">Ad Display Simulation</h2>
+                        <p>Website is blocked from embedding due to security policies (X-Frame-Options/CSP).</p>
+                        <p>Generating traffic for:</p>
+                        <a href="${url}" target="_blank" style="color:#2d82ff; text-decoration:underline;">${url}</a>
+                        <p style="margin-top:20px; font-size:small; color:#8b949e;">Keep this tab active for the duration to earn coins.</p>
+                    </body>
+                `);
+                return `data:text/html;base64,${base64Content}`;
+            }
+
             const loadNextAd = () => {
                 currentAdIndex = (currentAdIndex + 1) % currentAds.length;
                 const ad = currentAds[currentAdIndex];
                 
-                iframe.src = ad.url;
+                iframe.src = createIframeContent(ad.url); // Load local placeholder with target URL
                 adStatusEl.textContent = `Viewing Ad: ${ad.title} (${ad.url.substring(0, 30)}...)`;
-                adTimerSeconds = duration;
+                adTimerSeconds = WEB_DURATION;
                 nextButton.disabled = true;
             }
 
-            loadNextAd(); // Load the first ad (which will be a HARDCODED_ADS link)
+            loadNextAd(); // Load the first ad
             
-            const runTimer = async () => {
+            runWebTrafficTimer = async () => {
                 adTimerSeconds--;
                 adTimerEl.textContent = adTimerSeconds < 10 ? `0${adTimerSeconds}` : adTimerSeconds;
 
                 if (adTimerSeconds <= 0) {
-                    // Ad time completed - process earnings
-                    await processAdComplete(category, reward);
-                    loadNextAd(); // Load the next ad
+                    await processAdComplete('web', WEB_REWARD);
+                    await updateUIBalances(); // Update balances immediately after earning
+                    
+                    // Re-fetch ads to ensure closed ads are removed and re-start the cycle
+                    currentAds = await getAdsForCategory('web');
+                    if (currentAds.length === 0) {
+                         stopAdCycle();
+                         adStatusEl.textContent = 'No Ads Available. Campaign Ended.';
+                         adTimerEl.textContent = '00';
+                         return;
+                    }
+                    loadNextAd();
                 }
                 
                 // User can skip after 5 seconds
-                nextButton.disabled = adTimerSeconds > duration - 5;
+                nextButton.disabled = adTimerSeconds > WEB_DURATION - 5;
             };
             
-            adIntervalId = setInterval(runTimer, 1000);
-            console.log("Ad cycle started.");
+            // Start the timer only if not paused by visibility check
+            if (!adCyclePaused) {
+                earningInterval = setInterval(runWebTrafficTimer, 1000);
+            }
         };
 
-        const setupEarningPage = async (category) => {
-            stopAdCycle(); // Ensure clean start
-            
-            if (category === 'dlink') {
-                // Direct link page needs no timer/iframe cycle logic, only the global button listener
-                return;
-            }
 
-            // --- Web Traffic Logic ---
-            if (category === 'web') {
-                currentAds = await getAdsForCategory(category); 
-                startAdCycle(category, WEB_DURATION, WEB_REWARD);
+        const setupWebEarningPage = async () => {
+            stopAdCycle();
+            currentAds = await getAdsForCategory('web');
+            startWebTrafficCycle(currentAds);
             
-            // --- YouTube Logic ---
-            } else if (category.startsWith('yt')) {
-                 const ytPromoAd = HARDCODED_ADS.find(ad => ad.category === 'yt');
-                 if (ytPromoAd) {
-                     // YouTube uses a single fixed promo link for the timer-based earning simulation
-                     currentAds = [ytPromoAd]; 
-                     startYoutubeCycle(category, ytPromoAd.url);
-                 } else {
-                     document.getElementById('ad-status').textContent = 'YouTube Promo Link Configuration Missing.';
-                 }
-            }
-            
-            // Re-attach specific button logic for Next/Skip since it's only active here
             const nextButton = document.getElementById('btn-earn-next');
             if (nextButton) {
                 nextButton.onclick = async () => {
-                    if (category === 'web' && currentAds.length > 0) {
-                        const duration = WEB_DURATION;
-                        if (adTimerSeconds <= duration - 5) {
-                            // Immediately complete the current ad and move to the next
-                            await processAdComplete(category, WEB_REWARD);
-                            loadNextAd(); 
-                        } else {
-                            // Custom message box logic (replacing alert)
-                            console.warn('You must view the ad for at least 5 seconds before skipping.');
+                    if (adTimerSeconds <= WEB_DURATION - 5 && !adCyclePaused) {
+                        // Immediately process ad and manually trigger next ad logic
+                        await processAdComplete('web', WEB_REWARD);
+                        await updateUIBalances(); 
+                        
+                        currentAds = await getAdsForCategory('web');
+                        if (currentAds.length === 0) {
+                             stopAdCycle();
+                             document.getElementById('ad-status').textContent = 'No Ads Available. Campaign Ended.';
+                             document.getElementById('ad-timer').textContent = '00';
+                             return;
                         }
-                    } else if (category.startsWith('yt')) {
-                         console.log("Simulating next video. This would load a new video/session.");
-                         // For YouTube, we just reset the current session simulation
-                         startYoutubeCycle(category, currentAds[0].url);
+                        
+                        currentAdIndex = (currentAdIndex + 1) % currentAds.length;
+                        const ad = currentAds[currentAdIndex];
+                        document.getElementById('ad-iframe').src = createIframeContent(ad.url); 
+                        document.getElementById('ad-status').textContent = `Viewing Ad: ${ad.title} (${ad.url.substring(0, 30)}...)`;
+                        adTimerSeconds = WEB_DURATION;
+                        document.getElementById('btn-earn-next').disabled = true;
+                        
+                    } else {
+                        console.warn('You must view the ad for at least 5 seconds before skipping.');
                     }
                 };
             }
-            
-             // Helper function for the skip button logic
-            const loadNextAd = () => {
-                if (!currentAds.length) return;
-                currentAdIndex = (currentAdIndex + 1) % currentAds.length;
-                const ad = currentAds[currentAdIndex];
-                
-                document.getElementById('ad-iframe').src = ad.url;
-                document.getElementById('ad-status').textContent = `Viewing Ad: ${ad.title} (${ad.url.substring(0, 30)}...)`;
-                adTimerSeconds = WEB_DURATION;
-                document.getElementById('btn-earn-next').disabled = true;
-            };
+        };
+        
+        // --- YouTube Earning Cycle ---
+
+        let updateYoutubeStats = null;
+        const startYoutubeTimer = () => {
+            if (adCyclePaused) {
+                // Timer will be restarted by checkVisibility when focus returns
+                return; 
+            }
+            earningInterval = setInterval(updateYoutubeStats, 1000);
+            console.log("Youtube timer resumed/started.");
         }
         
-        // Updated startYoutubeCycle to accept the video URL
-        const startYoutubeCycle = (category, videoUrl) => {
+        const setupYtEarningPage = async (category) => {
             stopAdCycle();
             
             const isViews = category === 'ytviews';
@@ -755,38 +740,48 @@
             const adTimerEl = document.getElementById('ad-timer');
             const statusEl = document.getElementById('ad-status');
             const iframe = document.getElementById('ad-iframe'); 
+            const ytPromoAd = HARDCODED_ADS.find(ad => ad.category === 'yt');
             
-            // Set the iframe source to the required YouTube link
-            iframe.src = videoUrl;
+            if (!ytPromoAd) {
+                 statusEl.textContent = 'YouTube Promo Link Configuration Missing.';
+                 return;
+            }
+
+            // Set the iframe source to the YouTube link (autoplay/controls enabled, not muted)
+            iframe.src = ytPromoAd.url;
             
             statusEl.textContent = isViews 
-                ? `Video Playing. Views are counting! (Link: ${HARDCODED_ADS.find(a => a.category === 'yt').url})` 
-                : `Video Playing. Watch Time is counting! (Link: ${HARDCODED_ADS.find(a => a.category === 'yt').url})`;
+                ? `Video Playing. Views are counting! (Link: ${ytPromoAd.url.substring(0, 30)})` 
+                : `Video Playing. Watch Time is counting! (Link: ${ytPromoAd.url.substring(0, 30)})`;
 
-            document.getElementById('btn-earn-next').disabled = false;
+            document.getElementById('btn-earn-next').textContent = "Next Video (Simulated)";
+            document.getElementById('btn-earn-next').onclick = () => setupYtEarningPage(category);
             
             let ytCounter = 0; 
 
-            const updateYoutubeStats = async () => {
+            // Timer logic function
+            updateYoutubeStats = async () => {
                 ytCounter++;
 
                 if (isViews) {
                     adTimerEl.textContent = `${duration - (ytCounter % duration)}s to Next View`;
                     if (ytCounter % duration === 0) {
                          const newViews = userData.ytViews + 1;
+                         // The view count is saved every time a view is earned
                          await updateDoc(getUserDocRef(currentUserId), { ytViews: newViews });
                          userData.ytViews = newViews; 
                          updateUIBalances();
-                         console.log("YouTube View incremented.");
+                         console.log("YouTube View incremented and saved.");
                     }
-                } else { // ytwatch
+                } else { // ytwatch (Watch Time)
                     const totalSeconds = (userData.ytHours * 3600) + (userData.ytMinutes * 60) + userData.ytSeconds + 1;
                     const h = Math.floor(totalSeconds / 3600);
                     const m = Math.floor((totalSeconds % 3600) / 60);
                     const s = totalSeconds % 60;
                     
-                    adTimerEl.textContent = `${h}h ${m}m ${s}s Earned`;
+                    adTimerEl.textContent = `${h}h ${m}m ${s}s Earned (Saving every 10s)`;
                     
+                    // Only save to DB every 10 seconds to reduce writes
                     if (totalSeconds % 10 === 0) { 
                         await updateDoc(getUserDocRef(currentUserId), { 
                             ytHours: h, 
@@ -801,37 +796,69 @@
                     }
                 }
             };
-
-            adIntervalId = setInterval(updateYoutubeStats, 1000);
-            console.log("Youtube cycle started.");
+            
+            startYoutubeTimer();
         };
 
         const setupAdLaunchPage = () => {
-            // Attach input listener for budget estimation directly after render
+            // Ad Launch Form Logic
             const budgetInput = document.getElementById('ad-budget');
             const categorySelect = document.getElementById('ad-category');
             
             if (budgetInput && categorySelect) {
-                // Initial run for the estimator
                 const updateEstimate = () => {
                     const estimateEl = document.getElementById('impression-estimate');
                     if (!estimateEl) return;
                     
                     const budget = parseInt(budgetInput.value) || 0;
                     const category = categorySelect.value;
-                    let costPer = WEB_REWARD;
-                    
-                    if (category === 'dlink') {
-                        costPer = DLINK_REWARD;
-                    }
+                    let costPer = category === 'dlink' ? DLINK_REWARD : WEB_REWARD;
                     
                     const impressions = Math.floor(budget / costPer);
-                    estimateEl.textContent = `Estimated Impressions: ${impressions.toLocaleString()} (${costPer} W-Coins per impression)`;
+                    estimateEl.textContent = `Estimated Impressions: ${impressions.toLocaleString()} (${costPer.toLocaleString()} W-Coins per impression)`;
                 };
 
                 budgetInput.oninput = updateEstimate;
                 categorySelect.onchange = updateEstimate;
-                updateEstimate(); // Initial call
+                updateEstimate(); 
+            }
+            
+            // Real-time Running Ads List
+            const listContainer = document.getElementById('running-ads-list');
+            if (listContainer) {
+                 // Listen for all ads globally
+                 const q = query(getPublicAdsCollection(), where('userId', '==', currentUserId));
+                 onSnapshot(q, (snapshot) => {
+                    let html = '<div class="space-y-4">';
+                    
+                    if (snapshot.empty) {
+                        html += '<p>No active or closed ad campaigns yet. Launch one above!</p>';
+                    } else {
+                        snapshot.docs.forEach(doc => {
+                            const ad = doc.data();
+                            const statusColor = ad.status === 'active' ? 'text-green-400' : 'text-red-400';
+                            const impressions = ad.impressions || 0;
+                            const remainingBudget = ad.budget || 0;
+                            const category = ad.category.toUpperCase();
+
+                            html += `
+                                <div class="p-3 border border-[#30363d] rounded-lg">
+                                    <p class="font-bold text-base text-white truncate">${ad.url}</p>
+                                    <p class="text-xs text-gray-400">Category: ${category} | Status: <span class="${statusColor}">${ad.status.toUpperCase()}</span></p>
+                                    <p class="text-sm mt-1">
+                                        Budget Left: <span class="text-yellow-400 font-semibold">${remainingBudget.toLocaleString()} W-Coins</span>
+                                    </p>
+                                    <p class="text-sm">
+                                        Total Impressions/Opens: <span class="font-semibold">${impressions.toLocaleString()}</span>
+                                    </p>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    html += '</div>';
+                    listContainer.innerHTML = html;
+                 }, (error) => console.error("Error fetching running ads:", error));
             }
         };
 
@@ -910,7 +937,12 @@
                 }
             });
             
-            // 2. Collect Referral Button
+            // 2. Visibility and Focus Check for Earning Security
+            window.addEventListener('blur', checkVisibility);
+            window.addEventListener('focus', checkVisibility);
+            document.addEventListener('visibilitychange', checkVisibility);
+            
+            // 3. Collect Referral Button
             document.getElementById('btn-collect-ref').onclick = async () => {
                 if (userData.refBalance > 0 && currentUserId) {
                     try {
@@ -925,12 +957,10 @@
                 }
             };
             
-            // 3. Premium Button (Simulated)
+            // 4. Premium Button (Simulated)
             document.getElementById('btn-toggle-premium').onclick = async () => {
                 if (!currentUserId) return;
                 const newStatus = !userData.isPremium;
-                
-                console.log(`Simulating premium status update to ${newStatus}.`);
                 
                 try {
                     await updateDoc(getUserDocRef(currentUserId), { isPremium: newStatus });
@@ -939,7 +969,7 @@
                 }
             };
             
-            // 4. Delegated Listeners for Dynamic Content (#tab-content)
+            // 5. Delegated Listeners for Dynamic Content (#tab-content)
             document.getElementById('tab-content').addEventListener('click', async (e) => {
                 const target = e.target;
                 
@@ -948,7 +978,6 @@
                     e.preventDefault(); 
                     if (!currentUserId) return;
                     
-                    // Open the specific direct link in a new tab
                     window.open(DIRECT_LINK_URL, '_blank');
                     
                     // Simulate the user completing the link view after 2 seconds
@@ -972,6 +1001,8 @@
                     
                     if (budget > userData.wCoins) return console.error("Budget exceeds your W-Coins balance.");
                     if (budget < 500) return console.error("Minimum budget is 500 W-Coins.");
+
+                    const costPerImpression = category === 'dlink' ? DLINK_REWARD : WEB_REWARD;
                     
                     // Deduct budget from W-Coins and create ad document
                     try {
@@ -986,12 +1017,13 @@
                             initialBudget: budget,
                             budget: budget,
                             impressions: 0,
-                            costPerImpression: category === 'dlink' ? DLINK_REWARD : WEB_REWARD,
+                            costPerImpression: costPerImpression,
                             status: 'active',
                             createdAt: new Date().toISOString()
                         });
                         
                         console.log(`Ad campaign launched successfully! ${budget} W-Coins deducted.`);
+                        // Navigate to Ad Launch tab and re-render
                         changeTab('adlaunch'); 
                         
                     } catch (e) {
@@ -1000,12 +1032,25 @@
                 }
             });
         };
+        
+        // Helper function for web traffic iframe content
+        const createIframeContent = (url) => {
+            const base64Content = btoa(`
+                <body style="background:#0d1117; color:#c9d1d9; font-family:Inter, sans-serif; padding:20px; text-align:center;">
+                    <h2 style="color:#FFD700;">Ad Display Simulation</h2>
+                    <p>Website is blocked from embedding due to security policies (X-Frame-Options/CSP).</p>
+                    <p>Generating traffic for:</p>
+                    <a href="${url}" target="_blank" style="color:#2d82ff; text-decoration:underline;">${url}</a>
+                    <p style="margin-top:20px; font-size:small; color:#8b949e;">Keep this tab active for the duration to earn coins.</p>
+                </body>
+            `);
+            return `data:text/html;base64,${base64Content}`;
+        }
 
         // Initialize the app
         window.onload = () => {
             initAuthListeners();
             initGlobalListeners();
-            // Removed startPromoTimer() call as requested.
         };
 
     </script>
