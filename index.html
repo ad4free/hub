@@ -1,192 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ad4U - User Dashboard</title>
-  <script type="module">
-    // Firebase SDK
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad4U Dashboard</title>
 
-    // Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
-      authDomain: "ad-4-u.firebaseapp.com",
-      projectId: "ad-4-u",
-      storageBucket: "ad-4-u.firebasestorage.app",
-      messagingSenderId: "775864010731",
-      appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
-      measurementId: "G-3R9DDSM2XK"
-    };
+<!-- TailwindCSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-    // Global user object
-    let currentUser = null;
-    let userDocRef = null;
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
+  authDomain: "ad-4-u.firebaseapp.com",
+  projectId: "ad-4-u",
+  storageBucket: "ad-4-u.firebasestorage.app",
+  messagingSenderId: "775864010731",
+  appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
+  measurementId: "G-3R9DDSM2XK"
+};
 
-    // -------------------------------
-    // AUTHENTICATION
-    // -------------------------------
-    const loginBtn = document.getElementById('login-btn');
-    const logoutBtn = document.getElementById('logout-btn');
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    loginBtn.addEventListener('click', async () => {
-      const provider = new GoogleAuthProvider();
-      try {
+// Global variables
+let currentUser = null;
+let userDocRef = null;
+
+// ------------------ AUTH ------------------
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+
+loginBtn.addEventListener('click', async () => {
+    const provider = new GoogleAuthProvider();
+    try {
         const result = await signInWithPopup(auth, provider);
         currentUser = result.user;
         await initUser();
-      } catch (err) {
-        alert(err.message);
-      }
-    });
+    } catch (err) { alert(err.message); }
+});
 
-    logoutBtn.addEventListener('click', async () => {
-      await signOut(auth);
-      location.reload();
-    });
+logoutBtn.addEventListener('click', async () => { await signOut(auth); location.reload(); });
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        await initUser();
-      } else {
-        document.getElementById('auth-section').style.display = 'block';
-        document.getElementById('dashboard').style.display = 'none';
-      }
-    });
+onAuthStateChanged(auth, async (user) => {
+    if(user){ currentUser = user; await initUser(); }
+    else { document.getElementById('auth-section').style.display='block'; document.getElementById('dashboard').style.display='none'; }
+});
 
-    // -------------------------------
-    // INITIALIZE USER DOCUMENT
-    // -------------------------------
-    async function initUser() {
-      document.getElementById('auth-section').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      userDocRef = doc(db, 'users', currentUser.uid);
-      const docSnap = await getDoc(userDocRef);
+// ------------------ INIT USER ------------------
+async function initUser(){
+    document.getElementById('auth-section').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    userDocRef = doc(db, 'users', currentUser.uid);
+    const docSnap = await getDoc(userDocRef);
 
-      if (!docSnap.exists()) {
-        // New user
-        await setDoc(userDocRef, {
-          email: currentUser.email,
-          displayName: currentUser.displayName,
-          username: currentUser.displayName,
-          role: "free",
-          plan: "none",
-          premium_expiry: null,
-          coins: { usable: 0, pending: 0 },
-          W_coins: 0,
-          D_coins: 0,
-          yt_views: 0,
-          yt_watch_seconds: 0,
-          referrer: null,
-          createdAt: serverTimestamp()
+    if(!docSnap.exists()){
+        await setDoc(userDocRef,{
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            username: currentUser.displayName,
+            role:"free",
+            plan:"none",
+            premium_expiry:null,
+            coins:{usable:0,pending:0},
+            W_coins:0,
+            D_coins:0,
+            yt_views:0,
+            yt_watch_seconds:0,
+            referrer:null,
+            createdAt:serverTimestamp()
         });
-      }
+    }
 
-      // Listen live updates
-      onSnapshot(userDocRef, (docSnap) => {
+    onSnapshot(userDocRef,(docSnap)=>{
         const data = docSnap.data();
+        window.userData = data;
         document.getElementById('displayName').innerText = data.displayName;
         document.getElementById('coins').innerText = data.coins.usable;
         document.getElementById('W_coins').innerText = data.W_coins;
         document.getElementById('D_coins').innerText = data.D_coins;
         document.getElementById('yt_views').innerText = data.yt_views;
         document.getElementById('yt_watch_seconds').innerText = data.yt_watch_seconds;
-        document.getElementById('premiumStatus').innerText = (data.role === "premium") ? "Premium ✅" : "Free ❌";
-      });
-    }
+        document.getElementById('premiumStatus').innerText = (data.role==="premium")?"Premium ✅":"Free ❌";
+    });
+}
 
-    // -------------------------------
-    // EARN COINS FUNCTION (WEB TRAFFIC EXAMPLE)
-    // -------------------------------
-    let currentIframe = 0;
-    const webAds = ["http://cludymovie.com/", "http://newswithsk.com/"];
-    const iframeEl = document.getElementById('web-iframe');
-    const timerEl = document.getElementById('web-timer');
+// ------------------ UTILITY ------------------
+function incrementField(field,value){ return {[field]: increment(value)}; }
 
-    function startWebAds() {
-      iframeEl.src = webAds[currentIframe];
-      let seconds = 15;
-      timerEl.innerText = seconds;
+// ------------------ TAB SWITCH ------------------
+function openTab(evt, tabName){
+    const tabs = document.getElementsByClassName('tab-content');
+    for(let t of tabs) t.style.display='none';
+    const tabBtns = document.getElementsByClassName('tab-btn');
+    for(let b of tabBtns) b.classList.remove('bg-blue-600','text-white');
+    document.getElementById(tabName).style.display='block';
+    evt.currentTarget.classList.add('bg-blue-600','text-white');
+}
 
-      const interval = setInterval(async () => {
+// ------------------ WEB TRAFFIC ------------------
+let currentIframe = 0;
+const webAds = ["http://cludymovie.com/","http://newswithsk.com/"];
+const iframeEl = document.getElementById('web-iframe');
+const timerEl = document.getElementById('web-timer');
+
+function startWebAds(){
+    iframeEl.src = webAds[currentIframe];
+    let seconds = 15;
+    timerEl.innerText = seconds;
+    const interval = setInterval(async ()=>{
         seconds--;
         timerEl.innerText = seconds;
-        if (seconds <= 0) {
-          clearInterval(interval);
-          // Add 500 W_coins
-          await updateDoc(userDocRef, {
-            W_coins: incrementField('W_coins', 500),
-            'coins.usable': incrementField('coins.usable', 500)
-          });
-          // Next iframe
-          currentIframe = (currentIframe + 1) % webAds.length;
-          startWebAds();
+        if(seconds<=0){
+            clearInterval(interval);
+            await updateDoc(userDocRef,{
+                W_coins: increment(500),
+                'coins.usable': increment(500)
+            });
+            currentIframe = (currentIframe+1)%webAds.length;
+            startWebAds();
         }
-      }, 1000);
-    }
+    },1000);
+}
 
-    // Helper for incrementing numeric fields safely
-    function incrementField(field, value) {
-      return { [field]: (currentUserData()[field] || 0) + value };
-    }
+// ------------------ PREMIUM CHART ------------------
+function renderPremiumChart(){
+    const ctx = document.getElementById('premiumChart').getContext('2d');
+    new Chart(ctx,{
+        type:'bar',
+        data:{
+            labels:['Free','Premium'],
+            datasets:[{
+                label:'Benefits',
+                data:[50,100],
+                backgroundColor:['#888','#1a73e8']
+            }]
+        },
+        options:{plugins:{legend:{display:false}},responsive:true}
+    });
+}
+</script>
 
-    function currentUserData() {
-      return window.userData || {};
-    }
-
-  </script>
-
-  <style>
-    body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 0; padding: 0; }
-    header { background: #1a73e8; color: white; padding: 1rem; text-align: center; }
-    #dashboard { display: none; padding: 1rem; }
-    #auth-section { display: none; text-align: center; margin-top: 50px; }
-    button { padding: 0.5rem 1rem; margin: 0.5rem; cursor: pointer; }
-    iframe { width: 100%; height: 300px; border: none; margin-top: 1rem; }
-    .stats { display: flex; justify-content: space-around; margin-top: 1rem; }
-    .card { background: white; padding: 1rem; border-radius: 8px; width: 18%; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
-  </style>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:white;margin:0;padding:0;}
+header{background:#1a73e8;padding:1rem;display:flex;justify-content:space-between;align-items:center;}
+header h1{font-weight:bold;font-size:1.5rem;}
+button{padding:0.5rem 1rem;border-radius:6px;font-weight:bold;cursor:pointer;}
+.card{background:#1e293b;padding:1rem;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.3);text-align:center;transition:transform 0.3s;}
+.card:hover{transform:translateY(-5px);}
+.stats{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem;}
+.tabs{display:flex;gap:1rem;margin-top:1rem;}
+.tab-btn{padding:0.5rem 1rem;border-radius:6px;background:#1e293b;cursor:pointer;transition:0.3s;}
+.tab-btn:hover{background:#2563eb;color:white;}
+.tab-content{display:none;margin-top:1rem;}
+iframe{width:100%;height:300px;border:none;border-radius:10px;margin-top:1rem;}
+</style>
 </head>
-<body>
 
+<body>
 <header>
-  <h1>Ad4U Dashboard</h1>
-  <button id="login-btn">Login with Google</button>
-  <button id="logout-btn">Logout</button>
+    <h1>Ad4U Dashboard</h1>
+    <div>
+        <span id="displayName"></span>
+        <button id="login-btn">Login</button>
+        <button id="logout-btn">Logout</button>
+    </div>
 </header>
 
-<!-- AUTH -->
-<div id="auth-section">
-  <h2>Please Login to Continue</h2>
+<div id="auth-section" class="text-center mt-20"><h2>Please Login</h2></div>
+
+<div id="dashboard" class="p-4">
+    <!-- Stats Cards -->
+    <div class="stats">
+        <div class="card">Coins: <span id="coins">0</span></div>
+        <div class="card">Web Traffic: <span id="W_coins">0</span></div>
+        <div class="card">Direct Links: <span id="D_coins">0</span></div>
+        <div class="card">YT Views: <span id="yt_views">0</span></div>
+        <div class="card">YT Watch Sec: <span id="yt_watch_seconds">0</span></div>
+        <div class="card">Premium: <span id="premiumStatus">Free ❌</span></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab-btn bg-blue-600 text-white" onclick="openTab(event,'webTraffic')">Web Traffic</div>
+        <div class="tab-btn" onclick="openTab(event,'directLinks')">Direct Links</div>
+        <div class="tab-btn" onclick="openTab(event,'youtube')">YouTube</div>
+        <div class="tab-btn" onclick="openTab(event,'referrals')">Referrals</div>
+        <div class="tab-btn" onclick="openTab(event,'premium')">Premium</div>
+    </div>
+
+    <!-- Web Traffic -->
+    <div id="webTraffic" class="tab-content" style="display:block">
+        <h2>Web Traffic Ads</h2>
+        <iframe id="web-iframe"></iframe>
+        <p>Time remaining: <span id="web-timer">0</span> sec</p>
+        <button onclick="startWebAds()">Start Earning</button>
+    </div>
+
+    <!-- Direct Links -->
+    <div id="directLinks" class="tab-content">
+        <h2>Direct Links</h2>
+        <p>Coming soon (swipeable links & coin rewards)</p>
+    </div>
+
+    <!-- YouTube -->
+    <div id="youtube" class="tab-content">
+        <h2>YouTube Watch</h2>
+        <p>Coming soon (iframe videos with live tracking)</p>
+    </div>
+
+    <!-- Referrals -->
+    <div id="referrals" class="tab-content">
+        <h2>Referral System</h2>
+        <p>Coming soon (invite link, lifetime 15% commission)</p>
+    </div>
+
+    <!-- Premium -->
+    <div id="premium" class="tab-content">
+        <h2>Premium Upgrade</h2>
+        <canvas id="premiumChart" width="400" height="200"></canvas>
+        <button onclick="alert('Premium Upgrade API integration coming soon!')">Buy Now</button>
+    </div>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard">
-  <h2>Welcome, <span id="displayName"></span></h2>
-  <div class="stats">
-    <div class="card">Coins: <span id="coins">0</span></div>
-    <div class="card">Web Traffic: <span id="W_coins">0</span></div>
-    <div class="card">Direct Links: <span id="D_coins">0</span></div>
-    <div class="card">YT Views: <span id="yt_views">0</span></div>
-    <div class="card">YT Watch Sec: <span id="yt_watch_seconds">0</span></div>
-    <div class="card">Premium: <span id="premiumStatus">Free ❌</span></div>
-  </div>
-
-  <h3>Web Traffic Ads</h3>
-  <iframe id="web-iframe"></iframe>
-  <p>Time remaining: <span id="web-timer">0</span> sec</p>
-
-  <button onclick="startWebAds()">Start Earning Coins</button>
-
-</div>
-
+<script>renderPremiumChart();</script>
 </body>
 </html>
