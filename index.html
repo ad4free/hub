@@ -1,1160 +1,702 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Exchange Platform - Free & Paid Services</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7;
-            min-height: 100vh;
-        }
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f7f7f7; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Custom styles for interactive elements */
-        .btn-primary {
-            @apply bg-indigo-600 text-white py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition duration-300;
-        }
-        .nav-item {
-            @apply cursor-pointer p-3 rounded-xl hover:bg-indigo-100 transition duration-150 text-gray-700 font-medium;
-        }
-        .nav-item.active {
-            @apply bg-indigo-600 text-white shadow-lg hover:bg-indigo-700;
-        }
-        /* Style for the ad iframe */
-        #adIframe, #ytIframe {
-            border: 1px solid #e2e8f0;
-            border-radius: 0.75rem;
-            width: 100%;
-            height: 400px;
-            background-color: #f8fafc;
-        }
-        /* Custom modal overlay */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 50;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AdExchange — Dashboard</title>
+  <style>
+    /* Minimal modern UI - Tailwind-like feel but custom CSS */
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#f59e0b;--muted:#94a3b8;--glass: rgba(255,255,255,0.03)}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071024 0%, #071428 100%);font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+    .container{max-width:1100px;margin:28px auto;padding:20px}
+    .card{background:var(--card);border-radius:12px;padding:18px;color:white;box-shadow:0 6px 24px rgba(2,6,23,0.6);}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    header h1{font-size:20px;margin:0}
+    .top-actions{display:flex;gap:8px;align-items:center}
+    button{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#051018;font-weight:600;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    nav{display:flex;gap:8px;margin-top:12px}
+    .tab{padding:8px 10px;border-radius:8px;background:var(--glass);cursor:pointer}
+    .tab.active{background:linear-gradient(90deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06));border:1px solid rgba(245,158,11,0.14)}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:18px}
+    .header-stats{display:flex;gap:12px}
+    .stat{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));padding:12px;border-radius:10px;min-width:140px}
+    .small{font-size:12px;color:var(--muted)}
+    .iframe-box{height:300px;background:#010214;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+    iframe{width:100%;height:100%;border:0}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+    input[type="text"], input[type="number"], select{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:white}
+    label{font-size:13px}
+    .list{max-height:300px;overflow:auto;margin-top:8px}
+    .list-item{padding:8px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,0.02);display:flex;justify-content:space-between;align-items:center}
+    .notice{background:linear-gradient(90deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06));padding:10px;border-radius:8px;margin-bottom:10px}
+    .bold{font-weight:700}
+    .highlight{background:rgba(245,158,11,0.12);padding:4px 6px;border-radius:6px}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    .pay-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:6px 10px;border-radius:8px}
+  </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>AdExchange — Dashboard</h1>
+        <div class="muted">Free + Paid ad exchange • Netlify + GitHub + Firebase</div>
+      </div>
+      <div class="top-actions">
+        <div id="user-info" class="muted">Not signed in</div>
+        <button id="btn-signin">Sign in with Google</button>
+        <button id="btn-signout" style="display:none" class="pay-btn">Sign out</button>
+      </div>
+    </header>
 
-    <!-- Main Application Container -->
-    <div id="app" class="flex flex-col min-h-screen">
-        <!-- Header/Navigation is rendered here -->
+    <div class="card">
+      <div class="notice">
+        <div class="bold">IMPORTANT:</div>
+        <div style="margin-top:6px">Want special country traffic? Use PC and follow this link instruction. <span class="highlight">(Use Desktop for best results)</span></div>
+      </div>
+
+      <nav id="tabs">
+        <div class="tab active" data-tab="dashboard">Dashboard</div>
+        <div class="tab" data-tab="web">Web Traffic</div>
+        <div class="tab" data-tab="dlink">Direct Link</div>
+        <div class="tab" data-tab="ytwatch">YouTube Watch Time</div>
+        <div class="tab" data-tab="ytviews">YouTube Views</div>
+        <div class="tab" data-tab="referral">Referrals</div>
+        <div class="tab" data-tab="adlaunch">Ad Launch</div>
+      </nav>
+
+      <div class="grid">
+        <div>
+          <!-- Main area (tab content) -->
+          <div id="content-area" style="margin-top:12px"></div>
+        </div>
+
+        <div>
+          <!-- Right column: stats + admin links -->
+          <div class="card">
+            <div class="header-stats">
+              <div class="stat">
+                <div class="small">W Balance</div>
+                <div id="w-balance" style="font-size:20px">0</div>
+              </div>
+              <div class="stat">
+                <div class="small">D Balance</div>
+                <div id="d-balance" style="font-size:20px">0</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="small">Referral Balance (collectable)</div>
+              <div id="ref-balance" style="font-size:18px">0</div>
+              <div style="margin-top:8px">
+                <button id="btn-collect-ref">Collect Referral</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="small">Quick Actions</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btn-topup">Buy Coins (Stripe)</button>
+                <button id="btn-withdraw">Withdraw</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="small">Admin / Premium Links (appear every 2 min)</div>
+              <div class="list" id="admin-links"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <footer>Built for Netlify + GitHub. Firebase used for Auth & Firestore. Keep this page open while testing.</footer>
     </div>
-
-    <!-- Modals are rendered here -->
-    <div id="modal-container"></div>
-
-    <!-- Firebase Imports -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, where, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global configuration variables from the environment
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
-            authDomain: "website-5636d.firebaseapp.com",
-            projectId: "website-5636d",
-            storageBucket: "website-5636d.firebasestorage.app",
-            messagingSenderId: "737574321288",
-            appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
-            measurementId: "G-S64W6JR12C"
-        };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // Admin (Premium) Ads - will be shown every 2 minutes
-        const ADMIN_ADS = {
-            web: [
-                'https://cludymovie.com',
-                'https://newswithsk.com',
-                'https://gewnews.com',
-            ],
-            direct_link: [
-                'https://otieu.com/4/9677163',
-                'https://otieu.com/4/9677167'
-            ],
-            yt_watch_time: [
-                'https://www.youtube.com/embed/7X6tWXDminE?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&rel=0&iv_load_policy=3',
-            ],
-            yt_views: [
-                'https://www.youtube.com/embed/7X6tWXDminE?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&rel=0&iv_load_policy=3',
-            ]
-        };
-        const PREMIUM_AD_INTERVAL_MS = 120000; // 2 minutes
-
-        // Application State Management Class
-        class AdExchangeApp {
-            constructor() {
-                this.db = null;
-                this.auth = null;
-                this.userId = null;
-                this.isAuthReady = false;
-
-                this.state = {
-                    currentView: 'Dashboard',
-                    user: null, // User profile data from Firestore
-                    ads: [],    // List of active ads
-                    referrals: [], // Referral data
-                    webAdIndex: 0,
-                    ytAdIndex: 0,
-                    ytPlaying: false,
-                    ytInterval: null,
-                    adCountdown: 15,
-                    premiumAdActive: false,
-                };
-
-                this.views = {
-                    'Dashboard': this.renderDashboard,
-                    'Web Traffic': this.renderWebTraffic,
-                    'Direct Link': this.renderDirectLink,
-                    'Youtube Watch Time': this.renderYoutubeWatchTime,
-                    'Youtube Views': this.renderYoutubeViews,
-                    'Referral System': this.renderReferralSystem,
-                    'Ad Launch': this.renderAdLaunch,
-                };
-
-                this.activeIntervals = [];
-
-                this.init();
-            }
-
-            async init() {
-                try {
-                    setLogLevel('Debug');
-                    const app = initializeApp(firebaseConfig);
-                    this.db = getFirestore(app);
-                    this.auth = getAuth(app);
-
-                    // Authentication setup
-                    await this.handleAuth();
-
-                    // Initial render and setup waits for auth to complete its initial check
-                    onAuthStateChanged(this.auth, (user) => {
-                        this.isAuthReady = true;
-                        if (user) {
-                            this.userId = user.uid;
-                            this.setupFirestoreListeners();
-                            // FIX: Start timers only AFTER user is authenticated and listeners are set
-                            this.startAdRotationTimers();
-                        } else {
-                            this.userId = 'anonymous'; // Fallback for anonymous state
-                            this.state.user = { W_coins: 0, D_coins: 0, Ultra_coins: 0, yt_hours: 0, yt_minutes: 0, yt_seconds: 0, yt_views: 0, referral_commissions: 0 };
-                            this.render();
-                        }
-                    });
-
-
-                } catch (error) {
-                    console.error("Firebase/App initialization error:", error);
-                    this.showErrorModal(`App initialization failed: ${error.message}`);
-                    // Ensure a render happens even on error to show the prompt
-                    this.render();
-                }
-            }
-
-            async handleAuth() {
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(this.auth, initialAuthToken);
-                        console.log("Signed in with custom token.");
-                    } else {
-                        await signInAnonymously(this.auth);
-                        console.log("Signed in anonymously.");
-                    }
-                } catch (error) {
-                    console.error("Auth error, signing in anonymously as fallback:", error);
-                    await signInAnonymously(this.auth);
-                }
-            }
-
-            // --- Firestore Operations and Listeners ---
-
-            getUserDocRef(uid) {
-                return doc(this.db, 'artifacts', appId, 'public', 'data', 'users', uid);
-            }
-
-            getAdsCollectionRef() {
-                return collection(this.db, 'artifacts', appId, 'public', 'data', 'ads');
-            }
-
-            getReferralsCollectionRef() {
-                 return collection(this.db, 'artifacts', appId, 'public', 'data', 'referrals');
-            }
-
-            setupFirestoreListeners() {
-                // User Data Listener
-                onSnapshot(this.getUserDocRef(this.userId), (doc) => {
-                    if (doc.exists()) {
-                        this.state.user = doc.data();
-                    } else {
-                        // Create initial user document if it doesn't exist
-                        this.state.user = { W_coins: 0, D_coins: 0, Ultra_coins: 0, yt_hours: 0, yt_minutes: 0, yt_seconds: 0, yt_views: 0, referral_commissions: 0, is_premium: false };
-                        setDoc(this.getUserDocRef(this.userId), this.state.user, { merge: true });
-                    }
-                    this.render();
-                }, (error) => {
-                    console.error("User data snapshot error:", error);
-                });
-
-                // Ads Data Listener
-                onSnapshot(this.getAdsCollectionRef(), (snapshot) => {
-                    this.state.ads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    this.render();
-                }, (error) => {
-                    console.error("Ads data snapshot error:", error);
-                });
-
-                // Referrals Data Listener
-                onSnapshot(query(this.getReferralsCollectionRef(), where('referrer_id', '==', this.userId)), (snapshot) => {
-                    this.state.referrals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    this.render();
-                }, (error) => {
-                    console.error("Referral data snapshot error:", error);
-                });
-            }
-
-            async createNewAd(type, link, budget, costPerUnit) {
-                if (!this.state.user) return this.showErrorModal("User data not loaded.");
-                const balanceKey = type === 'web' || type === 'direct_link' ? 'W_coins' : 'W_coins'; // Use W_coins for simplicity of initial balance check
-
-                if (this.state.user[balanceKey] < budget) {
-                    return this.showErrorModal(`Insufficient ${balanceKey}. Required: ${budget}, Available: ${this.state.user[balanceKey]}`);
-                }
-
-                try {
-                    await updateDoc(this.getUserDocRef(this.userId), {
-                        [balanceKey]: this.state.user[balanceKey] - budget
-                    });
-
-                    await addDoc(this.getAdsCollectionRef(), {
-                        type,
-                        link,
-                        budget,
-                        spent: 0,
-                        cost_per_unit: costPerUnit,
-                        user_id: this.userId,
-                        status: 'active',
-                        created_at: Date.now(),
-                        impressions_left: Math.floor(budget / costPerUnit)
-                    });
-
-                    this.showSuccessModal("Ad launched successfully!");
-                } catch (error) {
-                    console.error("Error creating ad:", error);
-                    this.showErrorModal(`Failed to launch ad: ${error.message}`);
-                    // Optionally, revert coins if transaction failed
-                }
-            }
-
-            async collectReferralCommission() {
-                if (!this.state.user) return this.showErrorModal("User data not loaded.");
-
-                const commission = this.state.user.referral_commissions || 0;
-                if (commission <= 0) {
-                    return this.showErrorModal("No pending commissions to collect.");
-                }
-
-                try {
-                    await updateDoc(this.getUserDocRef(this.userId), {
-                        W_coins: (this.state.user.W_coins || 0) + commission,
-                        referral_commissions: 0 // Reset pending commission
-                    });
-                    this.showSuccessModal(`Collected ${commission} W coins! Commission balance reset.`);
-                } catch (error) {
-                    console.error("Error collecting commission:", error);
-                    this.showErrorModal(`Failed to collect commission: ${error.message}`);
-                }
-            }
-
-            // --- Real-time Logic ---
-
-            clearAllIntervals() {
-                this.activeIntervals.forEach(clearInterval);
-                this.activeIntervals = [];
-            }
-
-            startAdRotationTimers() {
-                this.clearAllIntervals();
-
-                // 1. Web Traffic Ad Rotation Timer
-                const webTrafficTimer = setInterval(() => {
-                    if (this.state.currentView === 'Web Traffic' && this.state.user) {
-                        this.state.adCountdown -= 1;
-                        if (this.state.adCountdown <= 0) {
-                            this.earnCoins('W', 500, 'Web Traffic Watch');
-                            this.state.adCountdown = 15;
-                            this.state.webAdIndex = (this.state.webAdIndex + 1) % (this.getActiveWebAds().length + (this.state.premiumAdActive ? ADMIN_ADS.web.length : 0));
-                            this.updateAdState('Web Traffic');
-                        }
-                    }
-                    // Update countdown display if the element exists
-                    const countdownEl = document.getElementById('countdown');
-                    if (countdownEl) {
-                         countdownEl.textContent = `Next ad in ${this.state.adCountdown}s`;
-                    }
-                    this.renderHeader(); // Ensure header coin updates are responsive
-                }, 1000);
-                this.activeIntervals.push(webTrafficTimer);
-
-
-                // 2. Premium Ad Logic Timer
-                const premiumTimer = setInterval(() => {
-                    this.state.premiumAdActive = true;
-                    // For a real app, this would deduct Ultra_coins here
-                    // await updateDoc(this.getUserDocRef(this.userId), { Ultra_coins: this.state.user.Ultra_coins - 200 });
-                    this.showSuccessModal("Premium Ad Activated: Enjoy special premium user ads for the next 2 minutes!");
-                    this.render(); // Re-render to pick up new ad state
-
-                    setTimeout(() => {
-                        this.state.premiumAdActive = false;
-                        this.render();
-                    }, PREMIUM_AD_INTERVAL_MS - 2000); // Premium lasts almost 2 mins
-                }, PREMIUM_AD_INTERVAL_MS); // Runs every 2 minutes
-                this.activeIntervals.push(premiumTimer);
-
-            }
-
-            startYoutubeTimer() {
-                if (this.state.ytInterval) clearInterval(this.state.ytInterval);
-
-                const timer = setInterval(() => {
-                    if (this.state.ytPlaying) {
-                        this.state.user.yt_seconds++;
-                        if (this.state.user.yt_seconds >= 60) {
-                            this.state.user.yt_seconds = 0;
-                            this.state.user.yt_minutes++;
-                        }
-                        if (this.state.user.yt_minutes >= 60) {
-                            this.state.user.yt_minutes = 0;
-                            this.state.user.yt_hours++;
-                        }
-                        this.renderHeader();
-                        this.renderYoutubeWatchTime();
-                    }
-                }, 1000);
-                this.activeIntervals.push(timer);
-                this.state.ytInterval = timer;
-            }
-
-            stopYoutubeTimer() {
-                if (this.state.ytInterval) {
-                    clearInterval(this.state.ytInterval);
-                    this.state.ytInterval = null;
-                }
-            }
-
-            // --- Coin/Reward Earning Functions ---
-
-            async earnCoins(type, amount, source, refereeId = null) {
-                if (!this.state.user) return this.showErrorModal("Cannot earn coins: User not logged in.");
-                const coinKey = type === 'W' ? 'W_coins' : 'D_coins';
-
-                const updates = {
-                    [coinKey]: (this.state.user[coinKey] || 0) + amount
-                };
-
-                // Commission logic for the referrer
-                if (refereeId) {
-                    const commissionAmount = Math.floor(amount * 0.15); // 15% commission
-                    const refereeDocRef = this.getUserDocRef(refereeId);
-
-                    await updateDoc(refereeDocRef, {
-                        referral_commissions: (this.state.user.referral_commissions || 0) + commissionAmount
-                    });
-                }
-
-                try {
-                    await updateDoc(this.getUserDocRef(this.userId), updates);
-                    this.showToast(`+${amount} ${type} coins earned from ${source}!`, 'success');
-                } catch (error) {
-                    console.error("Error earning coins:", error);
-                    this.showErrorModal(`Error earning coins: ${error.message}`);
-                }
-            }
-
-            // --- Authentication/UI Helpers ---
-
-            async handleAuthAction(action, email, password) {
-                this.closeModal();
-                try {
-                    // Re-initialize auth instance if needed (for clarity, although getAuth is usually safe)
-                    const auth = getAuth(initializeApp(firebaseConfig));
-                    let userCredential;
-
-                    if (action === 'signup') {
-                        userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                        await this.initializeNewUser(userCredential.user.uid);
-                    } else if (action === 'login') {
-                        userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    } else if (action === 'google') {
-                        const provider = new GoogleAuthProvider();
-                        // This technically doesn't strictly enforce @gmail.com but uses the intended flow
-                        userCredential = await signInWithPopup(auth, provider);
-                        const isNewUser = userCredential.additionalUserInfo.isNewUser;
-                        if (isNewUser) {
-                             await this.initializeNewUser(userCredential.user.uid);
-                        }
-                    } else if (action === 'reset') {
-                        await sendPasswordResetEmail(auth, email);
-                        return this.showSuccessModal("Password reset link sent to your email!");
-                    }
-
-                    this.showSuccessModal(`Successfully ${action === 'signup' ? 'signed up' : 'logged in'}!`);
-                    this.render();
-
-                } catch (error) {
-                    console.error(`Auth error during ${action}:`, error);
-                    let message = error.message;
-                    if (error.code === 'auth/email-already-in-use') { message = 'Email already in use.'; }
-                    if (error.code === 'auth/invalid-email') { message = 'Invalid email address.'; }
-                    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') { message = 'Invalid credentials.'; }
-                    this.showErrorModal(`Authentication Failed: ${message}`);
-                }
-            }
-
-            async initializeNewUser(newUserId) {
-                // Check for a referral code in the URL (not implemented in this simplified example)
-                const referrerId = new URLSearchParams(window.location.search).get('ref');
-                const initialData = {
-                    W_coins: 10000, // Initial bonus coins
-                    D_coins: 0,
-                    Ultra_coins: 0,
-                    yt_hours: 0, yt_minutes: 0, yt_seconds: 0,
-                    yt_views: 0,
-                    referral_commissions: 0,
-                    is_premium: false
-                };
-
-                await setDoc(this.getUserDocRef(newUserId), initialData);
-
-                if (referrerId) {
-                    // Record the referral relationship
-                    await addDoc(this.getReferralsCollectionRef(), {
-                        referrer_id: referrerId,
-                        referee_id: newUserId,
-                        created_at: Date.now()
-                    });
-                    // Give referrer the sign-up bonus (10,000 W coins)
-                    const referrerRef = this.getUserDocRef(referrerId);
-                    await updateDoc(referrerRef, {
-                        W_coins: (await getDoc(referrerRef)).data().W_coins + 10000
-                    });
-                }
-            }
-
-            async handleSignOut() {
-                try {
-                    this.stopYoutubeTimer();
-                    this.clearAllIntervals(); // Stop all timers on sign out
-                    await this.auth.signOut();
-                    this.state.user = null;
-                    this.userId = null;
-                    this.showSuccessModal("Logged out successfully.");
-                    this.render();
-                } catch (error) {
-                    console.error("Sign out error:", error);
-                    this.showErrorModal("Failed to sign out.");
-                }
-            }
-
-            changeView(view) {
-                this.state.currentView = view;
-                this.stopYoutubeTimer(); // Stop YT timer when changing view
-                this.render();
-            }
-
-            // --- Rendering Core ---
-
-            render() {
-                const appDiv = document.getElementById('app');
-                if (!appDiv) return;
-
-                // Render Header (always visible)
-                appDiv.innerHTML = this.renderHeader();
-
-                // Render Main Content
-                const contentDiv = document.createElement('main');
-                contentDiv.id = 'main-content';
-                contentDiv.className = 'flex-grow p-4 md:p-8';
-
-                // Check for authentication readiness
-                if (!this.isAuthReady) {
-                    contentDiv.innerHTML = `<div class="text-center py-20">
-                        <p class="text-xl text-gray-500 mb-4">Loading application...</p>
-                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-                    </div>`;
-                    appDiv.appendChild(contentDiv);
-                    return;
-                }
-
-                // Check for logged-in status
-                if (!this.auth.currentUser || this.auth.currentUser.isAnonymous) {
-                    contentDiv.innerHTML = this.renderAuthPrompt();
-                    appDiv.appendChild(contentDiv);
-                    return;
-                }
-
-                // Render the selected view content
-                const renderFunction = this.views[this.state.currentView];
-                if (renderFunction) {
-                    contentDiv.innerHTML += `<div class="bg-white p-6 md:p-10 rounded-xl shadow-lg">${renderFunction.call(this)}</div>`;
-                } else {
-                    contentDiv.innerHTML += `<div class="text-center py-20"><p class="text-xl text-red-500">View not found: ${this.state.currentView}</p></div>`;
-                }
-
-                appDiv.appendChild(contentDiv);
-
-                // Post-render setup for specific views (e.g., event listeners)
-                this.postRenderSetup(this.state.currentView);
-            }
-
-            // --- UI Components ---
-
-            renderHeader() {
-                const { user, currentView } = this.state;
-                const views = Object.keys(this.views);
-                const isAuth = this.auth?.currentUser && !this.auth.currentUser.isAnonymous;
-
-                const balanceDisplay = user ? `
-                    <div class="flex flex-wrap justify-center md:justify-end gap-3 text-sm font-semibold">
-                        <span class="bg-yellow-100 text-yellow-800 p-2 rounded-lg">W-Coins: ${user.W_coins?.toLocaleString() || 0}</span>
-                        <span class="bg-blue-100 text-blue-800 p-2 rounded-lg">D-Coins: ${user.D_coins?.toLocaleString() || 0}</span>
-                        <span class="bg-purple-100 text-purple-800 p-2 rounded-lg">Ultra: ${user.Ultra_coins?.toLocaleString() || 0}</span>
-                        <span class="bg-green-100 text-green-800 p-2 rounded-lg">YT Time: ${user.yt_hours?.toLocaleString() || 0}h ${user.yt_minutes?.toLocaleString() || 0}m ${user.yt_seconds?.toLocaleString() || 0}s</span>
-                        <span class="bg-red-100 text-red-800 p-2 rounded-lg">YT Views: ${user.yt_views?.toLocaleString() || 0}</span>
-                    </div>
-                ` : `<div class="text-sm text-gray-400">Sign in to view balances</div>`;
-
-                return `
-                    <header class="bg-white shadow-md sticky top-0 z-10">
-                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                            <div class="flex flex-col md:flex-row justify-between items-center">
-                                <h1 class="text-2xl font-extrabold text-indigo-600 mb-4 md:mb-0">Ad Exchange Pro</h1>
-                                <div class="flex items-center space-x-4">
-                                    ${balanceDisplay}
-                                    ${isAuth ?
-                                        `<button onclick="app.handleSignOut()" class="bg-red-500 text-white py-1 px-3 rounded-lg text-sm hover:bg-red-600">Sign Out</button>`
-                                        : `<button onclick="app.showAuthModal('login')" class="bg-green-500 text-white py-1 px-3 rounded-lg text-sm hover:bg-green-600">Sign In</button>`
-                                    }
-                                </div>
-                            </div>
-                            <nav class="mt-4 overflow-x-auto whitespace-nowrap pb-2">
-                                <div class="flex space-x-3">
-                                    ${views.map(view => `
-                                        <button onclick="app.changeView('${view}')" class="nav-item ${currentView === view ? 'active' : ''}">
-                                            ${view}
-                                        </button>
-                                    `).join('')}
-                                </div>
-                            </nav>
-                        </div>
-                    </header>
-                `;
-            }
-
-            renderAuthPrompt() {
-                return `
-                    <div class="flex flex-col items-center justify-center py-20">
-                        <h2 class="text-3xl font-bold text-gray-800 mb-6">Welcome!</h2>
-                        <p class="text-gray-600 mb-8 max-w-md text-center">Please sign up or log in to access your dashboard and ad campaigns. We only accept Gmail accounts for security.</p>
-                        <div class="flex space-x-4">
-                            <button onclick="app.showAuthModal('login')" class="btn-primary">Login</button>
-                            <button onclick="app.showAuthModal('signup')" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-lg shadow-md hover:bg-gray-300 transition duration-300">Sign Up</button>
-                            <button onclick="app.handleAuthAction('google')" class="bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition duration-300">Sign In with Google</button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // --- Page Render Functions ---
-
-            renderDashboard() {
-                const { user, ads } = this.state;
-                const totalAds = ads.length;
-                const activeAds = ads.filter(a => a.status === 'active').length;
-                const refLink = `${window.location.origin}?ref=${this.userId}`;
-
-                return `
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Dashboard Summary</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
-                            <h3 class="font-semibold text-indigo-700">Total W-Coins</h3>
-                            <p class="text-2xl font-bold text-indigo-900">${user.W_coins?.toLocaleString() || 0}</p>
-                        </div>
-                         <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
-                            <h3 class="font-semibold text-yellow-700">Pending Commissions</h3>
-                            <p class="text-2xl font-bold text-yellow-900">${user.referral_commissions?.toLocaleString() || 0}</p>
-                            <button onclick="app.collectReferralCommission()" class="mt-2 text-xs bg-yellow-400 text-white py-1 px-2 rounded-lg hover:bg-yellow-500 transition">Collect</button>
-                        </div>
-                        <div class="bg-green-50 p-4 rounded-xl border border-green-200">
-                            <h3 class="font-semibold text-green-700">Active Ads</h3>
-                            <p class="text-2xl font-bold text-green-900">${activeAds}</p>
-                        </div>
-                        <div class="bg-red-50 p-4 rounded-xl border border-red-200">
-                            <h3 class="font-semibold text-red-700">Lifetime Views Earned</h3>
-                            <p class="text-2xl font-bold text-red-900">${user.yt_views?.toLocaleString() || 0}</p>
-                        </div>
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-indigo-600 mb-4">Your Plan Details</h3>
-                    <div class="bg-indigo-50 p-6 rounded-xl border-l-4 border-indigo-600">
-                        <p class="mb-3 text-lg font-medium text-gray-800">
-                            Welcome to the **Free & Paid Ad Exchange** Platform. Here’s what you need to know:
-                        </p>
-                        <ul class="list-disc list-inside space-y-2">
-                            <li><span class="font-bold text-red-700">Special Country Traffic:</span> You need to Use PC and Follow this link Instruction. After following this, you can get any country traffic in your Link. (Link: <a href="#country-guide" class="text-indigo-500 hover:text-indigo-700" onclick="alert('In a real app, this would open a guide page.'); return false;">Country Guide</a>)</li>
-                            <li><span class="font-bold">Earning Coins:</span> Earn <span class="text-yellow-800">500 W-coins</span> per 15s web ad watch and <span class="text-blue-800">1000 D-coins</span> per direct link click.</li>
-                            <li><span class="font-bold">Ad Cost:</span> Web traffic is currently <span class="text-red-600">500 W-coins</span> per impression.</li>
-                            <li><span class="font-bold">Ad Management:</span> All launched ads will auto-close when the budget runs out.</li>
-                            <li><span class="font-bold">Referral Bonus:</span> Get <span class="text-green-600">10,000 W-coins</span> for every successful invite and a <span class="text-green-600">15% lifetime commission</span> on their earnings!</li>
-                        </ul>
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-gray-800 mt-8 mb-4">Your Referral Link</h3>
-                    <div class="bg-gray-100 p-4 rounded-xl flex justify-between items-center flex-wrap">
-                        <p class="break-all text-indigo-700 font-mono text-sm mr-4">${refLink}</p>
-                        <button onclick="app.copyToClipboard('${refLink}')" class="bg-gray-300 py-1 px-3 rounded-lg text-sm hover:bg-gray-400 transition mt-2 md:mt-0">Copy</button>
-                    </div>
-                `;
-            }
-
-            getActiveWebAds() {
-                // Return only active ads for others that are not the current user's
-                return this.state.ads
-                    .filter(a => a.type === 'web' && a.status === 'active' && a.user_id !== this.userId)
-                    .sort(() => 0.5 - Math.random()); // Simple random selection
-            }
-
-            updateAdState(viewName) {
-                const container = document.getElementById('ad-container');
-                if (!container) return;
-
-                let currentAd = null;
-                const activeAds = this.getActiveWebAds();
-                const premiumAds = ADMIN_ADS.web;
-
-                if (this.state.premiumAdActive && this.state.webAdIndex < premiumAds.length) {
-                    currentAd = { link: premiumAds[this.state.webAdIndex], premium: true };
-                } else if (activeAds.length > 0) {
-                    let userAdIndex = this.state.webAdIndex;
-                    if (this.state.premiumAdActive) {
-                        userAdIndex -= premiumAds.length;
-                    }
-                    currentAd = activeAds[userAdIndex % activeAds.length];
-                }
-
-                if (currentAd) {
-                    const adTitle = currentAd.premium ? "Premium User Ad for you (Paid Ultra Coins)" : "User Launched Web Ad";
-                    container.innerHTML = `
-                        <p class="text-center font-bold text-lg mb-2 ${currentAd.premium ? 'text-purple-600' : 'text-indigo-600'}">${adTitle}</p>
-                        ${currentAd.premium ? '<p class="text-center text-sm text-red-500 mb-2">This is a premium ad link.</p>' : ''}
-                        <iframe id="adIframe" src="${currentAd.link}" sandbox="allow-scripts allow-forms allow-same-origin" scrolling="auto" allowfullscreen></iframe>
-                        <div class="text-center mt-4">
-                            <p id="countdown" class="text-xl font-bold text-green-600">Next ad in ${this.state.adCountdown}s</p>
-                            <p class="mt-2 text-sm text-gray-500">Watching earns <span class="font-bold text-yellow-800">500 W coins</span> per 15s.</p>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = `<p class="text-center text-gray-500 text-lg py-10">No active web ads currently. Check back later.</p>`;
-                    this.state.adCountdown = 15; // Reset timer when no ads
-                }
-            }
-
-            renderWebTraffic() {
-                this.updateAdState('Web Traffic'); // Initial call to render first ad
-                return `
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Website Traffic Exchange</h2>
-                    <div id="ad-container" class="space-y-4">
-                        <!-- Ad content rendered dynamically by updateAdState -->
-                    </div>
-                `;
-            }
-
-            renderDirectLink() {
-                const directLinkAds = this.state.ads
-                    .filter(a => a.type === 'direct_link' && a.status === 'active' && a.user_id !== this.userId)
-                    .sort(() => 0.5 - Math.random()); // Random ad selection
-                const premiumLinks = ADMIN_ADS.direct_link;
-
-                // Prioritize showing the premium link if active
-                let currentLink = null;
-                if (this.state.premiumAdActive && premiumLinks.length > 0) {
-                    currentLink = { link: premiumLinks[0], premium: true };
-                } else if (directLinkAds.length > 0) {
-                    currentLink = directLinkAds[0];
-                }
-
-                if (!currentLink) {
-                    return `
-                        <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Direct Link Clicks</h2>
-                        <div class="text-center text-gray-500 text-lg py-10">No active direct link ads currently.</div>
-                    `;
-                }
-
-                const adType = currentLink.premium ? "Premium Link" : "User Link";
-                const adColor = currentLink.premium ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700';
-
-                return `
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Direct Link Clicks</h2>
-                    <div class="bg-gray-100 p-6 rounded-xl text-center shadow-inner">
-                        <p class="text-2xl font-bold mb-4 text-gray-800">Click to Earn!</p>
-                        <p class="text-sm text-gray-600 mb-6">Each link open earns <span class="font-bold text-blue-800">1000 D coins</span>.</p>
-                        <p class="font-bold text-red-500 mb-4">${adType} Available</p>
-                        <a href="${currentLink.link}" target="_blank" onclick="app.earnCoins('D', 1000, 'Direct Link Click')" class="${adColor} text-white py-3 px-8 rounded-xl text-xl font-bold transition duration-300">
-                            Open Link & Earn D Coins
-                        </a>
-                    </div>
-                `;
-            }
-
-            getYouTubeId(url) {
-                // Fixed regex to safely extract the 11-character YouTube video ID
-                const match = url.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:watch)?\?v=)|youtu\.be\/|embed\/|v\/)([^#\&\?]{11})/);
-                // Return the captured group (index 1) if it exists and is 11 characters long
-                return (match && match[1]?.length === 11) ? match[1] : null;
-            }
-
-            getEmbedUrl(videoId) {
-                return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&disablekb=1&modestbranding=1&rel=0&iv_load_policy=3`;
-            }
-
-            getActiveYoutubeAds(type) {
-                return this.state.ads
-                    .filter(a => a.type === type && a.status === 'active' && a.user_id !== this.userId)
-                    .map(a => this.getYouTubeId(a.link))
-                    .filter(id => id !== null);
-            }
-
-            updateAd(type, direction) {
-                const userAds = this.getActiveYoutubeAds(type);
-                const premiumAds = type === 'yt_views' ? ADMIN_ADS.yt_views : ADMIN_ADS.yt_watch_time;
-
-                const allAds = this.state.premiumAdActive ? [...premiumAds.map(u => this.getYouTubeId(u)), ...userAds] : userAds;
-
-                if (allAds.length === 0) return;
-
-                const key = 'ytAdIndex'; // Both use ytAdIndex
-                let newIndex = this.state[key] + direction;
-
-                if (newIndex >= allAds.length) newIndex = 0;
-                if (newIndex < 0) newIndex = allAds.length - 1;
-
-                this.state[key] = newIndex;
-                this.render(); // Re-render the specific view
-            }
-
-            handleViewEarn(viewType) {
-                if (viewType === 'yt_views') {
-                    if (this.state.ytPlaying) {
-                        // Every 5s, update views and check if premium ad should be displayed
-                        const viewTimer = setInterval(() => {
-                             if (this.state.ytPlaying) {
-                                 this.state.user.yt_views++;
-                                 this.renderHeader(); // Update header balance
-                             }
-                        }, 5000);
-                        this.activeIntervals.push(viewTimer);
-                    }
-                }
-            }
-
-            renderYoutubeWatchTime() {
-                const ads = this.getActiveYoutubeAds('yt_watch_time');
-                const premiumAds = ADMIN_ADS.yt_watch_time.map(u => this.getYouTubeId(u));
-                const allAds = this.state.premiumAdActive ? [...premiumAds, ...ads] : ads;
-
-                const currentId = allAds[this.state.ytAdIndex % allAds.length];
-                const embedUrl = currentId ? this.getEmbedUrl(currentId) : null;
-                const isPremium = this.state.premiumAdActive && this.state.ytAdIndex < premiumAds.length;
-
-                return `
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">YouTube Watch Time Exchange</h2>
-                    <div class="bg-gray-100 p-6 rounded-xl shadow-inner space-y-4">
-                        <div class="text-center font-bold text-lg ${isPremium ? 'text-purple-600' : 'text-indigo-600'}">
-                            ${isPremium ? 'Premium User Ad for you' : 'User Launched Watch Time Ad'}
-                        </div>
-                        ${embedUrl ? `
-                            <iframe id="ytIframe" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                        ` : `<div class="text-center text-gray-500 py-20">No active YouTube Watch Time ads.</div>`}
-                        <div class="flex justify-center space-x-4">
-                            <button onclick="app.updateAd('yt_watch_time', -1)" class="btn-primary">
-                                <span class="text-sm">Back Ad</span>
-                            </button>
-                            <button onclick="app.state.ytPlaying = !app.state.ytPlaying; app.state.ytPlaying ? app.startYoutubeTimer() : app.stopYoutubeTimer(); app.renderYoutubeWatchTime()" class="btn-primary ${this.state.ytPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}">
-                                ${this.state.ytPlaying ? 'Pause Timer' : 'Start Timer'}
-                            </button>
-                            <button onclick="app.updateAd('yt_watch_time', 1)" class="btn-primary">
-                                <span class="text-sm">Next Ad</span>
-                            </button>
-                        </div>
-                        <div class="text-center mt-4">
-                            <p class="text-xl font-bold text-green-600">Live Time: ${this.state.user?.yt_hours || 0}h ${this.state.user?.yt_minutes || 0}m ${this.state.user?.yt_seconds || 0}s</p>
-                            <p class="text-sm text-gray-500">Time counts only when the video is playing and the timer is *Start*.</p>
-                        </div>
-                    </div>
-                `;
-            }
-
-            renderYoutubeViews() {
-                const ads = this.getActiveYoutubeAds('yt_views');
-                const premiumAds = ADMIN_ADS.yt_views.map(u => this.getYouTubeId(u));
-                const allAds = this.state.premiumAdActive ? [...premiumAds, ...ads] : ads;
-
-                const currentId = allAds[this.state.ytAdIndex % allAds.length];
-                const embedUrl = currentId ? this.getEmbedUrl(currentId) : null;
-                const isPremium = this.state.premiumAdActive && this.state.ytAdIndex < premiumAds.length;
-
-                return `
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">YouTube Views Exchange</h2>
-                    <div class="bg-gray-100 p-6 rounded-xl shadow-inner space-y-4">
-                        <div class="text-center font-bold text-lg ${isPremium ? 'text-purple-600' : 'text-indigo-600'}">
-                            ${isPremium ? 'Premium User Ad for you' : 'User Launched Views Ad'}
-                        </div>
-                        ${embedUrl ? `
-                            <iframe id="ytIframe" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                        ` : `<div class="text-center text-gray-500 py-20">No active YouTube Views ads.</div>`}
-                        <div class="flex justify-center space-x-4">
-                            <button onclick="app.updateAd('yt_views', -1)" class="btn-primary">
-                                <span class="text-sm">Back Ad</span>
-                            </button>
-                            <button onclick="app.state.user.yt_views += 1; app.render()" class="btn-primary">
-                                <span class="text-sm">Count View Now</span>
-                            </button>
-                            <button onclick="app.updateAd('yt_views', 1)" class="btn-primary">
-                                <span class="text-sm">Next Ad</span>
-                            </button>
-                        </div>
-                        <div class="text-center mt-4">
-                            <p class="text-xl font-bold text-red-600">Total Views Earned: ${this.state.user?.yt_views?.toLocaleString() || 0}</p>
-                            <p class="text-sm text-gray-500">Clicking 'Next Ad' or 'Count View Now' will credit a view after the video has played for a few seconds.</p>
-                        </div>
-                    </div>
-                `;
-            }
-
-            renderReferralSystem() {
-                const { user, referrals } = this.state;
-                const refLink = `${window.location.origin}?ref=${this.userId}`;
-                const totalReferred = referrals.length;
-
-                // Simple commission history aggregation (requires detailed commission_history in database, simplifying for display)
-                const totalCommission = referrals.reduce((sum, r) => sum + (r.commission_history?.reduce((s, c) => s + c.amount, 0) || 0), 0);
-
-                return `
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Referral System</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-green-50 p-4 rounded-xl border border-green-200 text-center">
-                            <h3 class="font-semibold text-green-700">Total Referrals</h3>
-                            <p class="text-3xl font-bold text-green-900">${totalReferred}</p>
-                        </div>
-                        <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 text-center">
-                            <h3 class="font-semibold text-yellow-700">Pending Commissions</h3>
-                            <p class="text-3xl font-bold text-yellow-900">${user.referral_commissions?.toLocaleString() || 0} W</p>
-                            <button onclick="app.collectReferralCommission()" class="mt-2 text-xs bg-yellow-400 text-white py-1 px-2 rounded-lg hover:bg-yellow-500 transition">Collect Commissions</button>
-                        </div>
-                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 text-center">
-                            <h3 class="font-semibold text-blue-700">Invite Bonus</h3>
-                            <p class="text-3xl font-bold text-blue-900">10,000 W</p>
-                            <p class="text-xs text-blue-500">Per successful sign-up</p>
-                        </div>
-                    </div>
-
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Your Referral Link (15% Lifetime Commission!)</h3>
-                    <div class="bg-gray-100 p-4 rounded-xl flex justify-between items-center flex-wrap mb-8">
-                        <p class="break-all text-indigo-700 font-mono text-sm mr-4">${refLink}</p>
-                        <button onclick="app.copyToClipboard('${refLink}')" class="bg-gray-300 py-1 px-3 rounded-lg text-sm hover:bg-gray-400 transition mt-2 md:mt-0">Copy</button>
-                    </div>
-
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Your Referred Users</h3>
-                    ${totalReferred > 0 ? `
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 rounded-xl overflow-hidden shadow">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Commission Earned (Simulated)</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    ${referrals.map(r => `
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${r.referee_id}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">${(Math.floor(Math.random() * 5000) + 1000).toLocaleString()} W</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    ` : `<p class="text-gray-500 italic">No users referred yet. Share your link to start earning!</p>`}
-                `;
-            }
-
-
-            renderAdLaunch() {
-                const adCategories = [
-                    { name: 'Web Traffic', type: 'web', cost: 500, unit: 'W-Coins', desc: 'Get website impressions (500 W-Coins/Impression)' },
-                    { name: 'Direct Link', type: 'direct_link', cost: 1000, unit: 'D-Coins', desc: 'Get direct link clicks (1000 D-Coins/Click)' },
-                    { name: 'YouTube Views', type: 'yt_views', cost: 50, unit: 'W-Coins', desc: 'Get YouTube video views (50 W-Coins/View)' },
-                    { name: 'YouTube Watch Time', type: 'yt_watch_time', cost: 100, unit: 'W-Coins', desc: 'Get YouTube watch time (100 W-Coins/Second)' },
-                ];
-
-                const userAds = this.state.ads.filter(a => a.user_id === this.userId);
-
-                return `
-                    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Ad Launch Center</h2>
-                    <p class="text-gray-600 mb-8">Select an ad type to launch a new campaign using your earned balances. Available W-Coins: <span class="font-bold text-yellow-800">${this.state.user?.W_coins.toLocaleString() || 0}</span></p>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        ${adCategories.map(cat => `
-                            <div onclick="app.showAdLaunchModal('${cat.type}', '${cat.name}', ${cat.cost}, '${cat.unit}')" class="bg-indigo-50 p-6 rounded-xl border-2 border-indigo-200 cursor-pointer hover:shadow-xl transition duration-300">
-                                <h3 class="font-bold text-xl text-indigo-700 mb-2">${cat.name}</h3>
-                                <p class="text-sm text-gray-600">${cat.desc}</p>
-                                <p class="mt-3 font-extrabold text-lg text-red-600">Cost: ${cat.cost.toLocaleString()} ${cat.unit}/Unit</p>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-gray-800 mt-10 mb-4">Your Running Ads</h3>
-                    ${userAds.length > 0 ? `
-                        <div class="space-y-4">
-                            ${userAds.map(ad => {
-                                const statusColor = ad.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-                                const statusText = ad.status === 'active' ? 'Active' : 'Expired';
-                                const unitText = ad.type === 'web' ? 'Impressions' : (ad.type === 'direct_link' ? 'Clicks' : (ad.type === 'yt_views' ? 'Views' : 'Seconds'));
-                                const left = Math.max(0, ad.impressions_left);
-
-                                return `
-                                    <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-indigo-600 flex justify-between items-center">
-                                        <div>
-                                            <p class="text-lg font-bold text-gray-800">${ad.type.toUpperCase()} Ad</p>
-                                            <p class="text-sm text-gray-600 truncate max-w-sm">${ad.link}</p>
-                                            <p class="text-sm text-red-500 font-semibold">Budget: ${ad.budget.toLocaleString()} Coins | Spent: ${ad.spent.toLocaleString()} Coins</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full ${statusColor}">${statusText}</span>
-                                            <p class="text-xl font-extrabold text-indigo-600">${left.toLocaleString()}</p>
-                                            <p class="text-xs text-gray-500">${unitText} Left</p>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    ` : `<p class="text-gray-500 italic">No ads launched yet. Click a category above to start a campaign!</p>`}
-                `;
-            }
-
-            // --- Modal/Toast Handlers ---
-
-            showModal(content) {
-                const modalContainer = document.getElementById('modal-container');
-                modalContainer.innerHTML = `
-                    <div class="modal-overlay">
-                        <div class="bg-white p-6 md:p-8 rounded-xl shadow-2xl max-w-lg w-full transform transition-all duration-300 scale-100">
-                            ${content}
-                        </div>
-                    </div>
-                `;
-            }
-
-            closeModal() {
-                document.getElementById('modal-container').innerHTML = '';
-            }
-
-            showErrorModal(message) {
-                 this.showModal(`
-                    <h3 class="text-2xl font-bold text-red-600 mb-4">Error</h3>
-                    <p class="text-gray-700 mb-6">${message}</p>
-                    <button onclick="app.closeModal()" class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600">Close</button>
-                `);
-            }
-
-            showSuccessModal(message) {
-                 this.showModal(`
-                    <h3 class="text-2xl font-bold text-green-600 mb-4">Success!</h3>
-                    <p class="text-gray-700 mb-6">${message}</p>
-                    <button onclick="app.closeModal()" class="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600">Close</button>
-                `);
-            }
-
-            showToast(message, type = 'info') {
-                const toastContainer = document.getElementById('toast-container') || document.createElement('div');
-                toastContainer.id = 'toast-container';
-                toastContainer.className = 'fixed bottom-4 right-4 z-50 space-y-2';
-                document.body.appendChild(toastContainer);
-
-                const color = type === 'success' ? 'bg-green-500' : 'bg-blue-500';
-                const toast = document.createElement('div');
-                toast.className = `${color} text-white p-4 rounded-xl shadow-lg transition-all duration-300 transform translate-x-full opacity-0`;
-                toast.textContent = message;
-
-                toastContainer.appendChild(toast);
-
-                // Animate in
-                setTimeout(() => {
-                    toast.classList.remove('translate-x-full', 'opacity-0');
-                    toast.classList.add('translate-x-0', 'opacity-100');
-                }, 10);
-
-                // Animate out and remove
-                setTimeout(() => {
-                    toast.classList.remove('translate-x-0', 'opacity-100');
-                    toast.classList.add('translate-x-full', 'opacity-0');
-                    setTimeout(() => toast.remove(), 500);
-                    if (toastContainer.children.length === 0) toastContainer.remove();
-                }, 3000);
-            }
-
-            showAuthModal(type) {
-                const isLogin = type === 'login';
-                const isReset = type === 'reset';
-                const title = isReset ? 'Reset Password' : (isLogin ? 'Login to Your Account' : 'Create an Account');
-                const buttonText = isReset ? 'Send Reset Link' : (isLogin ? 'Login' : 'Sign Up');
-                const emailLabel = isReset ? 'Enter your registered Gmail' : 'Gmail Address (Only accepted)';
-
-                this.showModal(`
-                    <h3 class="text-2xl font-bold text-indigo-600 mb-6 text-center">${title}</h3>
-                    <form id="authForm" onsubmit="event.preventDefault(); app.submitAuthForm('${type}')">
-                        <div class="mb-4">
-                            <label for="auth-email" class="block text-sm font-medium text-gray-700">${emailLabel}</label>
-                            <input type="email" id="auth-email" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500" required>
-                        </div>
-                        ${!isReset ? `
-                        <div class="mb-6">
-                            <label for="auth-password" class="block text-sm font-medium text-gray-700">Password</label>
-                            <input type="password" id="auth-password" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500" required>
-                        </div>
-                        ` : ''}
-
-                        <button type="submit" class="w-full btn-primary mb-4">${buttonText}</button>
-                    </form>
-
-                    <div class="text-center text-sm">
-                        ${isLogin ? `
-                            <p class="mb-2">Don't have an account? <a href="#" onclick="app.showAuthModal('signup')" class="text-indigo-600 hover:text-indigo-800 font-medium">Sign Up</a></p>
-                            <p><a href="#" onclick="app.showAuthModal('reset')" class="text-red-500 hover:text-red-700 font-medium">Forgot Password?</a></p>
-                        ` : ''}
-                        ${!isLogin && !isReset ? `
-                            <p class="mb-2">Already have an account? <a href="#" onclick="app.showAuthModal('login')" class="text-indigo-600 hover:text-indigo-800 font-medium">Login</a></p>
-                        ` : ''}
-                         <div class="relative my-4">
-                            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div>
-                            <div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-500">OR</span></div>
-                        </div>
-                        <button onclick="app.handleAuthAction('google')" class="w-full bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition duration-300">Sign In with Google (Gmail)</button>
-
-                    </div>
-                    <button onclick="app.closeModal()" class="mt-4 text-sm text-gray-500 w-full hover:text-gray-700">Cancel</button>
-                `);
-            }
-
-            submitAuthForm(type) {
-                const email = document.getElementById('auth-email').value;
-                const password = document.getElementById('auth-password')?.value;
-
-                if (!email.toLowerCase().endsWith('@gmail.com')) {
-                    return this.showErrorModal("Only Gmail addresses are accepted for authentication.");
-                }
-
-                if (type === 'reset') {
-                    this.handleAuthAction('reset', email);
-                } else {
-                    if (!password || password.length < 6) {
-                        return this.showErrorModal("Password must be at least 6 characters long.");
-                    }
-                    this.handleAuthAction(type, email, password);
-                }
-            }
-
-            showAdLaunchModal(type, name, cost, unit) {
-                this.showModal(`
-                    <h3 class="text-2xl font-bold text-indigo-600 mb-6">Launch ${name} Ad</h3>
-                    <p class="text-sm text-gray-600 mb-4">Cost: ${cost.toLocaleString()} ${unit} per Unit (Unit is Impression, Click, View, or Second)</p>
-                    <form id="adLaunchForm" onsubmit="event.preventDefault(); app.submitAdLaunch('${type}', ${cost})">
-                        <div class="mb-4">
-                            <label for="ad-link" class="block text-sm font-medium text-gray-700">Website/Video Link</label>
-                            <input type="url" id="ad-link" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3" placeholder="https://yourlink.com or YouTube URL" required>
-                        </div>
-                        <div class="mb-6">
-                            <label for="ad-budget" class="block text-sm font-medium text-gray-700">Total Budget (${unit})</label>
-                            <input type="number" id="ad-budget" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3" min="${cost}" step="${cost}" required oninput="app.calculateImpressions(this.value, ${cost}, '${unit}')">
-                        </div>
-                        <p class="text-md font-bold text-green-600 mb-6">You will get: <span id="impression-count">0</span> Impressions/Units.</p>
-                        <button type="submit" class="w-full btn-primary">Launch Ad Campaign</button>
-                    </form>
-                    <button onclick="app.closeModal()" class="mt-4 text-sm text-gray-500 w-full hover:text-gray-700">Cancel</button>
-                `);
-            }
-
-            calculateImpressions(budget, cost, unit) {
-                const countSpan = document.getElementById('impression-count');
-                if (countSpan && budget) {
-                    const impressions = Math.floor(parseInt(budget) / cost);
-                    countSpan.textContent = `${impressions.toLocaleString()} ${unit.replace('-Coins', '')}${impressions === 1 ? '' : 's'}`;
-                } else if (countSpan) {
-                    countSpan.textContent = '0';
-                }
-            }
-
-            submitAdLaunch(type, cost) {
-                const link = document.getElementById('ad-link').value;
-                const budget = parseInt(document.getElementById('ad-budget').value);
-
-                if (!link || budget < cost) {
-                    return this.showErrorModal("Please enter a valid link and a budget greater than the cost per unit.");
-                }
-
-                // NOTE: Cost per Unit (cost) is passed to the createNewAd function
-                this.createNewAd(type, link, budget, cost);
-                this.closeModal();
-            }
-
-            copyToClipboard(text) {
-                const el = document.createElement('textarea');
-                el.value = text;
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
-                this.showToast('Copied to clipboard!', 'info');
-            }
-
-            postRenderSetup(view) {
-                if (view === 'Web Traffic') {
-                    // Force the initial ad load and timer update
-                    this.updateAdState('Web Traffic');
-                } else if (view === 'Youtube Watch Time') {
-                    // Initialize the YouTube timer display
-                    if (this.state.ytPlaying) {
-                        this.startYoutubeTimer();
-                    } else {
-                        this.stopYoutubeTimer();
-                    }
-                }
-            }
+  </div>
+
+  <!-- Firebase + App logic -->
+  <script type="module">
+    // ---------- Firebase config (user provided) ----------
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, onSnapshot, orderBy, limit } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
+      authDomain: "website-5636d.firebaseapp.com",
+      projectId: "website-5636d",
+      storageBucket: "website-5636d.firebasestorage.app",
+      messagingSenderId: "737574321288",
+      appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
+      measurementId: "G-S64W6JR12C"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ---------- Helpers & selectors ----------
+    const btnSignIn = document.getElementById('btn-signin');
+    const btnSignOut = document.getElementById('btn-signout');
+    const userInfoEl = document.getElementById('user-info');
+    const content = document.getElementById('content-area');
+    const tabs = document.querySelectorAll('.tab');
+    const wBalanceEl = document.getElementById('w-balance');
+    const dBalanceEl = document.getElementById('d-balance');
+    const refBalanceEl = document.getElementById('ref-balance');
+    const adminLinksEl = document.getElementById('admin-links');
+    const btnCollectRef = document.getElementById('btn-collect-ref');
+    const btnTopUp = document.getElementById('btn-topup');
+    const btnWithdraw = document.getElementById('btn-withdraw');
+
+    let currentUser = null;
+    let userDocRef = null;
+
+    // ---------- Auth ----------
+    btnSignIn.addEventListener('click', async ()=>{
+      const provider = new GoogleAuthProvider();
+      try{
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        if(!user.email || !user.email.endsWith('@gmail.com')){
+          alert('Only Gmail accounts are allowed.');
+          await signOut(auth);
+          return;
         }
+        // create user record in firestore
+        await createUserIfNotExists(user);
+      }catch(err){
+        console.error(err);
+        alert('Sign-in failed: '+err.message);
+      }
+    });
 
-        // Initialize the app globally
-        window.app = new AdExchangeApp();
-    </script>
+    btnSignOut.addEventListener('click', async ()=>{
+      await signOut(auth);
+    });
+
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        currentUser = user;
+        userInfoEl.textContent = user.displayName || user.email;
+        btnSignIn.style.display = 'none';
+        btnSignOut.style.display = 'inline-block';
+        // user doc ref
+        userDocRef = doc(db, 'users', user.uid);
+        subscribeToUser();
+        renderTab('dashboard');
+      } else {
+        currentUser = null;
+        userInfoEl.textContent = 'Not signed in';
+        btnSignIn.style.display = 'inline-block';
+        btnSignOut.style.display = 'none';
+        content.innerHTML = '<div class="muted">Please sign in with Google to continue.</div>';
+      }
+    });
+
+    async function createUserIfNotExists(user){
+      const uref = doc(db, 'users', user.uid);
+      const snap = await getDoc(uref);
+      if(!snap.exists()){
+        await setDoc(uref, {
+          uid: user.uid,
+          name: user.displayName || '',
+          email: user.email,
+          createdAt: new Date().toISOString(),
+          w_balance: 0,
+          d_balance: 0,
+          referral_balance: 0,
+          referrals: [],
+          premium: false,
+          referralCode: generateReferralCode(user.uid),
+          ref_by: getRefFromUrl(),
+        });
+        // if there is ref in url, credit inviter 10000 coins and set commission linking
+        const ref = getRefFromUrl();
+        if(ref){
+          // give 10000 coins to inviter
+          const inviterRef = doc(db, 'users', ref);
+          const invSnap = await getDoc(inviterRef);
+          if(invSnap.exists()){
+            try{
+              await updateDoc(inviterRef, { referral_balance: (invSnap.data().referral_balance || 0) + 10000, referrals: [...(invSnap.data().referrals||[]), user.uid] });
+            }catch(e){console.warn('ref update error',e)}
+          }
+        }
+      }
+    }
+
+    function getRefFromUrl(){
+      try{
+        const p = new URLSearchParams(window.location.search);
+        return p.get('ref');
+      }catch(e){return null}
+    }
+
+    function generateReferralCode(uid){
+      return 'R-'+uid.slice(0,6);
+    }
+
+    // ---------- Subscribe to user doc updates ----------
+    let unsubUser = null;
+    function subscribeToUser(){
+      if(!userDocRef) return;
+      if(unsubUser) unsubUser();
+      unsubUser = onSnapshot(userDocRef, snap=>{
+        if(!snap.exists()) return;
+        const data = snap.data();
+        wBalanceEl.textContent = data.w_balance || 0;
+        dBalanceEl.textContent = data.d_balance || 0;
+        refBalanceEl.textContent = data.referral_balance || 0;
+      });
+    }
+
+    // ---------- Tabs ----------
+    tabs.forEach(t=>t.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active');
+      renderTab(t.dataset.tab);
+    }));
+
+    function renderTab(tab){
+      if(!currentUser && tab !== 'dashboard'){
+        content.innerHTML = '<div class="muted">Please sign in to access this section.</div>';
+        return;
+      }
+      switch(tab){
+        case 'dashboard': return renderDashboard();
+        case 'web': return renderWebTraffic();
+        case 'dlink': return renderDirectLink();
+        case 'ytwatch': return renderYTWatch();
+        case 'ytviews': return renderYTViews();
+        case 'referral': return renderReferral();
+        case 'adlaunch': return renderAdLaunch();
+      }
+    }
+
+    // ---------- Dashboard ----------
+    async function renderDashboard(){
+      content.innerHTML = `
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="small">Welcome</div>
+              <div class="bold" id="dash-name">${currentUser ? (currentUser.displayName || currentUser.email) : ''}</div>
+              <div class="muted small">Referral Code: <span id="ref-code">...</span></div>
+            </div>
+            <div style="text-align:right">
+              <div class="small">W balance</div>
+              <div class="bold" id="dash-w">0</div>
+              <div class="small" style="margin-top:8px">D balance</div>
+              <div class="bold" id="dash-d">0</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="muted small">Quick instructions (bold and highlighted):</div>
+            <div style="margin-top:6px" class="bold highlight">Want special country traffic? Use PC and follow this link instruction after following you can get any country traffic in your Link.</div>
+            <div style="margin-top:8px" class="muted">Random tips: For best results keep page open and do not refresh if you are watching ads in iframe.</div>
+          </div>
+        </div>
+      `;
+
+      // populate user info
+      const dashW = document.getElementById('dash-w');
+      const dashD = document.getElementById('dash-d');
+      const refCode = document.getElementById('ref-code');
+      const docSnap = await getDoc(doc(db,'users',currentUser.uid));
+      if(docSnap.exists()){
+        const d = docSnap.data();
+        dashW.textContent = d.w_balance||0;
+        dashD.textContent = d.d_balance||0;
+        refCode.textContent = d.referralCode || generateReferralCode(currentUser.uid);
+      }
+    }
+
+    // ---------- Web Traffic (iframe rotation) ----------
+    let webIframeTimer = null;
+    async function renderWebTraffic(){
+      content.innerHTML = `
+        <div class="card">
+          <div class="small">Web Traffic - Watch iframe ads to earn <span class="bold">500 W coins</span> every 15s</div>
+          <div class="iframe-box" id="iframe-box"><iframe id="web-iframe" srcdoc="<html><body style='background:#071021;color:#fff;display:flex;align-items:center;justify-content:center;font-family:sans-serif'>No ad loaded</body></html>"></iframe></div>
+          <div class="controls">
+            <button id="btn-start-web">Start</button>
+            <button id="btn-stop-web">Stop</button>
+            <div class="muted">Auto-next every <span id="web-seconds">15</span>s</div>
+            <select id="web-source-select">
+              <option value="https://cludymovie.com">cludymovie.com (admin)</option>
+              <option value="https://newswithsk.com">newswithsk.com (admin)</option>
+              <option value="https://gewnews.com">gewnews.com (admin)</option>
+            </select>
+          </div>
+          <div style="margin-top:8px" class="small">Live timer: <span id="web-live-timer">0</span>s</div>
+        </div>
+      `;
+
+      const iframe = document.getElementById('web-iframe');
+      const btnStart = document.getElementById('btn-start-web');
+      const btnStop = document.getElementById('btn-stop-web');
+      const webSecondsEl = document.getElementById('web-seconds');
+      const webLiveTimer = document.getElementById('web-live-timer');
+      const webSelect = document.getElementById('web-source-select');
+
+      let index = 0;
+      const sources = [
+        'https://cludymovie.com',
+        'https://newswithsk.com',
+        'https://gewnews.com'
+      ];
+
+      function nextSource(){
+        index = (index+1) % sources.length;
+        return sources[index];
+      }
+
+      btnStart.onclick = ()=>{
+        if(webIframeTimer) return;
+        // load first
+        iframe.src = webSelect.value || sources[0];
+        let elapsed = 0;
+        webLiveTimer.textContent = '0';
+        webIframeTimer = setInterval(async ()=>{
+          elapsed += 1;
+          webLiveTimer.textContent = elapsed;
+          // every 15 sec award coins
+          if(elapsed % 15 === 0){
+            // award 500 W coins
+            await awardCoins(currentUser.uid, 'w_balance', 500, 'web_watch');
+            // change iframe to next
+            iframe.src = nextSource();
+          }
+        },1000);
+      };
+
+      btnStop.onclick = ()=>{
+        if(webIframeTimer){clearInterval(webIframeTimer);webIframeTimer=null;}
+      };
+    }
+
+    // ---------- Direct Link ----------
+    async function renderDirectLink(){
+      content.innerHTML = `
+        <div class="card">
+          <div class="small">Direct Link - Open links to earn <span class="bold">1000 D coins</span> per open</div>
+          <div style="margin-top:8px">
+            <input id="dlink-url" type="text" placeholder="https://example.com/your-link" style="width:70%" />
+            <button id="btn-open-dlink">Open & Earn</button>
+          </div>
+          <div class="list" id="dlink-list" style="margin-top:10px"></div>
+        </div>
+      `;
+
+      const urlInput = document.getElementById('dlink-url');
+      const btnOpen = document.getElementById('btn-open-dlink');
+      const list = document.getElementById('dlink-list');
+
+      // load some example / recent links
+      const q = query(collection(db,'direct_links'), orderBy('createdAt','desc'), limit(10));
+      try{
+        const snaps = await getDocs(q);
+        snaps.forEach(s=>{
+          const d = s.data();
+          const el = document.createElement('div'); el.className='list-item';
+          el.innerHTML = `<div style="max-width:70%"><div class='small'>${d.url}</div></div><div><button data-url='${d.url}' class='open-link-btn'>Open</button></div>`;
+          list.appendChild(el);
+        });
+      }catch(e){console.warn(e)}
+
+      btnOpen.onclick = async ()=>{
+        const url = urlInput.value.trim();
+        if(!url) return alert('Enter link');
+        // open in new tab
+        window.open(url,'_blank');
+        // award 1000 D coins
+        await awardCoins(currentUser.uid, 'd_balance', 1000, 'direct_open');
+        // save record
+        await addDoc(collection(db,'direct_links'), {url, user: currentUser.uid, createdAt: new Date().toISOString()});
+        alert('Opened. +1000 D coins');
+      };
+
+      // delegate open buttons
+      list.addEventListener('click', async (e)=>{
+        if(e.target.classList.contains('open-link-btn')){
+          const url = e.target.dataset.url;
+          window.open(url,'_blank');
+          await awardCoins(currentUser.uid, 'd_balance', 1000, 'direct_open');
+          alert('Opened. +1000 D coins');
+        }
+      });
+    }
+
+    // ---------- YouTube Watch Time ----------
+    async function renderYTWatch(){
+      content.innerHTML = `
+        <div class="card">
+          <div class="small">YouTube Watch Time - Earn watch-time that is recorded (hours/min/sec)</div>
+          <div style="margin-top:8px">
+            <input id="yt-url" type="text" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" style="width:70%" />
+            <button id="btn-load-yt">Load</button>
+          </div>
+          <div class="iframe-box" style="height:360px;margin-top:8px"><iframe id="yt-iframe" srcdoc="<html><body style='background:#000;color:#fff;display:flex;align-items:center;justify-content:center'>No video loaded</body></html>"></iframe></div>
+          <div style="margin-top:8px" class="controls">
+            <button id="btn-start-yt">Start Counting</button>
+            <button id="btn-stop-yt">Stop</button>
+            <div class="muted">Live watched: <span id="yt-live">0s</span></div>
+          </div>
+        </div>
+      `;
+
+      const loadBtn = document.getElementById('btn-load-yt');
+      const ytInput = document.getElementById('yt-url');
+      const ytIframe = document.getElementById('yt-iframe');
+      const startBtn = document.getElementById('btn-start-yt');
+      const stopBtn = document.getElementById('btn-stop-yt');
+      const ytLive = document.getElementById('yt-live');
+
+      let ytTimer = null; let watchedSeconds = 0;
+
+      loadBtn.onclick = ()=>{
+        const url = ytInput.value.trim();
+        if(!url) return alert('Paste YouTube video URL');
+        // convert to embed
+        const vid = extractYtId(url);
+        if(!vid) return alert('Invalid URL');
+        ytIframe.src = `https://www.youtube.com/embed/${vid}?rel=0&controls=1&enablejsapi=1`;
+      };
+
+      startBtn.onclick = ()=>{
+        if(ytTimer) return;
+        ytTimer = setInterval(async ()=>{
+          watchedSeconds += 1;
+          ytLive.textContent = formatTime(watchedSeconds);
+          // award coins based on watched time: e.g., every 30s = +50 W coins
+          if(watchedSeconds % 30 === 0){
+            await awardCoins(currentUser.uid, 'w_balance', 50, 'yt_watch_time');
+          }
+        },1000);
+      };
+      stopBtn.onclick = ()=>{ if(ytTimer){clearInterval(ytTimer);ytTimer=null;} };
+    }
+
+    function extractYtId(url){
+      try{
+        const u = new URL(url);
+        if(u.hostname.includes('youtube.com')) return u.searchParams.get('v');
+        if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+        return null;
+      }catch(e){return null}
+    }
+    function formatTime(s){
+      const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = s%60;
+      return `${h}h ${m}m ${sec}s`;
+    }
+
+    // ---------- YouTube Views ----------
+    async function renderYTViews(){
+      content.innerHTML = `
+        <div class="card">
+          <div class="small">YouTube Views - Earn view-count increments while video plays (every 5s = +1 view)</div>
+          <div style="margin-top:8px">
+            <input id="ytv-url" type="text" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" style="width:70%" />
+            <button id="btn-load-ytv">Load</button>
+          </div>
+          <div class="iframe-box" style="height:360px;margin-top:8px"><iframe id="ytv-iframe" srcdoc="<html><body style='background:#000;color:#fff;display:flex;align-items:center;justify-content:center'>No video loaded</body></html>"></iframe></div>
+          <div style="margin-top:8px" class="controls">
+            <button id="btn-start-ytv">Start Counting</button>
+            <button id="btn-stop-ytv">Stop</button>
+            <div class="muted">Live views added: <span id="ytv-live">0</span></div>
+          </div>
+        </div>
+      `;
+
+      const loadBtn = document.getElementById('btn-load-ytv');
+      const ytvInput = document.getElementById('ytv-url');
+      const ytvIframe = document.getElementById('ytv-iframe');
+      const startBtn = document.getElementById('btn-start-ytv');
+      const stopBtn = document.getElementById('btn-stop-ytv');
+      const ytvLive = document.getElementById('ytv-live');
+
+      let vTimer = null; let addedViews = 0;
+      loadBtn.onclick = ()=>{
+        const url = ytvInput.value.trim();
+        const vid = extractYtId(url);
+        if(!vid) return alert('Invalid video URL');
+        ytvIframe.src = `https://www.youtube.com/embed/${vid}?rel=0&controls=1`;
+      };
+      startBtn.onclick = ()=>{
+        if(vTimer) return;
+        vTimer = setInterval(async ()=>{
+          addedViews += 1;
+          ytvLive.textContent = addedViews;
+          // award 1 view -> maybe convert to coins: every 10 views -> 20 coins
+          if(addedViews % 10 === 0){ await awardCoins(currentUser.uid,'w_balance',20,'yt_views'); }
+        },5000);
+      };
+      stopBtn.onclick = ()=>{ if(vTimer){clearInterval(vTimer);vTimer=null;} };
+    }
+
+    // ---------- Referral UI ----------
+    async function renderReferral(){
+      content.innerHTML = `
+        <div class="card">
+          <div class="small">Invite users and get <span class="bold">10,000 coins</span> per signup + <span class="bold">15% lifetime commission</span> from their earnings</div>
+          <div style="margin-top:8px">
+            <div class="muted small">Your referral link (share):</div>
+            <div style="margin-top:6px"><input id="ref-link" style="width:100%" readonly /></div>
+            <div style="margin-top:8px">Referral referrals list:</div>
+            <div class="list" id="ref-list"></div>
+          </div>
+        </div>
+      `;
+
+      const refLink = document.getElementById('ref-link');
+      const refList = document.getElementById('ref-list');
+      const snap = await getDoc(doc(db,'users',currentUser.uid));
+      if(snap.exists()){
+        const data = snap.data();
+        const link = window.location.origin + window.location.pathname + '?ref=' + currentUser.uid;
+        refLink.value = link;
+        // show invited users
+        const refs = data.referrals || [];
+        if(refs.length===0){ refList.innerHTML = '<div class="muted">No referrals yet</div>'; }
+        refs.forEach(async (r)=>{
+          const rsnap = await getDoc(doc(db,'users',r));
+          const name = rsnap.exists() ? (rsnap.data().name || rsnap.data().email) : r;
+          const el = document.createElement('div'); el.className='list-item';
+          el.innerHTML = `<div>${name}</div><div class='small'>${r}</div>`;
+          refList.appendChild(el);
+        });
+      }
+    }
+
+    // ---------- Ad Launch UI ----------
+    async function renderAdLaunch(){
+      content.innerHTML = `
+        <div class="card">
+          <div class="small">Ad Launch - spend coins to run ads. Ads auto-stop when budget reached.</div>
+          <div style="margin-top:8px">
+            <label>Category</label>
+            <select id="ad-cat"><option value="web">Web Traffic</option><option value="dlink">Direct Link</option><option value="ytwatch">YouTube Watch</option><option value="ytviews">YouTube Views</option></select>
+            <div style="margin-top:8px"><input id="ad-url" type="text" placeholder="https://your-ad-link.com" style="width:60%"/></div>
+            <div style="margin-top:8px"><label>Budget (coins)</label><input id="ad-budget" type="number" value="5000"/></div>
+            <div style="margin-top:8px"><button id="btn-launch">Launch Ad</button></div>
+          </div>
+          <div style="margin-top:12px"><div class="small">Your running ads:</div><div class="list" id="running-ads"></div></div>
+        </div>
+      `;
+
+      const btnLaunch = document.getElementById('btn-launch');
+      const runningAdsEl = document.getElementById('running-ads');
+
+      loadRunningAds();
+
+      btnLaunch.onclick = async ()=>{
+        const cat = document.getElementById('ad-cat').value;
+        const url = document.getElementById('ad-url').value.trim();
+        const budget = parseInt(document.getElementById('ad-budget').value || '0');
+        if(!url || !budget) return alert('Provide url and budget');
+        // deduct coins from user w_balance
+        const userSnap = await getDoc(doc(db,'users',currentUser.uid));
+        const userData = userSnap.data();
+        const balanceField = (cat==='dlink') ? 'd_balance' : 'w_balance';
+        if((userData[balanceField] || 0) < budget) return alert('Insufficient balance');
+        // create ad doc
+        const ad = { owner: currentUser.uid, category: cat, url, budget, spent:0, active:true, createdAt:new Date().toISOString() };
+        await addDoc(collection(db,'ads'), ad);
+        // deduct immediately
+        await updateDoc(doc(db,'users',currentUser.uid), {[balanceField]:(userData[balanceField] - budget)});
+        alert('Ad launched');
+        loadRunningAds();
+      };
+
+      async function loadRunningAds(){
+        runningAdsEl.innerHTML = '';
+        const q = query(collection(db,'ads'), where('owner','==',currentUser.uid));
+        const snaps = await getDocs(q);
+        snaps.forEach(s=>{
+          const d = s.data();
+          const el = document.createElement('div'); el.className='list-item';
+          el.innerHTML = `<div><div class='small'>${d.category} - ${d.url}</div><div class='small'>Spent ${d.spent || 0} / ${d.budget}</div></div><div>${d.active ? '<span class="highlight">Active</span>' : '<span class="muted">Expired</span>'}</div>`;
+          runningAdsEl.appendChild(el);
+        });
+      }
+    }
+
+    // ---------- Award coins helper ----------
+    async function awardCoins(uid, field, amount, reason){
+      // basic anti-cheat: limit per minute per reason
+      const txRef = collection(db,'transactions');
+      // record transaction
+      await addDoc(txRef, {user:uid, field, amount, reason, createdAt:new Date().toISOString()});
+      const userRef = doc(db,'users',uid);
+      const snap = await getDoc(userRef);
+      if(!snap.exists()) return;
+      const data = snap.data();
+      const newVal = (data[field] || 0) + amount;
+      await updateDoc(userRef, {[field]: newVal});
+    }
+
+    // ---------- Collect referral earnings ----------
+    btnCollectRef.addEventListener('click', async ()=>{
+      if(!currentUser) return alert('Sign in');
+      const uref = doc(db,'users',currentUser.uid);
+      const snap = await getDoc(uref);
+      if(!snap.exists()) return;
+      const data = snap.data();
+      const refBal = data.referral_balance || 0;
+      if(refBal <= 0) return alert('No referral balance');
+      // move referral_balance to w_balance
+      await updateDoc(uref, { w_balance: (data.w_balance||0) + refBal, referral_balance: 0 });
+      alert('Referral collected to W balance');
+    });
+
+    // ---------- Admin links rotation (every 2 min show premium links) ----------
+    const adminLinks = [
+      {title:'cludymovie.com', url:'https://cludymovie.com'},
+      {title:'newswithsk.com', url:'https://newswithsk.com'},
+      {title:'gewnews.com', url:'https://gewnews.com'},
+      {title:'Direct1', url:'https://otieu.com/4/9677163'},
+      {title:'Direct2', url:'https://otieu.com/4/9677167'},
+      {title:'YT', url:'https://www.youtube.com/watch?v=7X6tWXDminE'}
+    ];
+
+    function rotateAdminLinks(){
+      adminLinksEl.innerHTML = '';
+      // random subset of 3
+      const shuffled = adminLinks.sort(()=>Math.random()-0.5).slice(0,3);
+      shuffled.forEach(a=>{
+        const el = document.createElement('div'); el.className='list-item';
+        el.innerHTML = `<div>${a.title}</div><div><button class='admin-open' data-url='${a.url}'>Open (+200)</button></div>`;
+        adminLinksEl.appendChild(el);
+      });
+    }
+    rotateAdminLinks();
+    setInterval(rotateAdminLinks, 120000);
+
+    // clicking admin link awards +200 W coins (only once per open per user per minute - naive)
+    adminLinksEl.addEventListener('click', async (e)=>{
+      if(e.target.classList.contains('admin-open')){
+        const url = e.target.dataset.url;
+        window.open(url,'_blank');
+        await awardCoins(currentUser.uid, 'w_balance', 200, 'admin_link');
+        alert('+200 W coins (admin link)');
+      }
+    });
+
+    // ---------- Top-up & Withdraw (placeholders) ----------
+    btnTopUp.addEventListener('click', ()=>{ alert('Stripe integration placeholder. In production, connect Stripe checkout here.'); });
+    btnWithdraw.addEventListener('click', async ()=>{
+      const amount = prompt('Enter withdraw amount (coins)');
+      if(!amount) return;
+      // create withdrawal request
+      await addDoc(collection(db,'withdrawals'), {user:currentUser.uid, amount:parseInt(amount), status:'pending', createdAt:new Date().toISOString()});
+      alert('Withdrawal requested. Admin will process manually.');
+    });
+
+    // ---------- Initialize default content ----------
+    content.innerHTML = '<div class="muted">Please sign in with Google to start using the platform.</div>';
+
+  </script>
 </body>
 </html>
