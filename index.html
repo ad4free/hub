@@ -1,715 +1,572 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Ad Revenue Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://kit.fontawesome.com/a72199b9c9.js" crossorigin="anonymous"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        /* Custom scrollbar for better look */
-        .ad-container::-webkit-scrollbar { width: 8px; }
-        .ad-container::-webkit-scrollbar-thumb { background-color: #6366f1; border-radius: 4px; }
-        .ad-container::-webkit-scrollbar-track { background-color: #e5e7eb; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AdExchange — Pro Secure</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#071026;--panel:#081127;--muted:#9aa7bd;--accent:#ffb020;--glass: rgba(255,255,255,0.03);--card-shadow:0 10px 30px rgba(4,10,25,0.6)}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#030417 0%,#071026 100%);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#e6eef8}
+    .wrap{max-width:1200px;margin:28px auto;padding:18px}
+    .top{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .brand h1{margin:0;font-size:20px}
+    .sub{color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px;align-items:center}
+    button{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#081827;font-weight:700;cursor:pointer}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 12px;border-radius:10px}
+    .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:16px;border-radius:12px;box-shadow:var(--card-shadow)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .tab{padding:8px 10px;border-radius:10px;background:var(--glass);cursor:pointer;color:var(--muted)}
+    .tab.active{background:linear-gradient(90deg, rgba(255,176,32,0.12), rgba(255,176,32,0.04));border:1px solid rgba(255,176,32,0.12);color:#fff}
+    .stats{display:flex;gap:10px;margin-top:12px}
+    .stat{flex:1;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);text-align:center}
+    .muted{color:var(--muted)}
+    .small{font-size:13px;color:var(--muted)}
+    .iframe-wrap{height:360px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);background:#000}
+    iframe{width:100%;height:100%;border:0}
+    input,select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:#eaf2ff;width:100%}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    .list{max-height:300px;overflow:auto;margin-top:8px}
+    .list-item{display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,0.015);border-radius:8px;margin-bottom:8px}
+    .badge{background:rgba(255,255,255,0.04);padding:4px 8px;border-radius:8px;color:var(--muted);font-weight:600}
+    .notice{background:linear-gradient(90deg, rgba(255,176,32,0.10), rgba(255,176,32,0.02));padding:10px;border-radius:8px;color:#fff;margin-bottom:12px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .multi-iframes{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+    .overlay-block{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);color:#fff}
+    footer{margin-top:12px;color:var(--muted);font-size:13px}
+    @media(max-width:980px){ .grid-2{grid-template-columns:1fr} .iframe-wrap{height:260px} }
+  </style>
 </head>
 <body>
-
-<div id="app" class="min-h-screen flex flex-col">
-
-    <!-- Header / Secure Balance Display -->
-    <header class="bg-indigo-700 shadow-lg p-4 sticky top-0 z-10">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-white tracking-wider">AdCore Pro</h1>
-            <div class="flex items-center space-x-6">
-                <div class="text-right">
-                    <p id="user-balance" class="text-3xl font-extrabold text-green-300">$0.00</p>
-                    <p class="text-xs text-gray-200 uppercase tracking-widest mt-[-4px]">Current Balance</p>
-                </div>
-                <div class="text-right">
-                    <p id="user-status" class="text-lg font-semibold text-yellow-300">Loading...</p>
-                    <p class="text-xs text-gray-200 uppercase tracking-widest mt-[-4px]">Account Status</p>
-                </div>
-                <button id="profile-btn" onclick="app.navigate('profile')" class="text-white hover:text-indigo-200 transition duration-150 p-2 rounded-full hover:bg-indigo-600">
-                    <i class="fas fa-user-circle text-2xl"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content Area -->
-    <main class="flex-grow flex max-w-6xl mx-auto w-full p-4">
-        <!-- Sidebar Navigation -->
-        <nav class="w-64 bg-white p-4 rounded-xl shadow-xl h-fit sticky top-20">
-            <h2 class="text-lg font-semibold text-gray-700 mb-4">Menu</h2>
-            <ul class="space-y-2">
-                <li><button onclick="app.navigate('dashboard')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150"><i class="fas fa-chart-line w-5"></i><span>Dashboard</span></button></li>
-                <li><button onclick="app.navigate('web_traffic')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 text-gray-700 hover:bg-gray-100 transition duration-150"><i class="fas fa-globe w-5"></i><span>Web Traffic (Ads)</span></button></li>
-                <li><button onclick="app.navigate('premium')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 text-gray-700 hover:bg-gray-100 transition duration-150"><i class="fas fa-crown w-5"></i><span>Get Premium</span></button></li>
-                <li><button onclick="app.navigate('profile')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 text-gray-700 hover:bg-gray-100 transition duration-150"><i class="fas fa-id-card w-5"></i><span>Profile</span></button></li>
-            </ul>
-            <div class="mt-6 pt-4 border-t border-gray-200">
-                <p id="user-id-display" class="text-xs text-gray-500 break-all"></p>
-            </div>
-        </nav>
-
-        <!-- Dynamic Content Area -->
-        <section id="content-area" class="flex-grow ml-6 bg-white p-8 rounded-xl shadow-xl">
-            <!-- Content will be injected here -->
-            <div class="text-center py-20">
-                <i class="fas fa-spinner fa-spin text-indigo-500 text-4xl"></i>
-                <p class="mt-4 text-gray-500">Loading application...</p>
-            </div>
-        </section>
-    </main>
-</div>
-
-<!-- Custom Modal Placeholder for alerts/confirmations -->
-<div id="custom-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
-        <h3 id="modal-title" class="text-xl font-bold mb-3 text-gray-800">Alert</h3>
-        <p id="modal-message" class="text-gray-600 mb-6"></p>
-        <div class="flex justify-end space-x-3">
-            <button id="modal-cancel" class="hidden px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">Cancel</button>
-            <button id="modal-confirm" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">OK</button>
-        </div>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <h1>AdExchange — Pro Secure</h1>
+        <div class="sub">Ad launch • Viewer earnings • Referral 15% lifetime • Netlify + Firebase</div>
+      </div>
+      <div class="controls">
+        <div id="user-info" class="small muted">Not signed</div>
+        <button id="btn-signin">Sign in with Google</button>
+        <button id="btn-signout" class="btn-ghost" style="display:none">Sign out</button>
+      </div>
     </div>
-</div>
 
-<script type="module">
-    // Firebase Imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, updateDoc, collection, getDocs, runTransaction, setDoc, query, where, limit, arrayUnion, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <div class="panel">
+      <div class="notice"><strong>Important:</strong> Use Desktop for country-targeted traffic. Ads launched by users appear to other users and auto-stop when budget/impressions are reached.</div>
 
-    // --- Global Canvas Variables ---
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-tab="dashboard">Dashboard</div>
+        <div class="tab" data-tab="web">Web Traffic</div>
+        <div class="tab" data-tab="dlink">Direct Link</div>
+        <div class="tab" data-tab="ytwatch">YouTube Watch Time</div>
+        <div class="tab" data-tab="ytviews">YouTube Views</div>
+        <div class="tab" data-tab="referral">Referrals</div>
+        <div class="tab" data-tab="adlaunch">Ad Launch</div>
+        <div class="tab" data-tab="premium">Become Premium</div>
+        <div class="tab" data-tab="admin">Admin (secure)</div>
+      </div>
 
-    // --- Firebase Initialization ---
-    let app, db, auth;
-    let userId = null;
-    let isAuthReady = false;
+      <div style="margin-top:14px" id="content-area">
+        <div class="small muted">Please sign in to access the full platform.</div>
+      </div>
+    </div>
 
-    // Set Firestore log level for debugging
-    setLogLevel('Debug');
+    <div style="height:18px"></div>
 
-    // --- App State ---
-    const appState = {
-        currentPage: 'dashboard',
-        user: {
-            balance: 0.00,
-            status: 'Loading...',
-            isPremium: false,
-            expiryDate: null,
-            uid: null,
-        },
-        ads: [], // Stores available ads fetched from Firebase
-        watching: {
-            isActive: false,
-            timerSeconds: 0,
-            intervalId: null,
-            adsShown: [],
-        },
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:18px">
+      <div></div>
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="small">W Balance</div>
+            <div style="font-size:22px;font-weight:800" id="w-balance">0</div>
+            <div class="small muted">Main coins</div>
+          </div>
+          <div style="text-align:right">
+            <div class="small">D Balance</div>
+            <div style="font-size:22px;font-weight:800" id="d-balance">0</div>
+            <div class="small muted">Direct coins</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="small">Referral (collectable)</div>
+          <div style="font-size:18px;font-weight:700" id="ref-balance">0</div>
+          <div style="margin-top:8px"><button id="btn-collect-ref" class="btn-ghost">Collect Referral</button></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="small">Quick Actions</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="btn-topup" class="btn-ghost">Buy Coins</button>
+            <button id="btn-withdraw" class="btn-ghost">Withdraw</button>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="small">Admin Premium Links (rotate)</div>
+          <div class="list" id="admin-links"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>Tip: Test with 2 accounts. Admins can approve premium payments via the Admin tab or via Firebase Console. See the guide below.</footer>
+  </div>
+
+  <script type="module">
+    // ---------- Firebase imports ----------
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, onSnapshot, orderBy, limit, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js';
+
+    // ---------- Config (user-provided) ----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
+      authDomain: "website-5636d.firebaseapp.com",
+      projectId: "website-5636d",
+      storageBucket: "website-5636d.firebasestorage.app",
+      messagingSenderId: "737574321288",
+      appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
+      measurementId: "G-S64W6JR12C"
     };
 
-    // --- Utility Functions ---
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    /** Shows a custom modal (replaces alert/confirm) */
-    function showModal(title, message, isConfirm = false, onConfirm = () => {}) {
-        const modal = document.getElementById('custom-modal');
-        document.getElementById('modal-title').textContent = title;
-        document.getElementById('modal-message').textContent = message;
-        
-        const confirmBtn = document.getElementById('modal-confirm');
-        const cancelBtn = document.getElementById('modal-cancel');
+    // ---------- UI elements ----------
+    const btnSignIn = document.getElementById('btn-signin');
+    const btnSignOut = document.getElementById('btn-signout');
+    const userInfoEl = document.getElementById('user-info');
+    const content = document.getElementById('content-area');
+    const tabs = document.querySelectorAll('.tab');
+    const wBalanceEl = document.getElementById('w-balance');
+    const dBalanceEl = document.getElementById('d-balance');
+    const refBalanceEl = document.getElementById('ref-balance');
+    const adminLinksEl = document.getElementById('admin-links');
+    const btnCollectRef = document.getElementById('btn-collect-ref');
+    const btnTopUp = document.getElementById('btn-topup');
+    const btnWithdraw = document.getElementById('btn-withdraw');
 
-        modal.classList.remove('hidden');
+    let currentUser = null;
+    let userRef = null;
+    let userUnsub = null;
 
-        confirmBtn.onclick = () => {
-            modal.classList.add('hidden');
-            onConfirm();
-        };
+    // ---------- Admin emails (simple) ----------
+    // You should replace with your admin emails
+    const ADMIN_EMAILS = ['admin@example.com'];
 
-        if (isConfirm) {
-            cancelBtn.classList.remove('hidden');
-            cancelBtn.onclick = () => modal.classList.add('hidden');
-        } else {
-            cancelBtn.classList.add('hidden');
+    // ---------- Auth ----------
+    btnSignIn.addEventListener('click', async ()=>{
+      const provider = new GoogleAuthProvider();
+      try{
+        const res = await signInWithPopup(auth, provider);
+        const user = res.user;
+        if(!user.email || !user.email.endsWith('@gmail.com')){
+          alert('Only Gmail allowed.');
+          await signOut(auth);
+          return;
         }
-    }
+        await createUserIfNotExists(user);
+      }catch(err){ console.error(err); alert('Sign-in failed: '+err.message); }
+    });
+    btnSignOut.addEventListener('click', async ()=>{ await signOut(auth); });
 
-    /** Helper to format currency */
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-    };
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        currentUser = user;
+        userInfoEl.textContent = user.displayName || user.email;
+        btnSignIn.style.display = 'none'; btnSignOut.style.display = 'inline-block';
+        userRef = doc(db,'users',user.uid);
+        subscribeUser();
+        renderTab('dashboard');
+      } else {
+        currentUser = null;
+        userInfoEl.textContent = 'Not signed';
+        btnSignIn.style.display = 'inline-block'; btnSignOut.style.display = 'none';
+        if(userUnsub) userUnsub();
+        content.innerHTML = '<div class="small muted">Please sign in with Google to use the platform.</div>';
+        wBalanceEl.textContent='0'; dBalanceEl.textContent='0'; refBalanceEl.textContent='0';
+      }
+    });
 
-    /** Shuffles an array (Fisher-Yates) */
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-
-    // --- Core UI Rendering & State Management ---
-
-    function updateUI() {
-        // 1. Update Header
-        document.getElementById('user-balance').textContent = formatCurrency(appState.user.balance);
-        const statusEl = document.getElementById('user-status');
-        statusEl.textContent = appState.user.status;
-        statusEl.className = appState.user.isPremium ? 'text-lg font-semibold text-pink-400' : 'text-lg font-semibold text-yellow-300';
-        document.getElementById('user-id-display').textContent = `User ID: ${appState.user.uid || 'N/A'}`;
-
-        // 2. Navigation Styling
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            const page = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
-            if (page === appState.currentPage) {
-                btn.classList.add('text-indigo-600', 'bg-indigo-50');
-                btn.classList.remove('text-gray-700', 'hover:bg-gray-100');
-            } else {
-                btn.classList.remove('text-indigo-600', 'bg-indigo-50');
-                btn.classList.add('text-gray-700', 'hover:bg-gray-100');
-            }
+    async function createUserIfNotExists(user){
+      const uref = doc(db,'users',user.uid);
+      const snap = await getDoc(uref);
+      if(!snap.exists()){
+        const refFromUrl = getRefFromUrl();
+        await setDoc(uref, {
+          uid: user.uid, name: user.displayName||'', email: user.email, createdAt: new Date().toISOString(),
+          w_balance: 0, d_balance: 0, referral_balance: 0, referrals: [], premium:false, referralCode: 'R-'+user.uid.slice(0,6), ref_by: refFromUrl || null,
+          yt_seconds:0, yt_views:0
         });
-        
-        // 3. Render Current Page
-        renderPage(appState.currentPage);
+        if(refFromUrl){
+          const inviterRef = doc(db,'users',refFromUrl);
+          await runTransaction(db, async (t)=>{
+            const inv = await t.get(inviterRef);
+            if(inv.exists()){
+              const prev = inv.data().referral_balance || 0;
+              const prevRefs = inv.data().referrals || [];
+              t.update(inviterRef, { referral_balance: prev + 10000, referrals: [...prevRefs, user.uid] });
+            }
+          });
+        }
+      }
     }
 
-    // --- FIREBASE LISTENERS & DATA FLOW ---
+    function getRefFromUrl(){ try{ const p = new URLSearchParams(window.location.search); return p.get('ref'); }catch(e){return null} }
 
-    function setupDataListeners() {
-        if (!db || !userId) {
-            console.error("Firebase not initialized or userId not available.");
-            return;
+    // ---------- Subscribe to user doc ----------
+    function subscribeUser(){ if(!userRef) return; if(userUnsub) userUnsub(); userUnsub = onSnapshot(userRef, snap=>{ if(!snap.exists()) return; const d = snap.data(); wBalanceEl.textContent = d.w_balance || 0; dBalanceEl.textContent = d.d_balance || 0; refBalanceEl.textContent = d.referral_balance || 0; }); }
+
+    // ---------- Tabs ----------
+    tabs.forEach(t=>t.addEventListener('click', ()=>{ tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active'); renderTab(t.dataset.tab); }));
+
+    function renderTab(tab){ if(!currentUser && tab !== 'dashboard'){ content.innerHTML = '<div class="small muted">Sign in to access this section.</div>'; return; } switch(tab){ case 'dashboard': return renderDashboard(); case 'web': return renderWebTraffic(); case 'dlink': return renderDirectLink(); case 'ytwatch': return renderYTWatch(); case 'ytviews': return renderYTViews(); case 'referral': return renderReferral(); case 'adlaunch': return renderAdLaunch(); case 'premium': return renderPremium(); case 'admin': return renderAdmin(); default: content.innerHTML = '<div>Unknown tab</div>'; } }
+
+    // ---------- DASHBOARD ----------
+    async function renderDashboard(){ const snap = await getDoc(doc(db,'users',currentUser.uid)); const data = snap.exists()?snap.data():{}; content.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:12px">
+        <div class="panel">
+          <div class="small">Welcome back</div>
+          <div style="font-size:20px;font-weight:800">${data.name || currentUser.email}</div>
+          <div class="small muted" style="margin-top:6px">Referral Code: <span style="font-weight:700">${data.referralCode||('R-'+currentUser.uid.slice(0,6))}</span></div>
+          <div style="margin-top:12px" class="notice">Want special country traffic? Use PC and follow the instruction link. Use Desktop for best results.</div>
+          <div style="margin-top:8px" class="small muted">Random tips: Keep the page open while viewing ads. For production we strongly recommend Cloud Functions + security rules.</div>
+        </div>
+        <div class="panel">
+          <div class="small">Your Stats</div>
+          <div style="margin-top:8px"><div class="small muted">YT Watch Seconds</div><div style="font-weight:800">${data.yt_seconds||0}s</div></div>
+          <div style="margin-top:8px"><div class="small muted">YT Views Count</div><div style="font-weight:800">${data.yt_views||0}</div></div>
+        </div>
+      </div>
+    `; }
+
+    // ---------- WEB TRAFFIC (multi-iframe with 60s limit for free users) ----------
+    let multiTimers = [];
+    async function renderWebTraffic(){
+      content.innerHTML = `
+        <div class="panel">
+          <div class="small">Web Traffic — choose how many ads you want to watch at the same time (1–15). Free users limited to 60s per session. Premium removes time limit.</div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+            <label style="width:180px">Ads at once</label>
+            <select id="ads-count" style="width:120px"></select>
+            <button id="btn-start-multi" class="btn-ghost">Start</button>
+            <button id="btn-stop-multi" class="btn-ghost">Stop</button>
+            <div class="small muted">Remaining session: <span id="multi-remaining">--</span></div>
+          </div>
+          <div style="margin-top:12px" id="multi-container" class="multi-iframes"></div>
+          <div style="margin-top:12px"><div class="small">Active Ad Queue</div><div class="list" id="active-ads-list"></div></div>
+        </div>
+      `;
+
+      // populate select
+      const sel = document.getElementById('ads-count'); sel.innerHTML = ''; for(let i=1;i<=15;i++){ const o = document.createElement('option'); o.value=i; o.textContent=i; sel.appendChild(o); }
+      const btnStart = document.getElementById('btn-start-multi'); const btnStop = document.getElementById('btn-stop-multi'); const container = document.getElementById('multi-container'); const remainingEl = document.getElementById('multi-remaining'); const activeList = document.getElementById('active-ads-list');
+
+      // live active ads listing
+      const adsQ = query(collection(db,'ads'), where('active','==', true), orderBy('createdAt','asc'));
+      const unsub = onSnapshot(adsQ, snap=>{ activeList.innerHTML=''; snap.forEach(d=>{ const ad=d.data(); const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<div style="max-width:70%"><div class="small">${ad.category.toUpperCase()} • ${ad.url}</div><div class="small muted">Served: ${ad.impressionsServed||0} / ${ad.impressionsGoal||0} • Cost: ${ad.costPerImp}</div></div><div><div class="badge">${ad.active? 'Active':'Expired'}</div></div>`; activeList.appendChild(el); }); });
+
+      // helper to fetch distinct ads up to n
+      async function fetchDistinctAds(n){ const snaps = await getDocs(adsQ); const all = snaps.docs.map(d=>({id:d.id,data:d.data()})); if(all.length===0) return []; // shuffle
+        for(let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
+        return all.slice(0,n);
+      }
+
+      let sessionTimer = null; let sessionSeconds = 0; let sessionLimit = 60; // free limit
+      let isPremium = false;
+
+      // check premium status
+      const userDoc = await getDoc(doc(db,'users',currentUser.uid));
+      if(userDoc.exists()){
+        const u=userDoc.data();
+        isPremium = u.premium && u.premiumUntil && (new Date(u.premiumUntil) > new Date());
+        if(isPremium) remainingEl.textContent = 'Unlimited (premium)'; else remainingEl.textContent = sessionLimit + 's';
+      }
+
+      btnStart.onclick = async ()=>{
+        const n = parseInt(sel.value || '1');
+        container.innerHTML=''; // clear
+        // fetch distinct ads
+        const ads = await fetchDistinctAds(n);
+        if(ads.length===0) return alert('No active ads to view');
+        // create iframes for each ad
+        multiTimers.forEach(t=>clearInterval(t.timer)); multiTimers=[];
+        sessionSeconds = 0; if(!isPremium){ remainingEl.textContent = sessionLimit + 's'; }
+
+        // for each ad create iframe and timer
+        for(let i=0;i<ads.length;i++){
+          const ad = ads[i];
+          const wrap = document.createElement('div'); wrap.style.position='relative'; wrap.style.height='180px'; wrap.style.borderRadius='8px'; wrap.style.overflow='hidden'; const iframe = document.createElement('iframe'); iframe.src = ad.data.url; iframe.loading='lazy'; wrap.appendChild(iframe); container.appendChild(wrap);
+
+          // detect embed blocked
+          iframe.addEventListener('load', ()=>{
+            try{
+              // cross-origin will throw - if it doesn't, embed works
+              const doc = iframe.contentDocument || iframe.contentWindow.document;
+            }catch(e){
+              const overlay = document.createElement('div'); overlay.className='overlay-block'; overlay.innerHTML = `<div style="text-align:center"><div>Unable to embed site (X-Frame blocked)</div><div style="margin-top:8px"><button class='btn-ghost open-out' data-url='${ad.data.url}'>Open in new tab</button></div></div>`; wrap.appendChild(overlay);
+              overlay.querySelector('.open-out').addEventListener('click', ()=>{ window.open(ad.data.url,'_blank'); });
+            }
+          });
+
+          // timer for this iframe: count 15s impressions
+          const timerObj = { timer:null, elapsed:0, adId:ad.id };
+          timerObj.timer = setInterval(async ()=>{
+            timerObj.elapsed++;
+            // each 15s -> attempt impression
+            if(timerObj.elapsed >= 15){
+              timerObj.elapsed = 0;
+              try{ await processAdImpression(ad.id, ad.data); }catch(err){ console.warn('Impression failed',err); }
+            }
+          },1000);
+          multiTimers.push(timerObj);
         }
 
-        // 1. User Profile Listener (Private Data)
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'user_data');
-        onSnapshot(userDocRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                appState.user.balance = data.balance || 0.00;
-                appState.user.isPremium = data.isPremium || false;
-                appState.user.expiryDate = data.expiryDate ? data.expiryDate.toDate() : null;
-                appState.user.status = appState.user.isPremium 
-                    ? `Premium (Expires: ${appState.user.expiryDate ? appState.user.expiryDate.toLocaleDateString() : 'N/A'})` 
-                    : 'Free User';
-                
-                // Check for expired subscription
-                if (appState.user.isPremium && appState.user.expiryDate && new Date() > appState.user.expiryDate) {
-                    console.log("Premium subscription expired. Downgrading...");
-                    // Note: This check should ideally be done by an Admin/Backend service, 
-                    // but we include client-side logic for demonstration.
-                    updateDoc(userDocRef, { isPremium: false, status: 'Free User', expiryDate: null });
-                }
+        // session timer for free users
+        if(!isPremium){ sessionTimer = setInterval(()=>{ sessionSeconds++; const left = Math.max(sessionLimit - sessionSeconds,0); remainingEl.textContent = left + 's'; if(sessionSeconds >= sessionLimit){ multiTimers.forEach(t=>clearInterval(t.timer)); multiTimers=[]; clearInterval(sessionTimer); sessionTimer=null; alert('Free session ended — upgrade to premium to watch longer'); } },1000); }
+      };
 
-                console.log("User data updated:", appState.user);
-                updateUI();
-            } else {
-                // Initialize user profile if it doesn't exist
-                setDoc(userDocRef, { 
-                    uid: userId, 
-                    balance: 0.00, 
-                    isPremium: false, 
-                    status: 'Free User',
-                    createdAt: serverTimestamp()
-                }, { merge: true });
-            }
-        }, (error) => console.error("Error listening to user profile:", error));
+      btnStop.onclick = ()=>{ multiTimers.forEach(t=>clearInterval(t.timer)); multiTimers=[]; if(sessionTimer){ clearInterval(sessionTimer); sessionTimer=null; } remainingEl.textContent='Stopped'; };
 
-
-        // 2. Available Ads Listener (Public Data)
-        const adsCollectionRef = collection(db, `artifacts/${appId}/public/data/available_ads`);
-        onSnapshot(adsCollectionRef, (querySnapshot) => {
-            appState.ads = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log(`Fetched ${appState.ads.length} available ads.`);
-            if (appState.currentPage === 'web_traffic' && !appState.watching.isActive) {
-                 renderPage('web_traffic'); // Re-render if on the ad page
-            }
-        }, (error) => console.error("Error listening to available ads:", error));
+      // store unsubscribe to window to cleanup when switching tabs
+      window._web_unsub = unsub;
     }
 
+    // ---------- processAdImpression (transactional) ----------
+    async function processAdImpression(adId, adSnapshotData){
+      const adRef = doc(db,'ads',adId);
+      const viewerRef = doc(db,'users', currentUser.uid);
+      return await runTransaction(db, async (t)=>{
+        const adSnap = await t.get(adRef);
+        if(!adSnap.exists()) throw new Error('Ad not available');
+        const ad = adSnap.data();
+        if(!ad.active) throw new Error('Ad inactive');
+        const impressionsServed = ad.impressionsServed || 0;
+        const impressionsGoal = ad.impressionsGoal || Math.max(1, Math.floor((ad.budget||0) / (ad.costPerImp||500)));
+        if(impressionsServed >= impressionsGoal) { t.update(adRef,{ active:false, updatedAt: serverTimestamp() }); throw new Error('Ad reached goal'); }
 
-    // --- SECURE MATH & COUNTING (TRANSACTIONS) ---
+        // award to viewer
+        const awardAmount = ad.costPerImp || 500; // reward per impression
+        const viewerSnap = await t.get(viewerRef);
+        if(!viewerSnap.exists()) throw new Error('Viewer missing');
+        const viewerData = viewerSnap.data();
+        const balanceField = (ad.category === 'dlink') ? 'd_balance' : 'w_balance';
+        const prev = viewerData[balanceField] || 0;
+        t.update(viewerRef, { [balanceField]: prev + awardAmount });
 
-    /**
-     * Securely increments the user balance using a Firestore Transaction.
-     * This prevents concurrent writes from overwriting each other (race conditions),
-     * ensuring that every watch/view is counted exactly once.
-     * @param {number} amount - The amount to add to the balance (e.g., 0.001 per view).
-     */
-    async function secureIncrementBalance(amount) {
-        if (!db || !userId) return console.error("Database or User ID not ready for transaction.");
+        // referral commission
+        const refBy = viewerData.ref_by || null;
+        if(refBy){ const inviterRef = doc(db,'users',refBy); const invSnap = await t.get(inviterRef); if(invSnap.exists()){ const commission = Math.floor(awardAmount * 0.15); const prevRef = invSnap.data().referral_balance || 0; t.update(inviterRef,{ referral_balance: prevRef + commission }); } }
 
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'user_data');
+        // update ad counts
+        t.update(adRef, { impressionsServed: impressionsServed + 1, spent: (ad.spent||0) + awardAmount, updatedAt: serverTimestamp() });
+        if(impressionsServed + 1 >= impressionsGoal) t.update(adRef, { active:false, closedAt: serverTimestamp() });
 
-        try {
-            await runTransaction(db, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef);
-                
-                if (!userDoc.exists()) {
-                    throw "User Document does not exist!";
-                }
+        // transaction record
+        const txRef = collection(db,'transactions');
+        const txDocRef = doc(txRef);
+        t.set(txDocRef, { user: currentUser.uid, type: 'ad_impression_reward', adId, amount: awardAmount, createdAt: new Date().toISOString() });
+      });
+    }
 
-                // Retrieve current balance, default to 0 if not set
-                const currentBalance = userDoc.data().balance || 0;
-                const newBalance = currentBalance + amount;
+    // ---------- DIRECT LINK ----------
+    async function renderDirectLink(){
+      content.innerHTML = `
+        <div class="panel">
+          <div class="small">Direct Link — open links and earn D coins. Or advertisers can launch dlink campaigns via Ad Launch.</div>
+          <div style="margin-top:10px"> <label>Paste link to open</label>
+            <div style="display:flex;gap:8px"><input id="dlink-url" placeholder="https://example.com/your-link"/><button id="btn-open-dlink" class="btn-ghost">Open & Earn</button></div>
+          </div>
+          <div style="margin-top:8px"><div class="small">Recent direct links</div><div class="list" id="recent-dlinks"></div></div>
+        </div>
+      `;
+      const urlInput = document.getElementById('dlink-url'); const btnOpen = document.getElementById('btn-open-dlink'); const recentEl = document.getElementById('recent-dlinks');
+      const snaps = await getDocs(query(collection(db,'direct_links'), orderBy('createdAt','desc'), limit(10)));
+      recentEl.innerHTML=''; snaps.forEach(s=>{ const d=s.data(); const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<div class="small">${d.url}</div><div><button class="btn-ghost open-link" data-url="${d.url}">Open</button></div>`; recentEl.appendChild(el); });
 
-                // Update the balance securely within the transaction
-                transaction.update(userDocRef, { balance: newBalance });
-                console.log(`Transaction successful. Added ${amount} to balance. New balance: ${newBalance.toFixed(4)}`);
-                
-                // Update local state immediately for a smooth UI experience
-                appState.user.balance = newBalance;
-                updateUI();
+      btnOpen.onclick = async ()=>{ const url = urlInput.value.trim(); if(!url) return alert('Provide URL'); window.open(url,'_blank'); await awardCoinsTransactional(currentUser.uid,'d_balance',1000,'direct_open_manual'); await addDoc(collection(db,'direct_links'), { url, user: currentUser.uid, createdAt: new Date().toISOString() }); alert('+1000 D coins'); };
+      recentEl.addEventListener('click', async (e)=>{ if(e.target.classList.contains('open-link')){ const u=e.target.dataset.url; window.open(u,'_blank'); await awardCoinsTransactional(currentUser.uid,'d_balance',1000,'direct_open_recent'); alert('+1000 D coins'); } });
+    }
 
+    // ---------- YT WATCH (counts saved in user doc) ----------
+    async function renderYTWatch(){
+      content.innerHTML = `
+        <div class="panel">
+          <div class="small">YouTube Watch Time — load embed and press Start. Every 30s gives a coin reward and increments your saved watch-time in Firebase.</div>
+          <div style="margin-top:8px;display:flex;gap:8px"><input id="yt-url" placeholder="https://www.youtube.com/watch?v=VIDEO_ID"/><button id="btn-load-yt" class="btn-ghost">Load</button></div>
+          <div style="margin-top:10px" class="iframe-wrap"><iframe id="yt-iframe" srcdoc="<html><body style='background:#000;color:#fff;display:flex;align-items:center;justify-content:center'>No video</body></html>"></iframe></div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button id="btn-start-yt" class="btn-ghost">Start Counting</button><button id="btn-stop-yt" class="btn-ghost">Stop</button><div class="small muted">Watched: <span id="yt-live">0s</span></div></div>
+        </div>
+      `;
+      const loadBtn = document.getElementById('btn-load-yt'); const ytInput = document.getElementById('yt-url'); const ytIframe = document.getElementById('yt-iframe'); const startBtn = document.getElementById('btn-start-yt'); const stopBtn = document.getElementById('btn-stop-yt'); const ytLive = document.getElementById('yt-live');
+      let timer=null; let seconds=0; loadBtn.onclick=()=>{ const url=ytInput.value.trim(); const vid=extractYtId(url); if(!vid) return alert('Invalid YouTube URL'); ytIframe.src = `https://www.youtube.com/embed/${vid}?rel=0&controls=1&mute=1`; };
+      startBtn.onclick = ()=>{ if(timer) return; timer = setInterval(async ()=>{ seconds++; ytLive.textContent = seconds + 's'; // every 30s give reward and save yt_seconds
+          if(seconds % 30 === 0){ // award and save
+            await runTransaction(db, async (t)=>{ const uRef=doc(db,'users',currentUser.uid); const uSnap=await t.get(uRef); if(!uSnap.exists()) throw new Error('User not found'); const prevY = uSnap.data().yt_seconds || 0; const prevW = uSnap.data().w_balance || 0; t.update(uRef, { yt_seconds: prevY + 30, w_balance: prevW + 50 }); // 50 coins per 30s
+              // referral commission handled on collect or via separate record: we will credit inviter's referral_balance by 15% here
+              const refBy = uSnap.data().ref_by || null; if(refBy){ const inviterRef=doc(db,'users',refBy); const invSnap=await t.get(inviterRef); if(invSnap.exists()){ const commission = Math.floor(50 * 0.15); const prevRef = invSnap.data().referral_balance || 0; t.update(inviterRef, { referral_balance: prevRef + commission }); } }
+              // transaction record
+              const txRef = collection(db,'transactions'); const txDoc = doc(txRef); t.set(txDoc, { user: currentUser.uid, type:'yt_watch_reward', amount:50, seconds:30, createdAt:new Date().toISOString() });
             });
-        } catch (e) {
-            console.error("Secure transaction failed: ", e);
-            showModal("Error", "Failed to count view securely. Please try again.");
-        }
+          }
+        },1000);
+      };
+      stopBtn.onclick = ()=>{ if(timer){ clearInterval(timer); timer=null; } };
     }
 
-    // --- Ad Watching System ---
+    // ---------- YT VIEWS ----------
+    async function renderYTViews(){
+      content.innerHTML = `
+        <div class="panel">
+          <div class="small">YouTube Views — every 5s counts 1 view (demo). Views are saved in Firebase and small coin rewards given every 10 views.</div>
+          <div style="margin-top:8px;display:flex;gap:8px"><input id="ytv-url" placeholder="https://www.youtube.com/watch?v=VIDEO_ID"/><button id="btn-load-ytv" class="btn-ghost">Load</button></div>
+          <div style="margin-top:10px" class="iframe-wrap"><iframe id="ytv-iframe" srcdoc="<html><body style='background:#000;color:#fff;display:flex;align-items:center;justify-content:center'>No video</body></html>"></iframe></div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center"><button id="btn-start-ytv" class="btn-ghost">Start Counting</button><button id="btn-stop-ytv" class="btn-ghost">Stop</button><div class="small muted">Views added: <span id="ytv-live">0</span></div></div>
+        </div>
+      `;
+      const loadBtn = document.getElementById('btn-load-ytv'); const ytvInput = document.getElementById('ytv-url'); const ytvIframe = document.getElementById('ytv-iframe'); const startBtn = document.getElementById('btn-start-ytv'); const stopBtn = document.getElementById('btn-stop-ytv'); const ytvLive = document.getElementById('ytv-live');
+      let timer=null; let views=0; loadBtn.onclick=()=>{ const vid=extractYtId(ytvInput.value.trim()); if(!vid) return alert('Invalid URL'); ytvIframe.src = `https://www.youtube.com/embed/${vid}?rel=0&controls=1&mute=1`; };
+      startBtn.onclick = ()=>{ if(timer) return; timer = setInterval(async ()=>{ views++; ytvLive.textContent = views; // every 10 views -> coin reward and save
+          if(views % 10 === 0){ await runTransaction(db, async (t)=>{ const uRef = doc(db,'users',currentUser.uid); const uSnap = await t.get(uRef); if(!uSnap.exists()) throw new Error('User not found'); const prevViews = uSnap.data().yt_views || 0; const prevW = uSnap.data().w_balance || 0; t.update(uRef, { yt_views: prevViews + 10, w_balance: prevW + 20 }); // +20 coins per 10 views
+              // referral commission
+              const refBy = uSnap.data().ref_by || null; if(refBy){ const inviterRef=doc(db,'users',refBy); const invSnap=await t.get(inviterRef); if(invSnap.exists()){ const commission = Math.floor(20 * 0.15); const prevRef = invSnap.data().referral_balance || 0; t.update(inviterRef, { referral_balance: prevRef + commission }); } }
+              // tx record
+              const txRef = collection(db,'transactions'); const txDoc = doc(txRef); t.set(txDoc, { user: currentUser.uid, type:'yt_views_reward', amount:20, views:10, createdAt:new Date().toISOString() });
+            }); }
+        },5000); };
+      stopBtn.onclick = ()=>{ if(timer){ clearInterval(timer); timer=null; } };
+    }
 
-    /**
-     * Initializes the multi-iFrame ad watching session.
-     * @param {number} numAds - Number of iFrames to generate (max 15).
-     */
-    function startWatching(numAds) {
-        if (appState.watching.isActive) return;
+    // ---------- REFERRAL ----------
+    async function renderReferral(){ content.innerHTML = `
+      <div class="panel">
+        <div class="small">Invite users and earn 10,000 coins per signup + 15% lifetime commission on their earnings.</div>
+        <div style="margin-top:10px"><label>Your referral link</label><input id="ref-link" readonly /></div>
+        <div style="margin-top:10px"><div class="small">Your referrals</div><div class="list" id="ref-list"></div></div>
+      </div>
+    `; const refLink = document.getElementById('ref-link'); const refList = document.getElementById('ref-list'); const snap = await getDoc(doc(db,'users',currentUser.uid)); const data = snap.exists()?snap.data():{}; refLink.value = window.location.origin + window.location.pathname + '?ref=' + currentUser.uid; const refs = data.referrals || []; refList.innerHTML = refs.length ? '' : '<div class="small muted">No referrals yet</div>'; for(const r of refs){ const rs = await getDoc(doc(db,'users',r)); const name = rs.exists()? (rs.data().name || rs.data().email) : r; const el = document.createElement('div'); el.className='list-item'; el.innerHTML = `<div>${name}</div><div class="small muted">${r}</div>`; refList.appendChild(el); } }
 
-        // Reset state
-        appState.watching.timerSeconds = 0;
-        appState.watching.isActive = true;
-        appState.watching.adsShown = [];
-
-        // Determine max duration: 60 seconds for Free, unlimited for Premium (simulated here)
-        const maxDuration = appState.user.isPremium ? 300 : 60; // 5 mins for premium demo, 60s for free
-
-        // 1. Select the ads to show (ensure different ads are shown)
-        let selectedAds = shuffleArray([...appState.ads]).slice(0, numAds);
-        if (selectedAds.length === 0) {
-            appState.watching.isActive = false;
-            showModal("Ad Error", "No ads available to watch. Please try again later.");
-            renderPage('web_traffic');
-            return;
-        }
-
-        // 2. Render the iFrames and start the simulation
-        const contentArea = document.getElementById('content-area');
-        let html = `
-            <div class="mb-6 p-4 bg-indigo-50 rounded-xl">
-                <h2 class="text-2xl font-bold text-indigo-700">Ad Watching Session Active</h2>
-                <p id="timer-display" class="text-xl font-mono mt-2 text-indigo-900">Time Left: ${maxDuration}s</p>
-                <button onclick="app.stopWatching()" class="mt-3 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition shadow">Stop Watching</button>
-            </div>
-            <div id="iframe-grid" class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-        `;
-
-        const watchValuePerAd = 0.001; // $0.001 per ad view
-        const adWatchDuration = 5; // Simulate a 5-second watch before counting
-
-        selectedAds.forEach((ad, index) => {
-            appState.watching.adsShown.push(ad.id);
-            // iFrame FIX: We use the ad.url from the Firestore document. If the external site prevents embedding (X-Frame-Options), 
-            // the iFrame will show an error. This is a browser security feature, not a code bug. 
-            // We use sandbox attributes for security but allow forms/scripts from the same origin if necessary.
-            html += `
-                <div class="ad-card bg-gray-100 p-3 rounded-lg shadow-md border border-gray-200">
-                    <p class="text-sm font-semibold mb-2 text-gray-700">Ad Slot ${index + 1} (${ad.id})</p>
-                    <div class="w-full aspect-video bg-gray-300 rounded-lg overflow-hidden relative">
-                        <!-- Simulation of Ad Content - Replace the placeholder URL with real ad tracking URLs -->
-                        <iframe id="ad-iframe-${index}" 
-                                src="${ad.url || 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1'}" 
-                                frameborder="0" 
-                                allow="autoplay; encrypted-media; fullscreen" 
-                                sandbox="allow-scripts allow-same-origin"
-                                class="w-full h-full"></iframe>
-                        <div id="watch-overlay-${index}" class="absolute inset-0 bg-indigo-500 bg-opacity-75 flex items-center justify-center text-white font-bold text-lg opacity-0 transition duration-500">Watching...</div>
-                    </div>
-                </div>
-            `;
+    // ---------- AD LAUNCH ----------
+    async function renderAdLaunch(){ content.innerHTML = `
+      <div class="panel">
+        <div class="small">Launch an ad campaign: set category, URL, budget (coins) and cost per impression. impressionsGoal = floor(budget/costPerImp).</div>
+        <div style="margin-top:8px"><label>Category</label><select id="ad-cat"><option value="web">Web Traffic</option><option value="dlink">Direct Link</option></select>
+        <label style="margin-top:8px">Ad URL</label><input id="ad-url" placeholder="https://example.com/landing" />
+        <div style="display:flex;gap:8px;margin-top:8px"><div style="flex:1"><label>Budget (coins)</label><input id="ad-budget" type="number" value="5000" /></div><div style="width:160px"><label>Cost per impression</label><input id="ad-cost" type="number" value="500" /></div></div>
+        <div style="margin-top:8px"><button id="btn-launch" class="btn-ghost">Launch Ad</button></div>
+        </div>
+        <div style="margin-top:12px"><div class="small">Your running ads</div><div class="list" id="running-ads"></div></div>
+      </div>
+    `; const btnLaunch = document.getElementById('btn-launch'); const runningEl = document.getElementById('running-ads'); await loadRunningAds(); btnLaunch.onclick = async ()=>{ const cat = document.getElementById('ad-cat').value; const url = document.getElementById('ad-url').value.trim(); const budget = parseInt(document.getElementById('ad-budget').value || '0'); const cost = parseInt(document.getElementById('ad-cost').value || '500'); if(!url || !budget || budget <= 0) return alert('Provide url and budget'); const balanceField = (cat === 'dlink') ? 'd_balance' : 'w_balance';
+      // transaction: deduct user balance and create ad doc atomically
+      const ownerRef = doc(db,'users',currentUser.uid);
+      const adDocRef = doc(collection(db,'ads')); // new doc ref
+      try{
+        await runTransaction(db, async (t)=>{
+          const owner = await t.get(ownerRef); if(!owner.exists()) throw new Error('User missing'); const ownerBal = owner.data()[balanceField] || 0; if(ownerBal < budget) throw new Error('Insufficient balance');
+          t.update(ownerRef, { [balanceField]: ownerBal - budget });
+          const impressionsGoal = Math.max(1, Math.floor(budget / cost));
+          t.set(adDocRef, { owner: currentUser.uid, category: cat, url, budget, costPerImp: cost, impressionsGoal, impressionsServed:0, spent:0, active:true, createdAt:new Date().toISOString() });
         });
-
-        html += '</div>';
-        contentArea.innerHTML = html;
-
-        // 3. Start the main session timer
-        appState.watching.intervalId = setInterval(() => {
-            appState.watching.timerSeconds++;
-            const timeLeft = maxDuration - appState.watching.timerSeconds;
-            
-            document.getElementById('timer-display').textContent = `Time Left: ${timeLeft}s`;
-
-            // Check if the 60-second limit is reached for Free users
-            if (!appState.user.isPremium && timeLeft <= 0) {
-                stopWatching();
-                app.navigate('premium');
-                showModal("Time Limit Reached", "Your 60-second ad watching session has ended. Go Premium to unlock unlimited ad time!", false, () => {});
-                return;
-            }
-
-            // Check if the overall session limit is reached (for Premium demo)
-            if (timeLeft <= 0) {
-                 stopWatching();
-                 showModal("Session Ended", "Your current ad session has concluded.", false, () => {});
-                 return;
-            }
-
-            // 4. Counting/Earning Logic (Simulate view count after adWatchDuration)
-            if (appState.watching.timerSeconds % adWatchDuration === 0) {
-                const totalEarned = selectedAds.length * watchValuePerAd;
-                secureIncrementBalance(totalEarned);
-                
-                // Show visual feedback
-                selectedAds.forEach((_, index) => {
-                     const overlay = document.getElementById(`watch-overlay-${index}`);
-                     if(overlay) {
-                         overlay.textContent = `+${(watchValuePerAd).toFixed(3)}$!`;
-                         overlay.style.opacity = '1';
-                         setTimeout(() => overlay.style.opacity = '0', 2000);
-                     }
-                });
-
-                console.log(`Counted ${selectedAds.length} views. Earned: ${totalEarned.toFixed(4)}`);
-            }
-
-        }, 1000);
-
-        console.log(`Started watching ${numAds} ads for max ${maxDuration} seconds.`);
-    }
-    
-    /** Stops the ad watching session and resets the state. */
-    function stopWatching() {
-        if (appState.watching.intervalId) {
-            clearInterval(appState.watching.intervalId);
-            appState.watching.intervalId = null;
-        }
-        appState.watching.isActive = false;
-        appState.watching.timerSeconds = 0;
-        appState.watching.adsShown = [];
-        renderPage('web_traffic');
-        console.log("Ad watching session stopped.");
-    }
-
-    // --- Premium Payment System ---
-
-    /** Handles the submission of the payment request to Firestore. */
-    async function submitPaymentRequest(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const trxId = form.elements['trxId'].value.trim();
-        const plan = form.elements['plan'].value;
-        const screenshotFile = form.elements['screenshot'].files[0];
-        const paymentMethod = form.elements['paymentMethod'].value;
-
-        if (!trxId || !plan || !screenshotFile || !paymentMethod) {
-            return showModal("Missing Info", "Please provide the Transaction ID, select a plan, and upload the payment screenshot.");
-        }
-
-        // 1. Simulate File Upload (In a real app, this goes to Firebase Storage, then the URL is saved to Firestore)
-        // For this single-file environment, we will *simulate* the upload and mention the file name/type.
-        const mockScreenshotPath = `gs://storage-bucket/premium_proofs/${userId}/${Date.now()}_${screenshotFile.name}`;
-
-        const requestData = {
-            userId: userId,
-            plan: plan,
-            amount: plan === '$5/week' ? 5 : 30,
-            paymentMethod: paymentMethod,
-            trxId: trxId,
-            screenshotPath: mockScreenshotPath, // The path for Admin to find the file
-            status: 'Pending Review', // Crucial: Admin needs to change this
-            requestedAt: serverTimestamp(),
-        };
-        
-        const requestsCollectionRef = collection(db, `artifacts/${appId}/public/data/premium_requests`);
-
-        try {
-            // Save the request to the public collection for Admin visibility
-            await addDoc(requestsCollectionRef, requestData);
-            form.reset();
-            showModal("Request Submitted", 
-                "Your premium request is now **Pending Review**. Please allow the admin time to verify the TRX ID and screenshot. You will be automatically upgraded once approved.",
-                false, 
-                () => app.navigate('dashboard'));
-        } catch (error) {
-            console.error("Error submitting payment request:", error);
-            showModal("Submission Failed", "There was an error submitting your request. Check the console for details.");
-        }
-    }
-
-
-    // --- View Rendering Logic ---
-
-    function renderPage(page) {
-        appState.currentPage = page;
-        const contentArea = document.getElementById('content-area');
-        let html = '';
-
-        if (appState.watching.isActive && page === 'web_traffic') {
-             // Do nothing, the watching view is already rendered and manages its own state
-             return; 
-        }
-
-        switch (page) {
-            case 'dashboard':
-                html = `
-                    <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">Dashboard Overview</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-indigo-500 text-white p-6 rounded-xl shadow-lg">
-                            <i class="fas fa-wallet text-3xl mb-3"></i>
-                            <p class="text-sm uppercase font-semibold opacity-80">Total Earnings</p>
-                            <p class="text-4xl font-extrabold mt-1">${formatCurrency(appState.user.balance)}</p>
-                        </div>
-                        <div class="bg-yellow-500 text-white p-6 rounded-xl shadow-lg">
-                            <i class="fas fa-eye text-3xl mb-3"></i>
-                            <p class="text-sm uppercase font-semibold opacity-80">Views Today (Simulated)</p>
-                            <p class="text-4xl font-extrabold mt-1">~${(appState.user.balance * 1000).toFixed(0)}</p>
-                        </div>
-                        <div class="bg-pink-500 text-white p-6 rounded-xl shadow-lg">
-                            <i class="fas fa-medal text-3xl mb-3"></i>
-                            <p class="text-sm uppercase font-semibold opacity-80">Account Tier</p>
-                            <p class="text-3xl font-extrabold mt-1">${appState.user.isPremium ? 'PREMIUM' : 'FREE'}</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 bg-gray-50 p-6 rounded-xl border border-gray-200">
-                        <h3 class="text-xl font-bold text-gray-700 mb-4">Quick Actions</h3>
-                        <div class="flex flex-wrap gap-4">
-                            <button onclick="app.navigate('web_traffic')" class="bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition shadow-md">Start Watching Ads</button>
-                            ${!appState.user.isPremium ? `<button onclick="app.navigate('premium')" class="bg-pink-500 text-white px-6 py-3 rounded-full hover:bg-pink-600 transition shadow-md">Upgrade to Premium</button>` : ''}
-                        </div>
-                    </div>
-                `;
-                break;
-            
-            case 'web_traffic':
-                html = `
-                    <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">Web Traffic (Ad Watcher)</h2>
-                    <div class="p-6 bg-yellow-50 rounded-xl border border-yellow-200 mb-6">
-                        <p class="text-yellow-800 font-medium"><i class="fas fa-info-circle mr-2"></i> **iFrame Fix Note:** Embedding external websites often fails due to browser security settings (X-Frame-Options, CORS). The system below uses ad URLs from Firebase, but **only URLs you control** will reliably display.</p>
-                        ${appState.user.isPremium 
-                            ? `<p class="mt-2 text-pink-700 font-bold"><i class="fas fa-crown mr-2"></i> **PREMIUM:** You have unlimited watching time and can watch up to 15 ads simultaneously!</p>`
-                            : `<p class="mt-2 text-red-600 font-bold"><i class="fas fa-lock mr-2"></i> **FREE LIMIT:** You can only watch for 60 seconds. Upgrade to Premium for unlimited time!</p>`
-                        }
-                    </div>
-
-                    <div class="bg-gray-100 p-6 rounded-xl shadow-inner">
-                        <h3 class="text-xl font-bold text-gray-700 mb-4">Watch More at a Time</h3>
-                        <p class="mb-4 text-gray-600">How many ads do you want to run simultaneously? (Max: ${appState.user.isPremium ? 15 : 5})</p>
-                        <form id="ad-watch-form">
-                            <div class="flex items-end space-x-4">
-                                <div class="flex-grow">
-                                    <label for="numAds" class="block text-sm font-medium text-gray-700">Number of Ads to Watch</label>
-                                    <input type="number" id="numAds" name="numAds" value="1" min="1" max="${appState.user.isPremium ? 15 : 5}" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3">
-                                </div>
-                                <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-lg flex-shrink-0">
-                                    <i class="fas fa-play mr-2"></i> Start Watching
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div id="ad-info-container" class="mt-6 text-center">
-                        ${appState.ads.length > 0 ? `<p class="text-sm text-gray-500">Currently ${appState.ads.length} unique ads are available.</p>` : `<p class="text-sm text-red-500">No ads available. Please launch ads in the admin panel.</p>`}
-                    </div>
-                `;
-                break;
-
-            case 'premium':
-                html = `
-                    <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">Get Premium Account</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                        <div class="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
-                            <h3 class="text-2xl font-bold text-gray-700 mb-4">Premium Benefits</h3>
-                            <ul class="space-y-3 text-gray-600">
-                                <li class="flex items-center"><i class="fas fa-infinity text-green-500 w-5 mr-3"></i> Unlimited Ad Watching Time</li>
-                                <li class="flex items-center"><i class="fas fa-layer-group text-green-500 w-5 mr-3"></i> Watch Up to 15 Ads Simultaneously</li>
-                                <li class="flex items-center"><i class="fas fa-shield-alt text-green-500 w-5 mr-3"></i> Higher View Count Security</li>
-                                <li class="flex items-center"><i class="fas fa-star text-green-500 w-5 mr-3"></i> Priority Customer Support</li>
-                            </ul>
-                        </div>
-
-                        <div class="bg-indigo-600 text-white p-6 rounded-xl shadow-lg">
-                            <h3 class="text-2xl font-bold mb-4">Pricing Plans</h3>
-                            <ul class="space-y-4">
-                                <li class="flex justify-between items-center bg-indigo-700 p-3 rounded-lg">
-                                    <span class="text-xl font-semibold">Weekly Plan</span>
-                                    <span class="text-3xl font-extrabold">$5 / Week</span>
-                                </li>
-                                <li class="flex justify-between items-center bg-indigo-700 p-3 rounded-lg border-4 border-yellow-400">
-                                    <span class="text-xl font-semibold">Monthly Plan (Best Value)</span>
-                                    <span class="text-3xl font-extrabold">$30 / Month</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-100 p-6 rounded-xl shadow-inner">
-                        <h3 class="text-2xl font-bold text-indigo-700 mb-4">Payment Submission</h3>
-                        <form id="payment-submission-form">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="plan" class="block text-sm font-medium text-gray-700">Select Plan</label>
-                                    <select id="plan" name="plan" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
-                                        <option value="">-- Select a Plan --</option>
-                                        <option value="$5/week">$5 Every Week</option>
-                                        <option value="$30/month">$30 Per Month</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="trxId" class="block text-sm font-medium text-gray-700">Transaction ID (TRX ID)</label>
-                                    <input type="text" id="trxId" name="trxId" placeholder="Enter Easypaisa/Upaisa TRX ID" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
-                                </div>
-                            </div>
-                            
-                            <div class="mt-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Methods & Details</label>
-                                <ul class="space-y-2 p-3 bg-white rounded-lg border">
-                                    <li><strong class="text-indigo-600">Easypaisa / Upaisa:</strong> 03326849518</li>
-                                    <li><strong class="text-red-500">Action:</strong> Send payment, take a screenshot, and submit it below.</li>
-                                </ul>
-                                <input type="hidden" name="paymentMethod" value="Easypaisa/Upaisa">
-                            </div>
-
-                            <div class="mt-4">
-                                <label for="screenshot" class="block text-sm font-medium text-gray-700">Payment Screenshot Submission</label>
-                                <input type="file" id="screenshot" name="screenshot" accept="image/*" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
-                            </div>
-
-                            <button type="submit" class="mt-6 w-full px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg hover:bg-green-700 transition shadow-xl">
-                                Submit Payment Proof
-                            </button>
-                        </form>
-                    </div>
-                `;
-                break;
-            
-            case 'profile':
-                html = `
-                    <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">User Profile</h2>
-                    <div class="bg-gray-100 p-6 rounded-xl shadow-inner space-y-4">
-                        <div class="p-4 bg-white rounded-lg border">
-                            <p class="text-sm font-medium text-gray-500">User ID</p>
-                            <p class="text-lg font-mono text-gray-800 break-all">${appState.user.uid || 'N/A'}</p>
-                        </div>
-                        <div class="p-4 bg-white rounded-lg border">
-                            <p class="text-sm font-medium text-gray-500">Account Status</p>
-                            <p class="text-xl font-bold ${appState.user.isPremium ? 'text-pink-600' : 'text-yellow-600'}">${appState.user.status}</p>
-                        </div>
-                        ${appState.user.isPremium ? `
-                            <div class="p-4 bg-white rounded-lg border">
-                                <p class="text-sm font-medium text-gray-500">Subscription Expiry</p>
-                                <p class="text-lg font-semibold text-gray-800">${appState.user.expiryDate ? appState.user.expiryDate.toLocaleDateString() : 'N/A'}</p>
-                            </div>
-                        ` : `
-                            <button onclick="app.navigate('premium')" class="w-full px-4 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition font-semibold mt-4">
-                                <i class="fas fa-arrow-up mr-2"></i> Upgrade to Premium Now
-                            </button>
-                        `}
-                        <div class="mt-6 border-t pt-4">
-                             <p class="text-sm text-gray-500">**Note on Security:** Password and account detail management (like updating name/password) are handled securely by Firebase Authentication, which is separate from Firestore data.</p>
-                        </div>
-                    </div>
-                `;
-                break;
-
-            default:
-                html = '<p class="text-gray-500">Page not found.</p>';
-        }
-
-        contentArea.innerHTML = html;
-        
-        // Attach event listeners for forms after rendering
-        if (page === 'web_traffic' && !appState.watching.isActive) {
-            document.getElementById('ad-watch-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const numAds = parseInt(document.getElementById('numAds').value, 10);
-                const maxAllowed = appState.user.isPremium ? 15 : 5;
-
-                if (numAds > maxAllowed) {
-                     showModal("Limit Exceeded", `You can only watch up to ${maxAllowed} ads simultaneously in your current tier.`, false, () => {});
-                     document.getElementById('numAds').value = maxAllowed;
-                     return;
-                }
-                if (appState.ads.length < numAds) {
-                     showModal("Ad Shortage", `You requested ${numAds} ads, but only ${appState.ads.length} are currently available.`, false, () => {});
-                     return;
-                }
-                startWatching(numAds);
-            });
-        } else if (page === 'premium') {
-            document.getElementById('payment-submission-form').addEventListener('submit', submitPaymentRequest);
-        }
-    }
-
-
-    // --- Initialization and Public API ---
-
-    /** Initialize Firebase and setup Auth Listener */
-    async function init() {
-        if (!Object.keys(firebaseConfig).length) {
-             console.error("Firebase config is missing. Cannot initialize app.");
-             return;
-        }
-
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-
-        try {
-            if (initialAuthToken) {
-                await signInWithCustomToken(auth, initialAuthToken);
-            } else {
-                await signInAnonymously(auth);
-            }
-        } catch (error) {
-            console.error("Firebase Auth failed:", error);
-            showModal("Authentication Error", "Failed to sign in. Please refresh.", false, () => {});
-        }
-
-        // Auth state listener to get the current user ID
-        onAuthStateChanged(auth, (user) => {
-            if (user && !isAuthReady) {
-                userId = user.uid;
-                appState.user.uid = userId;
-                isAuthReady = true;
-                setupDataListeners();
-                updateUI();
-            } else if (!user) {
-                 // Fallback for unauthenticated users, though we expect a token
-                 userId = crypto.randomUUID();
-                 appState.user.uid = userId;
-                 isAuthReady = true;
-                 setupDataListeners();
-                 updateUI();
-            }
-        });
-    }
-
-    // Public API for HTML access
-    window.app = {
-        navigate: (page) => {
-            appState.currentPage = page;
-            updateUI();
-        },
-        startWatching,
-        stopWatching,
+        alert('Ad launched'); await loadRunningAds();
+      }catch(err){ console.error('Launch error',err); alert('Launch failed: '+(err.message||err)); }
     };
+    async function loadRunningAds(){ runningEl.innerHTML=''; const q = query(collection(db,'ads'), where('owner','==', currentUser.uid), orderBy('createdAt','desc')); const snaps = await getDocs(q); snaps.forEach(s=>{ const d=s.data(); const el=document.createElement('div'); el.className='list-item'; el.innerHTML = `<div style="max-width:70%"><div class="small">${d.category.toUpperCase()} • ${d.url}</div><div class="small muted">Served ${d.impressionsServed||0} / ${d.impressionsGoal||0} • Spent ${d.spent||0} / ${d.budget||0}</div></div><div>${d.active ? '<span class="badge">Active</span>' : '<span class="small muted">Expired</span>'}</div>`; runningEl.appendChild(el); }); }
+    }
 
-    // Start the application
-    init();
-</script>
+    // ---------- PREMIUM FLOW (manual payment) ----------
+    async function renderPremium(){ content.innerHTML = `
+      <div class="panel">
+        <div class="small">Become Premium — unlock longer sessions and more concurrent ads. Manual payment via Easypaisa / Upaisa.</div>
+        <div style="margin-top:8px">Choose package:</div>
+        <div style="display:flex;gap:8px;margin-top:8px"><button class="btn-ghost pkg" data-plan="weekly" data-price="5">$5 / week</button><button class="btn-ghost pkg" data-plan="monthly" data-price="30">$30 / month</button></div>
+        <div style="margin-top:12px"><div class="small">Payment Methods</div><div class="small muted">Easypaisa / Upaisa: 03326849518</div></div>
+        <div style="margin-top:12px"><label>Upload screenshot of payment</label><input id="pay-file" type="file" accept="image/*" /></div>
+        <div style="margin-top:8px"><label>TRX ID</label><input id="trx-id" placeholder="Transaction ID" /></div>
+        <div style="margin-top:8px"><button id="btn-submit-pay" class="btn-ghost">Submit Payment Request</button></div>
+        <div style="margin-top:12px"><div class="small">Your payment requests</div><div class="list" id="payment-requests"></div></div>
+      </div>
+    `;
 
+      // package selection
+      document.querySelectorAll('.pkg').forEach(b=>b.addEventListener('click', ()=>{ document.querySelectorAll('.pkg').forEach(x=>x.style.border='1px solid rgba(255,255,255,0.04)'); b.style.border='2px solid #ffb020'; b.dataset.selected='1'; b.classList.add('selected'); b.dataset.chosen='1'; b.blur(); document.body.dataset.chosenPlan = b.dataset.plan; }));
+
+      const fileInput = document.getElementById('pay-file'); const trxInput = document.getElementById('trx-id'); const btnSubmit = document.getElementById('btn-submit-pay'); const requestsEl = document.getElementById('payment-requests');
+
+      // load user's past requests
+      const snaps = await getDocs(query(collection(db,'payments'), where('user','==', currentUser.uid), orderBy('createdAt','desc')));
+      requestsEl.innerHTML=''; snaps.forEach(s=>{ const d=s.data(); const el=document.createElement('div'); el.className='list-item'; el.innerHTML = `<div><div class="small">${d.package} • ${d.amount}$ • ${d.status}</div><div class="small muted">TRX: ${d.trxId || '-'} • ${d.createdAt}</div></div><div>${d.screenshot ? '<a href="'+d.screenshot+'" target="_blank" class="btn-ghost">View</a>' : ''}</div>`; requestsEl.appendChild(el); });
+
+      btnSubmit.addEventListener('click', async ()=>{
+        const chosen = document.querySelector('.pkg.selected'); if(!chosen) return alert('Choose a package'); const plan = chosen.dataset.plan; const price = chosen.dataset.price; const trx = trxInput.value.trim(); if(!trx) return alert('Enter TRX ID'); const file = fileInput.files[0]; if(!file) return alert('Upload screenshot');
+        // upload file
+        const path = `payments/${currentUser.uid}/${Date.now()}_${file.name}`;
+        const sRef = storageRef(storage, path);
+        const upl = await uploadBytes(sRef, file);
+        const url = await getDownloadURL(sRef);
+        await addDoc(collection(db,'payments'), { user: currentUser.uid, package: plan, amount: parseFloat(price), trxId: trx, screenshot: url, status:'pending', createdAt:new Date().toISOString() });
+        alert('Payment request submitted. Admin will review.');
+        renderPremium();
+      });
+    }
+
+    // ---------- ADMIN PANEL (approve payments) ----------
+    async function renderAdmin(){
+      const email = currentUser.email || '';
+      if(!ADMIN_EMAILS.includes(email)) return content.innerHTML = `<div class="panel"><div class="small">Admin only</div></div>`;
+      content.innerHTML = `<div class="panel"><div class="small">Admin — review payments</div><div class="list" id="admin-payments"></div></div>`;
+      const adminPaymentsEl = document.getElementById('admin-payments');
+      const snaps = await getDocs(query(collection(db,'payments'), orderBy('createdAt','desc')));
+      adminPaymentsEl.innerHTML=''; snaps.forEach(async s=>{ const d=s.data(); const el=document.createElement('div'); el.className='list-item'; el.innerHTML = `<div><div class="small">${d.user} • ${d.package} • ${d.amount}$</div><div class="small muted">TRX: ${d.trxId || '-'} • ${d.createdAt}</div></div><div><a href="${d.screenshot}" target="_blank" class="btn-ghost">View</a><button class="btn-ghost approve" data-id="${s.id}" data-user="${d.user}" data-package="${d.package}">Approve</button></div>`; adminPaymentsEl.appendChild(el); });
+
+      adminPaymentsEl.addEventListener('click', async (e)=>{ if(e.target.classList.contains('approve')){ const id = e.target.dataset.id; const uid = e.target.dataset.user; const pkg = e.target.dataset.package; if(!confirm('Approve this payment?')) return; // set payment status and give premium
+          const payRef = doc(db,'payments',id); await updateDoc(payRef, { status:'approved', approvedAt:new Date().toISOString(), approvedBy: currentUser.email });
+          // set user's premiumUntil based on package
+          const userRefDoc = doc(db,'users',uid); const now = new Date(); let until = new Date(now);
+          if(pkg === 'weekly') until.setDate(until.getDate() + 7); else if(pkg === 'monthly') until.setMonth(until.getMonth() + 1);
+          await updateDoc(userRefDoc, { premium: true, premiumUntil: until.toISOString() }); alert('Payment approved and premium set'); renderAdmin(); } });
+    }
+
+    // ---------- helper: awardCoinsTransactional ----------
+    async function awardCoinsTransactional(uid, field, amount, reason){
+      const userDocRef = doc(db,'users',uid);
+      await runTransaction(db, async (t)=>{
+        const u = await t.get(userDocRef);
+        if(!u.exists()) throw new Error('User missing');
+        const prev = u.data()[field] || 0;
+        t.update(userDocRef, { [field]: prev + amount });
+        // referral commission
+        const refBy = u.data().ref_by || null;
+        if(refBy){ const inviterRef = doc(db,'users',refBy); const invSnap = await t.get(inviterRef); if(invSnap.exists()){ const commission = Math.floor(amount * 0.15); const prevRef = invSnap.data().referral_balance || 0; t.update(inviterRef, { referral_balance: prevRef + commission }); } }
+        // tx
+        const txRef = collection(db,'transactions'); const txDoc = doc(txRef); t.set(txDoc, { user: uid, type: reason || 'award', amount, createdAt: new Date().toISOString() });
+      });
+    }
+
+    // ---------- Utility: extract YouTube ID ----------
+    function extractYtId(url){ try{ const u = new URL(url); if(u.hostname.includes('youtube.com')) return u.searchParams.get('v'); if(u.hostname.includes('youtu.be')) return u.pathname.slice(1); return null; }catch(e){ return null; } }
+
+    // ---------- Referral collect button ----------
+    btnCollectRef.addEventListener('click', async ()=>{ if(!currentUser) return alert('Sign in'); const uref = doc(db,'users',currentUser.uid); await runTransaction(db, async (t)=>{ const s = await t.get(uref); if(!s.exists()) throw new Error('User missing'); const data = s.data(); const refBal = data.referral_balance || 0; if(refBal <= 0) throw new Error('No referral balance'); const prevW = data.w_balance || 0; t.update(uref, { w_balance: prevW + refBal, referral_balance: 0 }); const txRef = collection(db,'transactions'); const txDoc = doc(txRef); t.set(txDoc, { user: currentUser.uid, type:'referral_collect', amount: refBal, createdAt:new Date().toISOString() }); }); alert('Referral moved to W balance'); });
+
+    // ---------- Admin links rotation ----------
+    const adminLinks = [ {title:'cludymovie.com', url:'https://cludymovie.com'}, {title:'newswithsk.com', url:'https://newswithsk.com'}, {title:'gewnews.com', url:'https://gewnews.com'}, {title:'Direct1', url:'https://otieu.com/4/9677163'}, {title:'Direct2', url:'https://otieu.com/4/9677167'}, {title:'YT', url:'https://www.youtube.com/watch?v=7X6tWXDminE'} ];
+    function rotateAdminLinks(){ adminLinksEl.innerHTML=''; const shuffled = adminLinks.sort(()=>Math.random()-0.5).slice(0,3); shuffled.forEach(a=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML = `<div>${a.title}</div><div><button class="btn-ghost admin-open" data-url="${a.url}">Open (+200)</button></div>`; adminLinksEl.appendChild(el); }); }
+    rotateAdminLinks(); setInterval(rotateAdminLinks, 120000);
+    adminLinksEl.addEventListener('click', async (e)=>{ if(e.target.classList.contains('admin-open')){ const url = e.target.dataset.url; window.open(url,'_blank'); if(currentUser){ await awardCoinsTransactional(currentUser.uid,'w_balance',200,'admin_link'); alert('+200 W coins (admin link)'); } else alert('Sign in to collect'); } });
+
+    // ---------- Top-up & withdraw placeholders ----------
+    btnTopUp.addEventListener('click', ()=> alert('Stripe integration placeholder — next step: add Stripe Checkout serverless.'));
+    btnWithdraw.addEventListener('click', async ()=>{ if(!currentUser) return alert('Sign in'); const amount = parseInt(prompt('Withdraw amount (coins)')); if(!amount || amount <= 0) return; await addDoc(collection(db,'withdrawals'), { user: currentUser.uid, amount, status:'pending', createdAt: new Date().toISOString()}); alert('Withdrawal requested; admin will process manually.'); });
+
+    // ---------- initial content ----------
+    content.innerHTML = '<div class="small muted">Please sign in with Google to start using the platform.</div>';
+  </script>
 </body>
 </html>
