@@ -1,902 +1,192 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>AdBoost — Single file demo</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="AdBoost demo single-page app (Firebase client). Server functions required for final production." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ad4U - User Dashboard</title>
+  <script type="module">
+    // Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
+      authDomain: "ad-4-u.firebaseapp.com",
+      projectId: "ad-4-u",
+      storageBucket: "ad-4-u.firebasestorage.app",
+      messagingSenderId: "775864010731",
+      appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
+      measurementId: "G-3R9DDSM2XK"
+    };
 
-  <style>
-    /* ====================== Stylish single-file CSS ====================== */
-    :root{
-      --bg1:#071029;
-      --bg2:#061827;
-      --card:#071a2a;
-      --accent1:#7c3aed;
-      --accent2:#06b6d4;
-      --muted:#9aa4b2;
-      --glass: rgba(255,255,255,0.04);
-      --glass-2: rgba(255,255,255,0.025);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#e6eef8;background:linear-gradient(180deg,var(--bg1),var(--bg2));-webkit-font-smoothing:antialiased}
-    a{color:inherit}
-    .app{min-height:100%;display:flex;flex-direction:column}
-    .container{max-width:1100px;margin:0 auto;padding:20px}
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    /* Header */
-    .site-header{background:linear-gradient(90deg,var(--accent1),var(--accent2));padding:14px;border-radius:10px;box-shadow:0 10px 30px rgba(2,6,23,0.5)}
-    .site-header .inner{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .brand{display:flex;align-items:center;gap:18px}
-    .logo{font-weight:800;font-size:20px;color:white}
-    .nav{display:flex;gap:12px}
-    .nav a{font-weight:600;color:rgba(255,255,255,0.95);text-decoration:none;font-size:14px}
-    .nav a:hover{text-decoration:underline}
-    .header-right{display:flex;align-items:center;gap:10px}
-    .counters{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:10px}
-    .counter{display:flex;flex-direction:column;align-items:center;padding:4px 8px}
-    .counter .label{font-size:11px;color:var(--muted)}
-    .counter .value{font-weight:800;font-size:16px}
-    .btn{padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-    .btn-primary{background:white;color:var(--accent1)}
-    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
+    // Global user object
+    let currentUser = null;
+    let userDocRef = null;
 
-    /* Layout */
-    .main{display:grid;grid-template-columns:1fr 360px;gap:20px;margin-top:20px}
-    @media(max-width:1000px){.main{grid-template-columns:1fr}}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid var(--glass-2);padding:14px;border-radius:12px;box-shadow:0 8px 24px rgba(2,6,23,0.5)}
-    .hero{padding:20px;border-radius:12px}
-    .hero h1{margin:0 0 8px;font-weight:800;font-size:28px}
-    .lead{color:var(--muted);margin-bottom:12px}
+    // -------------------------------
+    // AUTHENTICATION
+    // -------------------------------
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    /* controls */
-    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-    .range{width:180px}
-
-    /* grid frames */
-    .frames{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
-    .iframe-slot{display:flex;flex-direction:column;gap:8px}
-    .iframe-wrap{height:200px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-    .iframe-wrap iframe{width:100%;height:100%;border:0}
-
-    .notice{background:linear-gradient(90deg, rgba(124,58,237,0.04), rgba(6,182,212,0.02));padding:12px;border-radius:8px;border-left:4px solid rgba(255,210,90,0.95);color:var(--muted)}
-
-    /* sections */
-    .section{margin-top:18px}
-    .flex{display:flex;gap:10px;align-items:center}
-    .small{font-size:13px;color:var(--muted)}
-    .muted{color:var(--muted)}
-    .footer{margin-top:26px;color:var(--muted);text-align:center;padding:20px 0}
-
-    /* admin panel */
-    .payments-list{max-height:300px;overflow:auto}
-    .payment-item{display:flex;justify-content:space-between;gap:12px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);margin-bottom:8px}
-
-    /* form */
-    .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
-    input[type="file"]{color:inherit}
-    label{font-weight:600;font-size:13px}
-    .referral{background:rgba(255,255,255,0.02);padding:8px;border-radius:8px}
-    .badge{display:inline-block;background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:8px;font-weight:700}
-  </style>
-</head>
-<body>
-  <!-- Firebase SDK (compat for single-file use) -->
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-storage-compat.js"></script>
-
-  <div class="app">
-    <header class="site-header">
-      <div class="container inner">
-        <div class="brand">
-          <div class="logo">AdBoost</div>
-          <nav class="nav">
-            <a href="#" data-nav="home">Home</a>
-            <a href="#" data-nav="web-traffic">Web Traffic</a>
-            <a href="#" data-nav="direct-link">Direct Link</a>
-            <a href="#" data-nav="yt-watch">YT Watch</a>
-            <a href="#" data-nav="launch-ad">Ad Launch</a>
-            <a href="#" data-nav="profile">Profile</a>
-          </nav>
-        </div>
-
-        <div class="header-right">
-          <div class="counters" style="min-width:220px">
-            <div class="counter"><div class="label">W</div><div id="hdr-W" class="value">—</div></div>
-            <div class="counter"><div class="label">D</div><div id="hdr-D" class="value">—</div></div>
-            <div class="counter"><div class="label">YT H</div><div id="hdr-YT" class="value">0:00:00</div></div>
-          </div>
-          <div id="authArea" class="flex">
-            <button id="signInBtn" class="btn btn-primary">Sign in (Google)</button>
-            <button id="signOutBtn" class="btn btn-ghost" style="display:none">Sign out</button>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <main class="container main">
-      <div>
-        <!-- HOME -->
-        <section id="home" class="card hero section">
-          <h1>Promote links. Earn coins. Grow traffic.</h1>
-          <p class="lead">Free & paid plans. Launch ads across web and direct links. Use coins to boost visibility, or buy premium via manual payments.</p>
-
-          <div class="notice">
-            <strong>Want special country traffic?</strong>
-            <div class="small">Use a PC and follow advertiser instructions. Require embeddable landing pages; proxying remote sites is not recommended.</div>
-          </div>
-
-          <div class="section" style="display:flex;gap:10px;margin-top:12px">
-            <a class="btn btn-primary" href="#" data-nav="launch-ad">Launch Ad</a>
-            <a class="btn btn-ghost" href="#" data-nav="web-traffic">Go to Web Traffic</a>
-          </div>
-        </section>
-
-        <!-- WEB TRAFFIC -->
-        <section id="web-traffic" class="card section" style="display:none">
-          <h2>Web Traffic</h2>
-          <p class="small">Choose how many ads you want to watch at once. Free users: up to <span id="freeLimit">3</span>. Premium users: up to <span id="premiumLimit">15</span>.</p>
-
-          <div class="controls section">
-            <div style="min-width:260px">
-              <label class="small">Show how many ads at once?</label>
-              <input id="countRange" class="range" type="range" min="1" max="3" value="1" />
-              <div id="countValue" class="small">1 ad(s)</div>
-              <div id="upgradeNote" class="small muted" style="display:none">To watch more than 3 at once you need Premium. <a href="#" data-nav="profile">Upgrade</a></div>
-            </div>
-
-            <div style="margin-left:auto">
-              <button id="startWatchBtn" class="btn btn-primary">Start watching</button>
-              <button id="stopWatchBtn" class="btn btn-ghost" disabled>Stop</button>
-            </div>
-          </div>
-
-          <div id="framesArea" class="frames section"></div>
-
-          <div class="section small muted">Each free ad session auto-stops after <strong>60 seconds</strong>. Premium users have extended limits.</div>
-        </section>
-
-        <!-- DIRECT LINK (simple demo) -->
-        <section id="direct-link" class="card section" style="display:none">
-          <h2>Direct Link (demo)</h2>
-          <p class="small">Click links to open in new tab. In production, the server must validate and award D coins once the redirect is validated.</p>
-          <div>
-            <button id="openDemoLink" class="btn btn-primary">Open demo direct link</button>
-          </div>
-        </section>
-
-        <!-- YT WATCH (self-hosted demo only) -->
-        <section id="yt-watch" class="card section" style="display:none">
-          <h2>Video Watch (SELF-HOSTED demo)</h2>
-          <p class="small">This demo uses a self-hosted HTML5 video to show secure watch-time counting. <strong>Do not</strong> incentivize YouTube views (it's against YouTube TOS).</p>
-
-          <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
-            <video id="demoVideo" width="480" controls preload="metadata" style="max-width:100%;border-radius:8px">
-              <!-- Replace with a self-hosted video URL you own or have permission for -->
-              <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
-              Your browser does not support HTML5 video.
-            </video>
-
-            <div style="flex:1;min-width:220px">
-              <div class="small">Watch timer: <span id="videoTimer">0s</span></div>
-              <div class="small">When video is playing, secure heartbeats are sent to the server every 5s. Server should calculate and credit time-based coins.</div>
-              <button id="startVideoSession" class="btn btn-primary">Start video session</button>
-              <button id="stopVideoSession" class="btn btn-ghost" disabled>Stop</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- LAUNCH AD (stub) -->
-        <section id="launch-ad" class="card section" style="display:none">
-          <h2>Launch Ad</h2>
-          <p class="small">This is a simplified form. In production you must validate owner's domain and set budgetCoins.</p>
-
-          <div class="form-row">
-            <label>Ad type</label>
-            <select id="adType"><option value="web">Web (iframe)</option><option value="direct">Direct link</option></select>
-          </div>
-          <div class="form-row">
-            <label>Target URL</label>
-            <input id="adUrl" type="url" placeholder="https://yourdomain.com/landing" />
-          </div>
-          <div class="form-row">
-            <label>Budget (coins)</label>
-            <input id="adBudget" type="number" value="5000" />
-          </div>
-          <div class="form-row">
-            <button id="createAdBtn" class="btn btn-primary">Create Promotion (client-only demo)</button>
-            <div class="small muted">Server must atomically deduct coins and create promotions for production.</div>
-          </div>
-        </section>
-
-        <!-- PROFILE / PAYMENTS -->
-        <section id="profile" class="card section" style="display:none">
-          <h2>Profile & Premium</h2>
-          <div id="profileInfo" class="small muted">Sign in to see profile details</div>
-
-          <h3 style="margin-top:12px">Buy Premium (manual)</h3>
-          <div class="small">Options: $5 / week, $30 / month. Pay to one of the numbers below, upload screenshot, add TRX ID, and we will approve manually.</div>
-
-          <div style="margin-top:8px" class="card">
-            <div class="small"><strong>Payment numbers</strong></div>
-            <div class="small">Easypaisa: <span class="badge">03326849518</span></div>
-            <div class="small">Upaisa: <span class="badge">03326849518</span></div>
-          </div>
-
-          <div style="margin-top:8px" class="card">
-            <div class="form-row">
-              <label>Plan</label>
-              <select id="planSelect"><option value="weekly">Weekly - $5</option><option value="monthly">Monthly - $30</option></select>
-            </div>
-            <div class="form-row">
-              <label>Method</label>
-              <select id="methodSelect"><option value="easypaisa">Easypaisa</option><option value="upaisa">Upaisa</option></select>
-            </div>
-            <div class="form-row">
-              <label>TRX ID</label>
-              <input id="trxInput" placeholder="Transaction ID from vendor" />
-            </div>
-            <div class="form-row">
-              <label>Upload screenshot</label>
-              <input id="screenshotInput" type="file" accept="image/*" />
-            </div>
-            <div class="form-row">
-              <button id="submitPaymentReq" class="btn btn-primary">Submit Payment Request</button>
-              <div class="small muted">After you submit, admin will approve and set your premium expiry.</div>
-            </div>
-          </div>
-
-          <h3 style="margin-top:12px">Referral</h3>
-          <div class="referral">
-            <div class="small">Your referral code: <strong id="refCode">—</strong></div>
-            <div class="small">Invite link: <span id="refLink">—</span></div>
-            <div class="small">Reward: 10000 coins per successful referral (server must award on sign-up).</div>
-          </div>
-        </section>
-      </div>
-
-      <!-- RIGHT COLUMN (sidebar) -->
-      <aside>
-        <div class="card" id="userCard">
-          <div id="userName" style="font-weight:800">Anonymous</div>
-          <div id="userEmail" class="small muted">Not signed in</div>
-          <div style="margin-top:8px">
-            <div class="small">Account status: <strong id="accountStatus">Free</strong></div>
-            <div class="small">Premium expires: <span id="premiumExpiry">—</span></div>
-          </div>
-        </div>
-
-        <div class="card section">
-          <h4>Admin Alerts</h4>
-          <div class="small muted">Certain admin-provided links may pay ultra coins +200 when present.</div>
-          <div style="margin-top:8px">
-            <div class="small">Example premium links:</div>
-            <ul class="small muted">
-              <li>cludymovie.com</li>
-              <li>newswithsk.com</li>
-              <li>gewnews.com</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="card section">
-          <h4>Admin / Payments</h4>
-          <div id="adminPanel" class="small muted">(Sign in as admin to see pending requests)</div>
-          <div id="paymentsList" class="payments-list"></div>
-        </div>
-      </aside>
-    </main>
-
-    <footer class="container footer">
-      © <span id="year"></span> AdBoost — demo. Server functions required to make coin operations secure. See inline comments for next steps.
-    </footer>
-  </div>
-
-  <script>
-  /*************************************************************************
-   * Full single-file client app (Firebase compat SDK)
-   *
-   * What this file does:
-   * - Initializes Firebase client (Auth / Firestore / Storage)
-   * - Gmail-only Google sign-in, creates a users/{uid} doc if missing
-   * - Shows header counters from users/{uid}.coins
-   * - Web-traffic: lets user open multiple iframe slots. For each slot it:
-   *     - creates sessions/{sessionId} doc (client-side)
-   *     - creates heartbeat docs under sessions/{sessionId}/heartbeats every 5s while visible
-   *   IMPORTANT: Server must process these session & heartbeat docs to award coins securely.
-   * - Profile: upload screenshot to Storage, create payments_pending doc
-   * - Admin: list payments_pending docs and approve them (tries cloud function first, otherwise writes user.isPremium if current user.role === 'admin')
-   *
-   * SECURITY: This client intentionally never increments coins. All coin awarding must be
-   *           performed by a server-side function that:
-   *           - validates idToken
-   *           - checks ipHash / uaHash and anti-fraud heuristics
-   *           - atomically updates users/{uid}.coins and promotions/{promoId}.coinsSpent
-   *
-   * Suggested server functions (not included here):
-   *  - processHeartbeats: Firestore trigger or scheduled job that scans sessions + heartbeats and awards coins
-   *  - approvePayment: callable function that sets user.isPremium & premiumExpiry
-   *
-   *************************************************************************/
-
-  // --------------- Firebase client config (you provided earlier) ---------------
-  const firebaseConfig = {
-    apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
-    authDomain: "website-5636d.firebaseapp.com",
-    projectId: "website-5636d",
-    storageBucket: "website-5636d.firebasestorage.app",
-    messagingSenderId: "737574321288",
-    appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
-    measurementId: "G-S64W6JR12C"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  const storage = firebase.storage();
-
-  // ---------------- UI helpers ----------------
-  const el = id => document.getElementById(id);
-  const adminLinks = [
-    'https://cludymovie.com',
-    'https://newswithsk.com',
-    'https://gewnews.com',
-    'https://otieu.com/4/9677163',
-    'https://otieu.com/4/9677167'
-  ]; // used for demo iframes
-
-  // free / premium constants
-  const FREE_MAX_IFRAMES = 3;
-  const PREMIUM_MAX_IFRAMES = 15;
-  const HEARTBEAT_INTERVAL_MS = 5000;
-  const FREE_LIMIT_SECONDS = 60; // free sessions auto-limit
-
-  // state
-  let currentUser = null;
-  let userDocUnsub = null;
-  let activeSessions = {}; // sessionId => {intervalId, hbCounter}
-
-  // set year in footer
-  el('year').textContent = new Date().getFullYear();
-
-  // navigation
-  document.querySelectorAll('[data-nav]').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      const target = a.getAttribute('data-nav');
-      showSection(target);
-    });
-  });
-  function showSection(id) {
-    ['home','web-traffic','direct-link','yt-watch','launch-ad','profile'].forEach(s => {
-      const elS = document.getElementById(s);
-      if (elS) elS.style.display = (s === id ? '' : 'none');
-    });
-    // highlight nav (simple)
-    document.querySelectorAll('.nav a').forEach(a => a.style.opacity = '0.9');
-    const navA = document.querySelector('.nav a[href="#"][data-nav="'+id+'"]');
-    if (navA) navA.style.opacity = '1';
-  }
-  showSection('home');
-
-  // ---------------- Auth: Gmail-only Google sign-in ----------------
-  el('signInBtn').addEventListener('click', async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    try {
-      const res = await auth.signInWithPopup(provider);
-      const user = res.user;
-      if (!user.email.endsWith('@gmail.com')) {
-        await auth.signOut();
-        alert('Only @gmail.com accounts are allowed. Please sign in with a Gmail account.');
-        return;
+    loginBtn.addEventListener('click', async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        currentUser = result.user;
+        await initUser();
+      } catch (err) {
+        alert(err.message);
       }
-      // user will be handled in onAuthStateChanged
-    } catch(err) {
-      console.error(err);
-      alert('Sign-in failed: '+(err.message || err));
-    }
-  });
-  el('signOutBtn').addEventListener('click', () => auth.signOut());
-
-  // ---------------- Auth state observer and user doc handling ----------------
-  auth.onAuthStateChanged(async (u) => {
-    currentUser = u;
-    if (!u) {
-      el('signInBtn').style.display = '';
-      el('signOutBtn').style.display = 'none';
-      el('userName').textContent = 'Anonymous';
-      el('userEmail').textContent = 'Not signed in';
-      el('accountStatus').textContent = 'Free';
-      el('premiumExpiry').textContent = '—';
-      el('refCode').textContent = '—';
-      el('refLink').textContent = '—';
-      // detach user doc listener
-      if (userDocUnsub) userDocUnsub(); userDocUnsub = null;
-      // reset header counters
-      el('hdr-W').textContent = '—'; el('hdr-D').textContent = '—'; el('hdr-YT').textContent = '0:00:00';
-      // reset web traffic slider
-      setMaxIframes(FREE_MAX_IFRAMES);
-      return;
-    }
-    el('signInBtn').style.display = 'none';
-    el('signOutBtn').style.display = '';
-    el('userName').textContent = u.displayName || 'User';
-    el('userEmail').textContent = u.email;
-
-    // create user doc if missing
-    const uRef = db.collection('users').doc(u.uid);
-    const snap = await uRef.get();
-    if (!snap.exists) {
-      await uRef.set({
-        displayName: u.displayName || '',
-        email: u.email,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        referralCode: 'ref-' + u.uid.slice(0,8),
-        referredBy: null,
-        coins: { W: 0, D: 0, YT_time_secs: 0, YT_views: 0 },
-        commissionBalance: 0,
-        isPremium: false,
-        premiumExpiry: null,
-        role: 'user'
-      });
-    }
-
-    // live listener for user doc
-    if (userDocUnsub) userDocUnsub();
-    userDocUnsub = uRef.onSnapshot(snap => {
-      if (!snap.exists) return;
-      const data = snap.data();
-      const coins = data.coins || {W:0,D:0,YT_time_secs:0,YT_views:0};
-      el('hdr-W').textContent = coins.W ?? 0;
-      el('hdr-D').textContent = coins.D ?? 0;
-      el('hdr-YT').textContent = formatTime(coins.YT_time_secs ?? 0);
-      el('userName').textContent = data.displayName || u.displayName || 'User';
-      el('accountStatus').textContent = data.isPremium ? 'Premium' : 'Free';
-      el('premiumExpiry').textContent = data.premiumExpiry ? new Date(data.premiumExpiry.seconds*1000).toLocaleString() : '—';
-      el('refCode').textContent = data.referralCode || '—';
-      el('refLink').textContent = location.href.split('#')[0] + '?ref=' + (data.referralCode || '');
-      // set iframe limits
-      const premiumActive = data.isPremium && data.premiumExpiry && (data.premiumExpiry.seconds * 1000 > Date.now());
-      setMaxIframes(premiumActive ? PREMIUM_MAX_IFRAMES : FREE_MAX_IFRAMES);
     });
-  });
 
-  function setMaxIframes(max) {
-    el('countRange').max = max;
-    // if range value is higher than max, set to max
-    if (Number(el('countRange').value) > max) el('countRange').value = max;
-    el('countValue').textContent = el('countRange').value + ' ad(s)';
-    el('freeLimit').textContent = FREE_MAX_IFRAMES;
-    el('premiumLimit').textContent = PREMIUM_MAX_IFRAMES;
-    if (max > FREE_MAX_IFRAMES) el('upgradeNote').style.display = 'none';
-    else el('upgradeNote').style.display = '';
-  }
+    logoutBtn.addEventListener('click', async () => {
+      await signOut(auth);
+      location.reload();
+    });
 
-  el('countRange').addEventListener('input', (e) => {
-    el('countValue').textContent = e.target.value + ' ad(s)';
-  });
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await initUser();
+      } else {
+        document.getElementById('auth-section').style.display = 'block';
+        document.getElementById('dashboard').style.display = 'none';
+      }
+    });
 
-  // --------------- Web Traffic: create sessions & heartbeat heartbeats ---------------
-  el('startWatchBtn').addEventListener('click', async () => {
-    if (!currentUser) { alert('Sign in first'); return; }
-    const count = Number(el('countRange').value || 1);
-    startWatching(count);
-    el('startWatchBtn').disabled = true;
-    el('stopWatchBtn').disabled = false;
-  });
+    // -------------------------------
+    // INITIALIZE USER DOCUMENT
+    // -------------------------------
+    async function initUser() {
+      document.getElementById('auth-section').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      userDocRef = doc(db, 'users', currentUser.uid);
+      const docSnap = await getDoc(userDocRef);
 
-  el('stopWatchBtn').addEventListener('click', () => {
-    stopAllSessions();
-    el('startWatchBtn').disabled = false;
-    el('stopWatchBtn').disabled = true;
-  });
-
-  function renderFrames(count, sessionIds=[]) {
-    const area = el('framesArea');
-    area.innerHTML = '';
-    for (let i=0;i<count;i++){
-      const sid = sessionIds[i] || '';
-      const slot = document.createElement('div'); slot.className = 'iframe-slot card';
-      slot.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="small">Slot #${i+1}</div>
-          <div id="slot-sec-${i}" class="small muted">0s</div>
-        </div>
-        <div class="iframe-wrap" id="wrap-${i}"><div class="small muted" style="padding:10px">Loading ad...</div></div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="small">Session: <span id="slot-sid-${i}">${sid}</span></div>
-          <div class="small"><button id="slot-stop-${i}" class="btn btn-ghost">Stop</button></div>
-        </div>
-      `;
-      area.appendChild(slot);
-
-      // stop handler
-      (function(i){
-        document.getElementById('slot-stop-'+i).addEventListener('click', () => {
-          const sid = document.getElementById('slot-sid-'+i).textContent;
-          stopSession(sid);
+      if (!docSnap.exists()) {
+        // New user
+        await setDoc(userDocRef, {
+          email: currentUser.email,
+          displayName: currentUser.displayName,
+          username: currentUser.displayName,
+          role: "free",
+          plan: "none",
+          premium_expiry: null,
+          coins: { usable: 0, pending: 0 },
+          W_coins: 0,
+          D_coins: 0,
+          yt_views: 0,
+          yt_watch_seconds: 0,
+          referrer: null,
+          createdAt: serverTimestamp()
         });
-      })(i);
-    }
-  }
-
-  async function startWatching(count) {
-    const userRef = db.collection('users').doc(currentUser.uid);
-    const userSnap = await userRef.get();
-    const userData = userSnap.exists ? userSnap.data() : {};
-    const isPremium = userData.isPremium && userData.premiumExpiry && (userData.premiumExpiry.seconds * 1000 > Date.now());
-
-    // if user tries to watch more than allowed, block
-    const max = isPremium ? PREMIUM_MAX_IFRAMES : FREE_MAX_IFRAMES;
-    if (count > max) {
-      alert(`Max allowed is ${max}. Upgrade to premium to watch more at once.`);
-      return;
-    }
-
-    // create sessions client-side in Firestore and render frames
-    const sessionIds = [];
-    for (let i=0;i<count;i++){
-      // choose ad URL (server should pick an ad - client picks demo ad here)
-      const url = adminLinks[(Math.floor(Math.random()*adminLinks.length))];
-
-      const sessionRef = db.collection('sessions').doc();
-      const sessionData = {
-        userId: currentUser.uid,
-        iframeIndex: i,
-        url,
-        promoId: null, // in production server should assign a promotion id
-        startedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        lastHeartbeatAt: null,
-        heartbeatCount: 0,
-        credited: false,
-        limitSeconds: isPremium ? 3600 : FREE_LIMIT_SECONDS // server should enforce as well
-      };
-      await sessionRef.set(sessionData);
-      sessionIds.push(sessionRef.id);
-    }
-
-    renderFrames(count, sessionIds);
-
-    // start heartbeat loops for each session
-    for (let i=0;i<sessionIds.length;i++){
-      const sid = sessionIds[i];
-      const wrap = document.getElementById('wrap-'+i);
-      const slotSidEl = document.getElementById('slot-sid-'+i);
-      if (wrap) {
-        // create iframe
-        wrap.innerHTML = `<iframe id="iframe-${i}" src="${adminLinks[i % adminLinks.length]}" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>`;
-        // detect blocked iframe after 1s
-        setTimeout(() => {
-          const iframe = document.getElementById('iframe-'+i);
-          let blocked = false;
-          try {
-            // accessing .contentWindow may throw if cross-origin not allowed; don't rely on it for security
-            const cw = iframe && iframe.contentWindow;
-            if (!cw) blocked = true;
-          } catch(e) {
-            blocked = true;
-          }
-          if (blocked) wrap.innerHTML = `<div class="small muted" style="padding:10px">This page blocks embedding. Ask advertiser to provide an embeddable landing page.</div>`;
-        }, 1200);
       }
 
-      // create heartbeat interval
-      let seconds = 0;
-      const secEl = document.getElementById('slot-sec-'+i);
-      const hbInterval = setInterval(async () => {
-        seconds += 5;
-        if (secEl) secEl.textContent = seconds + 's';
-        // write heartbeat document under session
-        try {
-          await db.collection('sessions').doc(sid).collection('heartbeats').add({
-            ts: firebase.firestore.FieldValue.serverTimestamp(),
-            userAgent: navigator.userAgent,
-            visibility: document.visibilityState,
+      // Listen live updates
+      onSnapshot(userDocRef, (docSnap) => {
+        const data = docSnap.data();
+        document.getElementById('displayName').innerText = data.displayName;
+        document.getElementById('coins').innerText = data.coins.usable;
+        document.getElementById('W_coins').innerText = data.W_coins;
+        document.getElementById('D_coins').innerText = data.D_coins;
+        document.getElementById('yt_views').innerText = data.yt_views;
+        document.getElementById('yt_watch_seconds').innerText = data.yt_watch_seconds;
+        document.getElementById('premiumStatus').innerText = (data.role === "premium") ? "Premium ✅" : "Free ❌";
+      });
+    }
+
+    // -------------------------------
+    // EARN COINS FUNCTION (WEB TRAFFIC EXAMPLE)
+    // -------------------------------
+    let currentIframe = 0;
+    const webAds = ["http://cludymovie.com/", "http://newswithsk.com/"];
+    const iframeEl = document.getElementById('web-iframe');
+    const timerEl = document.getElementById('web-timer');
+
+    function startWebAds() {
+      iframeEl.src = webAds[currentIframe];
+      let seconds = 15;
+      timerEl.innerText = seconds;
+
+      const interval = setInterval(async () => {
+        seconds--;
+        timerEl.innerText = seconds;
+        if (seconds <= 0) {
+          clearInterval(interval);
+          // Add 500 W_coins
+          await updateDoc(userDocRef, {
+            W_coins: incrementField('W_coins', 500),
+            'coins.usable': incrementField('coins.usable', 500)
           });
-          // also update session doc lastHeartbeatAt and increment count (client-only)
-          await db.collection('sessions').doc(sid).update({
-            lastHeartbeatAt: firebase.firestore.FieldValue.serverTimestamp(),
-            heartbeatCount: firebase.firestore.FieldValue.increment(1)
-          });
-        } catch (err) {
-          console.error('hb write err', err);
+          // Next iframe
+          currentIframe = (currentIframe + 1) % webAds.length;
+          startWebAds();
         }
-
-        // optional: for free users, auto-stop after limit
-        if (!isPremium && seconds >= FREE_LIMIT_SECONDS) {
-          clearInterval(hbInterval);
-          // let user know this slot expired
-          if (secEl) secEl.textContent = 'expired';
-        }
-      }, HEARTBEAT_INTERVAL_MS);
-      activeSessions[sid] = { intervalId: hbInterval, sid };
-    }
-  }
-
-  function stopAllSessions() {
-    Object.values(activeSessions).forEach(s => {
-      clearInterval(s.intervalId);
-      // finalize session: in production call server finalize or mark session finished
-    });
-    activeSessions = {};
-    el('framesArea').innerHTML = '';
-  }
-
-  async function stopSession(sessionId) {
-    const s = activeSessions[sessionId];
-    if (s) {
-      clearInterval(s.intervalId);
-      delete activeSessions[sessionId];
-      // optionally mark finished in db
-      await db.collection('sessions').doc(sessionId).update({ finishedAt: firebase.firestore.FieldValue.serverTimestamp() });
-      // re-render frames area to remove the slot
-      // naive approach: reload current frames
-      el('framesArea').querySelectorAll('.iframe-slot').forEach(slot => slot.remove());
-    }
-  }
-
-  // ---------------- Direct link demo ----------------
-  el('openDemoLink').addEventListener('click', () => {
-    window.open('https://otieu.com/4/9677163','_blank');
-  });
-
-  // ---------------- Video watch demo (self-hosted) ----------------
-  let videoSessionId = null;
-  let videoHbInterval = null;
-  el('startVideoSession').addEventListener('click', async () => {
-    if (!currentUser) { alert('Sign in first'); return; }
-    const video = document.getElementById('demoVideo');
-    // create a video session doc
-    const sRef = db.collection('sessions').doc();
-    await sRef.set({
-      userId: currentUser.uid,
-      type: 'video',
-      url: video.currentSrc || '',
-      startedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      lastHeartbeatAt: null,
-      heartbeatCount: 0,
-      credited: false,
-      limitSeconds: FREE_LIMIT_SECONDS
-    });
-    videoSessionId = sRef.id;
-    video.play();
-    let sec = 0;
-    el('videoTimer').textContent = '0s';
-    videoHbInterval = setInterval(async () => {
-      sec += 5;
-      el('videoTimer').textContent = sec+'s';
-      await sRef.collection('heartbeats').add({ ts: firebase.firestore.FieldValue.serverTimestamp(), playbackTime: video.currentTime });
-      await sRef.update({ lastHeartbeatAt: firebase.firestore.FieldValue.serverTimestamp(), heartbeatCount: firebase.firestore.FieldValue.increment(1) });
-      if (sec >= FREE_LIMIT_SECONDS) {
-        clearInterval(videoHbInterval);
-        alert('Free limit reached (60s). Upgrade to premium to continue this session.');
-      }
-    }, HEARTBEAT_INTERVAL_MS);
-    el('startVideoSession').disabled = true;
-    el('stopVideoSession').disabled = false;
-  });
-
-  el('stopVideoSession').addEventListener('click', async () => {
-    if (!videoSessionId) return;
-    clearInterval(videoHbInterval);
-    await db.collection('sessions').doc(videoSessionId).update({ finishedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    videoSessionId = null;
-    el('startVideoSession').disabled = false;
-    el('stopVideoSession').disabled = true;
-  });
-
-  // ---------------- Launch Ad client stub ----------------
-  el('createAdBtn').addEventListener('click', async () => {
-    if (!currentUser) { alert('Sign in first'); return; }
-    const type = el('adType').value;
-    const url = el('adUrl').value.trim();
-    const budget = Number(el('adBudget').value || 0);
-    if (!url || budget <= 0) { alert('Enter valid values'); return; }
-    // client-side demo: create promotions doc (server should validate and deduct coins)
-    try {
-      const promoRef = db.collection('promotions').doc();
-      await promoRef.set({
-        ownerId: currentUser.uid,
-        type,
-        link: url,
-        budgetCoins: budget,
-        coinsSpent: 0,
-        status: 'active',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      alert('Promotion created (client-side). Server should validate and deduct coins in production.');
-    } catch (err) {
-      console.error(err); alert('Failed to create promotion: '+err.message);
-    }
-  });
-
-  // ---------------- Profile: manual payment submission ----------------
-  el('submitPaymentReq').addEventListener('click', async () => {
-    if (!currentUser) { alert('Sign in first'); return; }
-    const plan = el('planSelect').value;
-    const method = el('methodSelect').value;
-    const trx = el('trxInput').value.trim();
-    const file = el('screenshotInput').files[0];
-    if (!trx || !file) { alert('TRX ID and screenshot are required'); return; }
-
-    try {
-      // upload file to storage
-      const path = `payments/${currentUser.uid}/${Date.now()}-${file.name}`;
-      const ref = storage.ref(path);
-      await ref.put(file);
-      const url = await ref.getDownloadURL();
-
-      // write payments_pending doc
-      await db.collection('payments_pending').add({
-        userId: currentUser.uid,
-        plan,
-        amount: plan === 'weekly' ? 5 : 30,
-        method,
-        trxId: trx,
-        screenshotPath: path,
-        screenshotUrl: url,
-        status: 'pending',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      alert('Payment request submitted. Admin will review and approve.');
-    } catch (err) {
-      console.error(err);
-      alert('Payment request failed: '+err.message);
-    }
-  });
-
-  // ---------------- Admin: list pending payments ----------------
-  async function refreshPaymentsList() {
-    const list = el('paymentsList');
-    list.innerHTML = '';
-    if (!currentUser) return;
-    // attempt to load only if admin (here we read all and hide content to non-admin)
-    const udoc = await db.collection('users').doc(currentUser.uid).get();
-    const role = udoc.exists ? udoc.data().role : null;
-    if (role !== 'admin') { list.innerHTML = '<div class="small muted">You are not an admin.</div>'; return; }
-    const snap = await db.collection('payments_pending').where('status','==','pending').orderBy('createdAt','desc').get();
-    if (snap.empty) { list.innerHTML = '<div class="small muted">No pending payments</div>'; return; }
-    snap.forEach(doc=> {
-      const d = doc.data(); const id = doc.id;
-      const div = document.createElement('div'); div.className='payment-item';
-      div.innerHTML = `
-        <div>
-          <div><strong>${d.userId}</strong> ${d.plan} $${d.amount}</div>
-          <div class="small muted">TRX: ${d.trxId}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="margin-bottom:6px"><a target="_blank" href="${d.screenshotUrl || '#'}" class="small">View screenshot</a></div>
-          <button data-id="${id}" class="btn btn-primary approveBtn">Approve</button>
-        </div>
-      `;
-      list.appendChild(div);
-    });
-    // hook approve buttons
-    document.querySelectorAll('.approveBtn').forEach(b => b.addEventListener('click', (ev) => {
-      const id = ev.target.getAttribute('data-id');
-      approvePayment(id).catch(err => alert('Approve failed: '+err.message));
-    }));
-  }
-
-  // call refresh when admin panel visible or user changes
-  auth.onAuthStateChanged(u => {
-    setTimeout(() => refreshPaymentsList(), 600);
-  });
-
-  // ---------------- Approve payment (tries cloud function or direct admin write) ----------------
-  async function approvePayment(paymentId) {
-    if (!currentUser) throw new Error('Sign in as admin');
-    // prefer Cloud Function (https callable) at /approvePayment — implement server function for safety
-    // fallback: if your admin user has role == 'admin' in users/{uid} doc, we update user document directly
-    try {
-      // attempt callable function (if you deploy to /approvePayment)
-      // If you have Netlify Functions, change the URL accordingly
-      const cfUrl = '/.netlify/functions/approvePayment'; // placeholder
-      const resp = await fetch(cfUrl, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ paymentId })
-      });
-      if (resp.ok) {
-        const r = await resp.json();
-        if (r.ok) { alert('Approved via function'); refreshPaymentsList(); return; }
-      }
-    } catch (err) {
-      console.warn('function approve failed or not deployed', err);
+      }, 1000);
     }
 
-    // fallback: direct admin update (only works if current user has role 'admin' per Firestore rules)
-    const payRef = db.collection('payments_pending').doc(paymentId);
-    const payDoc = await payRef.get();
-    if (!payDoc.exists) throw new Error('payment not found');
-    const pdata = payDoc.data();
-    // compute expiry
-    const now = Date.now();
-    const durMs = pdata.plan === 'weekly' ? 7*24*3600*1000 : 30*24*3600*1000;
-    const expiry = new Date(now + durMs);
+    // Helper for incrementing numeric fields safely
+    function incrementField(field, value) {
+      return { [field]: (currentUserData()[field] || 0) + value };
+    }
 
-    // perform batch: set payment status, set user's premium fields
-    const batch = db.batch();
-    batch.update(payRef, { status:'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: currentUser.uid });
-    const userRef = db.collection('users').doc(pdata.userId);
-    batch.update(userRef, { isPremium: true, premiumExpiry: firebase.firestore.Timestamp.fromDate(expiry) });
-    await batch.commit();
-    alert('Payment approved (client-side). In production use server-side approval for security.');
-    refreshPaymentsList();
-  }
-
-  // utility: format seconds to H:MM:SS
-  function formatTime(sec) {
-    if (!sec) return '0:00:00';
-    const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
-    return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  }
-
-  // initial UI setup
-  document.addEventListener('DOMContentLoaded', () => {
-    el('hdr-W').textContent = '—';
-    el('hdr-D').textContent = '—';
-    el('hdr-YT').textContent = '0:00:00';
-    el('countRange').max = FREE_MAX_IFRAMES;
-    el('countValue').textContent = el('countRange').value + ' ad(s)';
-  });
-
-  // small: refresh payments list periodically for admin
-  setInterval(() => { if (currentUser) refreshPaymentsList(); }, 60_000);
+    function currentUserData() {
+      return window.userData || {};
+    }
 
   </script>
 
-  <!-- ------------- Notes for server (paste into your repo) -------------
-    1) You MUST implement server-side processing for awarding coins.
-       Suggested approach:
-       - Use a Cloud Function or Netlify Function that listens for new heartbeat documents
-         or scans sessions and heartbeats periodically.
-       - Validate ID token, compute ipHash/uaHash, verify heartbeats are real (visibility, spacing),
-         require a minimum number of heartbeats (e.g., 3 heartbeats over 15s) before awarding coins.
-       - Award coins inside a Firestore transaction that increments users/{uid}.coins and updates promotions/{promoId}.coinsSpent.
-       - Create transaction audit docs (transactions collection) and impression docs.
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 0; padding: 0; }
+    header { background: #1a73e8; color: white; padding: 1rem; text-align: center; }
+    #dashboard { display: none; padding: 1rem; }
+    #auth-section { display: none; text-align: center; margin-top: 50px; }
+    button { padding: 0.5rem 1rem; margin: 0.5rem; cursor: pointer; }
+    iframe { width: 100%; height: 300px; border: none; margin-top: 1rem; }
+    .stats { display: flex; justify-content: space-around; margin-top: 1rem; }
+    .card { background: white; padding: 1rem; border-radius: 8px; width: 18%; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
+  </style>
+</head>
+<body>
 
-    2) Suggested Firestore security rules (put in Firebase console):
-       rules_version = '2';
-       service cloud.firestore {
-         match /databases/{database}/documents {
-           match /users/{uid} {
-             allow read: if request.auth != null && request.auth.uid == uid;
-             allow create: if request.auth != null && request.auth.uid == uid;
-             allow update: if request.auth != null && request.auth.uid == uid
-                          && !(request.resource.data.keys().hasAny(['coins','isPremium','premiumExpiry','commissionBalance','role']));
-             allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-           }
-           match /sessions/{sid} {
-             allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-             allow read: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-             allow update, delete: if false;
-           }
-           match /sessions/{sid}/heartbeats/{hb} {
-             allow create: if request.auth != null && request.auth.uid == resource.parent.data.userId;
-             allow read: if request.auth != null;
-           }
-           match /payments_pending/{pid} {
-             allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-             allow read: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-             allow update: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-           }
-           match /{document=**} { allow read, write: if false; }
-         }
-       }
+<header>
+  <h1>Ad4U Dashboard</h1>
+  <button id="login-btn">Login with Google</button>
+  <button id="logout-btn">Logout</button>
+</header>
 
-    3) Server function examples (high level):
-       - processHeartbeats (HTTP or Firestore-triggered): read sessions and heartbeats, verify min heartbeats,
-         run Firestore transaction to increment users/{uid}.coins.W by awardAmount and mark sessions/{sid}.credited = true.
-       - approvePayment (callable): check admin auth, set payments_pending.status = 'approved', set users/{uid}.isPremium = true and premiumExpiry accordingly.
+<!-- AUTH -->
+<div id="auth-section">
+  <h2>Please Login to Continue</h2>
+</div>
 
-    4) YouTube note: Do NOT incentivize standard YouTube videos — use self-hosted or partner-permitted content.
-    --------------------------------------------------------------------------- -->
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <h2>Welcome, <span id="displayName"></span></h2>
+  <div class="stats">
+    <div class="card">Coins: <span id="coins">0</span></div>
+    <div class="card">Web Traffic: <span id="W_coins">0</span></div>
+    <div class="card">Direct Links: <span id="D_coins">0</span></div>
+    <div class="card">YT Views: <span id="yt_views">0</span></div>
+    <div class="card">YT Watch Sec: <span id="yt_watch_seconds">0</span></div>
+    <div class="card">Premium: <span id="premiumStatus">Free ❌</span></div>
+  </div>
+
+  <h3>Web Traffic Ads</h3>
+  <iframe id="web-iframe"></iframe>
+  <p>Time remaining: <span id="web-timer">0</span> sec</p>
+
+  <button onclick="startWebAds()">Start Earning Coins</button>
+
+</div>
+
 </body>
 </html>
