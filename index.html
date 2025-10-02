@@ -114,6 +114,20 @@
             border-left: 4px solid var(--accent);
         }
 
+        /* Timed Promo Modal Styling */
+        .promo-modal-overlay {
+            z-index: 50;
+            /* Start hidden */
+            display: none; 
+            opacity: 0;
+        }
+
+        .promo-modal-overlay.visible {
+            /* End state visible */
+            display: flex;
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
@@ -121,9 +135,13 @@
         <!-- Main Application Header -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 border-b border-[#30363d]">
             <h1 class="text-3xl font-extrabold text-white">AdExchange Platform</h1>
-            <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+            <div class="flex items-center space-x-2 mt-3 sm:mt-0">
+                <!-- Authentication Status/Buttons -->
                 <div id="auth-status" class="flex items-center space-x-2">
-                    <button id="btn-auth" class="btn-primary text-sm">Sign In / Sign Up (Gmail)</button>
+                    <!-- Dynamic content will be injected here by initAuthListeners -->
+                    <button id="btn-signup" class="btn-secondary text-sm">Sign Up</button>
+                    <button id="btn-signin" class="btn-secondary text-sm">Sign In</button>
+                    <button id="btn-gmail-auth" class="btn-primary text-sm">Login with Gmail</button>
                 </div>
             </div>
         </header>
@@ -184,19 +202,40 @@
                         </button>
                     </div>
 
-                    <!-- Admin Links / Premium Ads -->
+                    <!-- Timed Promo Notice -->
                     <div class="card">
-                        <h3 class="text-lg font-semibold mb-3">
-                            Premium Ads <span id="admin-timer" class="text-xs text-green-400 ml-2">(Next in 120s)</span>
-                        </h3>
-                        <div id="admin-links-container" class="space-y-3">
-                            <p class="text-sm text-gray-500">Waiting for first admin ad cycle...</p>
+                        <h3 class="text-lg font-semibold mb-3">Timed Promotions</h3>
+                        <div class="p-3 highlight-notice text-sm">
+                            <p class="font-bold text-yellow-400">Recurring Content Alert:</p>
+                            <p class="text-gray-300">A special promotion window with key links will automatically appear every 2 minutes. This ensures maximum visibility for all users.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- 2-Minute Promotion Modal Overlay -->
+    <div id="promo-modal-overlay" class="promo-modal-overlay fixed inset-0 bg-black bg-opacity-80 items-center justify-center transition-opacity duration-300">
+        <div id="promo-modal" class="bg-gray-800 rounded-xl shadow-2xl max-w-xl w-11/12 p-2 relative transform transition-transform duration-300">
+            <!-- Close Button -->
+            <button onclick="closePromoModal()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-200 z-10 p-2 bg-gray-900 rounded-full">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <h3 class="text-xl font-bold text-center text-indigo-400 pt-4 pb-2">Related Subpage Promotion (Every 2 Min)</h3>
+            <p class="text-sm text-center text-gray-400 mb-2">Exclusive links for website traffic and YouTube growth.</p>
+
+            <div class="iframe-container-promo h-96 w-full rounded-lg overflow-hidden border-4 border-indigo-500">
+                <iframe id="promo-iframe" src="about:blank" class="w-full h-full" frameborder="0"></iframe>
+            </div>
+
+            <button onclick="closePromoModal()" class="w-full mt-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">
+                Continue to Platform
+            </button>
+        </div>
+    </div>
+
 
     <!-- Firebase SDK Imports and App Logic -->
     <script type="module">
@@ -247,16 +286,16 @@
         const DLINK_REWARD = 1000;
         const YT_VIEW_DURATION = 5; // seconds per view
         
-        const ADMIN_BONUS_COINS = 200;
-        const ADMIN_AD_CYCLE_TIME = 120; // 2 minutes
+        // Links for the 2-minute promotional iFrame
+        const PROMO_LINKS = [
+            { title: "Website Traffic: cludymovie.com", url: "http://cludymovie.com/", type: 'web' },
+            { title: "Website Traffic: newswithsk.com", url: "http://newswithsk.com", type: 'web' },
+            { title: "Direct Link: otieu.com", url: "https://otieu.com/4/9677163", type: 'dlink' },
+            { title: "Direct Link: otieu.com (Duplicate)", url: "https://otieu.com/4/9677163", type: 'dlink' },
+            { title: "YouTube Watch Time/Views Video", url: "https://www.youtube.com/watch?v=Uw9bqrrV-yI", type: 'yt' },
+        ];
+        const PROMO_INTERVAL_TIME = 120000; // 2 minutes
 
-        const ADMIN_LINKS = {
-            web: ["https://cludymovie.com", "https://newswithsk.com", "https://gewnews.com"],
-            dlink: ["https://otieu.com/4/9677163", "https://otieu.com/4/9677167"],
-            ytwatch: ["https://www.youtube.com/watch?v=7X6tWXDminE"],
-            ytviews: ["https://www.youtube.com/watch?v=7X6tWXDminE"]
-        };
-        
         // --- Firebase Helpers ---
         const getUserDocRef = (uid) => doc(db, 'artifacts', appId, 'users', uid, 'user_data', 'profile');
         const getPublicAdsCollection = () => collection(db, 'artifacts', appId, 'public', 'data', 'ads');
@@ -570,18 +609,6 @@
                 
                 let fetchedAds = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'user' }));
 
-                // Add Admin links to the pool (20% chance they appear)
-                if (Math.random() < 0.2) {
-                     const adminLinks = ADMIN_LINKS[category] || [];
-                     const adminAds = adminLinks.map(url => ({ 
-                        id: `admin-${crypto.randomUUID()}`, 
-                        url: url, 
-                        type: 'admin', 
-                        costPerImpression: WEB_REWARD + ADMIN_BONUS_COINS 
-                    }));
-                    fetchedAds.push(...adminAds);
-                }
-                
                 // Shuffle the list
                 for (let i = fetchedAds.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -599,25 +626,19 @@
         const processAdComplete = async (category, reward) => {
             const ad = currentAds[currentAdIndex];
             
-            if (ad.type === 'admin') {
-                // Admin ad gives bonus coins, but no budget deduction needed
-                await earnCoins(category, reward + ADMIN_BONUS_COINS);
-                alert(`PREMIUM BONUS! You earned ${reward} (base) + ${ADMIN_BONUS_COINS} (bonus) W-Coins!`);
-            } else {
-                // User ad: earn coins and deduct budget
-                const success = await earnCoins(category, reward);
-                
-                if (success) {
-                    try {
-                        const adRef = doc(getPublicAdsCollection(), ad.id);
-                        await updateDoc(adRef, { 
-                            budget: increment(-reward),
-                            impressions: increment(1)
-                        });
-                        console.log(`Ad budget for ${ad.id} deducted by ${reward}.`);
-                    } catch (e) { 
-                        console.error("Could not update ad budget (Ad may be completed):", e); 
-                    }
+            // User ad: earn coins and deduct budget
+            const success = await earnCoins(category, reward);
+            
+            if (success) {
+                try {
+                    const adRef = doc(getPublicAdsCollection(), ad.id);
+                    await updateDoc(adRef, { 
+                        budget: increment(-reward),
+                        impressions: increment(1)
+                    });
+                    console.log(`Ad budget for ${ad.id} deducted by ${reward}.`);
+                } catch (e) { 
+                    console.error("Could not update ad budget (Ad may be completed):", e); 
                 }
             }
         }
@@ -640,9 +661,7 @@
                 const ad = currentAds[currentAdIndex];
                 
                 iframe.src = ad.url;
-                adStatusEl.textContent = ad.type === 'admin' 
-                    ? `Premium Ad: ${ad.url.substring(0, 30)}... (+${ADMIN_BONUS_COINS} Bonus)`
-                    : `Viewing Ad: ${ad.url.substring(0, 30)}...`;
+                adStatusEl.textContent = `Viewing Ad: ${ad.url.substring(0, 30)}...`;
                 adTimerSeconds = duration;
                 nextButton.disabled = true;
             }
@@ -791,64 +810,77 @@
             }
         };
 
-        // --- Admin Ad Cycle ---
-        const runAdminAdCycle = () => {
-            let timeLeft = ADMIN_AD_CYCLE_TIME;
-            const timerEl = document.getElementById('admin-timer');
-            const linksContainer = document.getElementById('admin-links-container');
+        // --- Timed Promotional Modal Logic ---
 
-            const cycle = () => {
-                timeLeft--;
-                timerEl.textContent = `(Next in ${timeLeft}s)`;
+        const promoOverlayEl = document.getElementById('promo-modal-overlay');
+        const promoModalEl = document.getElementById('promo-modal');
+        const promoIframeEl = document.getElementById('promo-iframe');
 
-                if (timeLeft <= 0) {
-                    timeLeft = ADMIN_AD_CYCLE_TIME; // Reset
-                    
-                    if (!currentUserId) {
-                        linksContainer.innerHTML = `<p class="text-sm text-gray-500">Sign in to see Premium Ads!</p>`;
-                        return;
-                    }
+        const generateIframeContent = (links) => {
+            const listItems = links.map(item => `
+                <li style="padding: 0.5rem; border-bottom: 1px solid #30363d; display: flex; align-items: center;">
+                    <span style="color: #FFD700; font-weight: bold; margin-right: 8px;">&bull;</span>
+                    <a href="${item.url}" target="_blank" style="color: #63b3ed; text-decoration: none; overflow-wrap: break-word; flex-grow: 1;" onmouseover="this.style.color='#90cdf4'" onmouseout="this.style.color='#63b3ed'">
+                        <span style="color: #c9d1d9; font-weight: 600;">${item.title}:</span> ${item.url}
+                    </a>
+                </li>
+            `).join('');
 
-                    // Select a random Admin Link
-                    const categories = Object.keys(ADMIN_LINKS).filter(c => ADMIN_LINKS[c].length > 0);
-                    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-                    const links = ADMIN_LINKS[randomCategory];
-                    const randomLink = links[Math.floor(Math.random() * links.length)];
+            return `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body { background-color: #161b22; color: #c9d1d9; font-family: 'Inter', sans-serif; margin: 0; padding: 1rem; }
+                        ul { list-style: none; padding: 0; margin: 0; }
+                    </style>
+                </head>
+                <body>
+                    <ul>${listItems}</ul>
+                </body>
+                </html>
+            `;
+        };
 
-                    linksContainer.innerHTML = `
-                        <div class="p-3 bg-purple-900/40 border border-purple-600 rounded-lg">
-                            <p class="text-sm font-bold text-purple-300">💎 PREMIUM AD FOR YOU! (+${ADMIN_BONUS_COINS} W-Coins)</p>
-                            <a href="${randomLink}" target="_blank" class="text-primary hover:text-blue-400 break-all text-xs">${randomLink.substring(0, 50)}...</a>
-                            <button 
-                                class="btn-primary w-full mt-2 text-xs py-1" 
-                                data-link-url="${randomLink}"
-                                id="btn-earn-admin-bonus"
-                            >
-                                View & Earn Bonus!
-                            </button>
-                        </div>
-                    `;
-                    
-                    // Attach listener for the dynamically created button
-                    const adminButton = document.getElementById('btn-earn-admin-bonus');
-                    if (adminButton) {
-                        adminButton.onclick = async (e) => {
-                            window.open(e.target.dataset.linkUrl, '_blank');
-                            // Award bonus immediately for simulation
-                            const earned = await earnCoins('admin_link', ADMIN_BONUS_COINS);
-                            if(earned) alert(`Bonus of ${ADMIN_BONUS_COINS} W-Coins earned!`);
-                            
-                            // Clear the ad after click to simulate one-time reward
-                            linksContainer.innerHTML = `<p class="text-sm text-gray-500">Premium bonus earned! Waiting for next cycle...</p>`;
-                        };
-                    }
-                }
-            };
+        const showPromoModal = () => {
+            // Only show if the user is logged in
+            if (!currentUserId) return;
+
+            // Generate the content URL and set it to the iframe
+            const htmlContent = generateIframeContent(PROMO_LINKS);
+            const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
+            promoIframeEl.src = dataUrl;
             
-            // Start the admin cycle timer
-            setInterval(cycle, 1000);
+            // Show modal with transition classes
+            promoOverlayEl.classList.remove('hidden', 'opacity-0');
+            promoOverlayEl.classList.add('flex', 'opacity-100');
+            promoModalEl.classList.remove('scale-95');
+            promoModalEl.classList.add('scale-100');
+        };
+
+        const closePromoModal = () => {
+            // Hide modal with transition classes
+            promoModalEl.classList.remove('scale-100');
+            promoModalEl.classList.add('scale-95');
+            
+            setTimeout(() => {
+                promoOverlayEl.classList.remove('flex', 'opacity-100');
+                promoOverlayEl.classList.add('hidden', 'opacity-0');
+                promoIframeEl.src = 'about:blank'; // Clear iframe content
+            }, 300); // Match transition duration
         };
         
+        const startPromoTimer = () => {
+            // Immediately show the first modal on load, and then start the interval
+            showPromoModal(); 
+            setInterval(showPromoModal, PROMO_INTERVAL_TIME);
+            console.log(`Promotion timer started. Modal will reappear every ${PROMO_INTERVAL_TIME / 1000} seconds.`);
+        };
+        
+        // Expose closePromoModal globally since it's used in the onclick attribute
+        window.closePromoModal = closePromoModal;
+
         // --- Event Handlers & Initialization ---
         
         const handleAuth = async () => {
@@ -858,7 +890,7 @@
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Google sign in error:", error);
-                alert('Sign In Failed. Only Gmail accounts accepted.');
+                // NOTE: No alert() used, console log instead.
             }
         };
 
@@ -902,8 +934,14 @@
                 } else {
                     currentUserId = null;
                     userData = { wCoins: 0, dCoins: 0, refBalance: 0, isPremium: false };
-                    authStatus.innerHTML = '<button id="btn-auth" class="btn-primary text-sm">Sign In / Sign Up (Gmail)</button>';
-                    document.getElementById('btn-auth').onclick = handleAuth;
+                    authStatus.innerHTML = `
+                        <button id="btn-signup" class="btn-secondary text-sm">Sign Up</button>
+                        <button id="btn-signin" class="btn-secondary text-sm">Sign In</button>
+                        <button id="btn-gmail-auth" class="btn-primary text-sm">Login with Gmail</button>
+                    `;
+                    document.getElementById('btn-signup').onclick = handleAuth;
+                    document.getElementById('btn-signin').onclick = handleAuth;
+                    document.getElementById('btn-gmail-auth').onclick = handleAuth;
                     updateUIBalances();
                     renderPage(); // Render unauthenticated page
                 }
@@ -927,27 +965,27 @@
                             wCoins: increment(userData.refBalance),
                             refBalance: 0
                         });
-                        alert(`Successfully collected ${userData.refBalance.toLocaleString()} W-Coins from referrals!`);
+                        // Use console log instead of alert
+                        console.log(`Successfully collected ${userData.refBalance.toLocaleString()} W-Coins from referrals!`);
                     } catch (e) {
                         console.error("Collection error:", e);
-                        alert("Failed to collect referral balance.");
                     }
                 }
             };
             
             // 3. Premium Button (Simulated)
             document.getElementById('btn-toggle-premium').onclick = async () => {
-                if (!currentUserId) return alert("Please sign in first.");
+                if (!currentUserId) return; // Silent return if not signed in
                 const action = userData.isPremium ? 'Downgrade' : 'Upgrade';
                 const newStatus = !userData.isPremium;
                 
-                if (confirm(`Do you want to ${action} your premium status? (Simulated)`)) {
-                    try {
-                        await updateDoc(getUserDocRef(currentUserId), { isPremium: newStatus });
-                        alert(`${action} successful! Status: ${newStatus ? 'Premium' : 'Free'}`);
-                    } catch (e) {
-                        alert("Failed to update premium status.");
-                    }
+                // Use custom console message instead of confirm()
+                console.log(`Simulating ${action} premium status to ${newStatus}.`);
+                
+                try {
+                    await updateDoc(getUserDocRef(currentUserId), { isPremium: newStatus });
+                } catch (e) {
+                    console.error("Failed to update premium status:", e);
                 }
             };
             
@@ -958,16 +996,16 @@
                 // Direct Link Earning (This is the button on the 'dlink' page)
                 if (target.id === 'btn-direct-link') {
                     e.preventDefault(); // Stop default button action
-                    if (!currentUserId) return alert("Please sign in to earn coins.");
+                    if (!currentUserId) return;
                     
-                    // Open a random direct link
-                    const dLink = ADMIN_LINKS.dlink[Math.floor(Math.random() * ADMIN_LINKS.dlink.length)];
+                    // Open a random direct link (using one of the user's promo links for simplicity)
+                    const dLink = PROMO_LINKS.find(link => link.type === 'dlink')?.url || 'about:blank';
                     window.open(dLink, '_blank');
                     
                     // Simulate the user completing the link view after 2 seconds
                     setTimeout(async () => {
                         const earned = await earnCoins('dlink', DLINK_REWARD);
-                        if(earned) alert(`You earned ${DLINK_REWARD} D-Coins!`);
+                        if(earned) console.log(`You earned ${DLINK_REWARD} D-Coins!`);
                     }, 2000); 
                 }
             });
@@ -976,15 +1014,15 @@
                 // Ad Launch Form Submission
                 if (e.target.id === 'ad-launch-form') {
                     e.preventDefault();
-                    if (!currentUserId) return alert("Please sign in to launch ads.");
+                    if (!currentUserId) return;
                     
                     const form = e.target;
                     const category = form.elements['category'].value;
                     const url = form.elements['url'].value;
                     const budget = parseInt(form.elements['budget'].value);
                     
-                    if (budget > userData.wCoins) return alert("Budget exceeds your W-Coins balance.");
-                    if (budget < 500) return alert("Minimum budget is 500 W-Coins.");
+                    if (budget > userData.wCoins) return console.error("Budget exceeds your W-Coins balance.");
+                    if (budget < 500) return console.error("Minimum budget is 500 W-Coins.");
                     
                     // Deduct budget from W-Coins and create ad document
                     try {
@@ -1004,12 +1042,11 @@
                             createdAt: new Date().toISOString()
                         });
                         
-                        alert(`Ad campaign launched successfully! ${budget} W-Coins deducted.`);
+                        console.log(`Ad campaign launched successfully! ${budget} W-Coins deducted.`);
                         changeTab('adlaunch'); 
                         
                     } catch (e) {
                         console.error("Ad Launch Error:", e);
-                        alert("Failed to launch ad campaign. Check console.");
                     }
                 }
             });
@@ -1019,7 +1056,7 @@
         window.onload = () => {
             initAuthListeners();
             initGlobalListeners();
-            runAdminAdCycle();
+            startPromoTimer(); // Start the 2-minute promotional cycle
         };
 
     </script>
