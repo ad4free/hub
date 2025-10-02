@@ -1,1038 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrafficForge - Decentralized Traffic Exchange</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://kit.fontawesome.com/4c45b78f68.js" crossorigin="anonymous"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0d1117; /* Dark background */
-        }
-        .ad-iframe {
-            /* Ensure the iframe is visible and takes a good height */
-            height: 50vh; 
-            min-height: 400px;
-            border: 2px solid #4f46e5;
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-        .main-content {
-            min-height: calc(100vh - 120px); /* Adjust based on header height */
-        }
-        /* Custom scrollbar for aesthetic on dark theme */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4f46e5;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6366f1;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad4U - User Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+  header { background-color: #1f2937; color: white; padding: 1rem; }
+  .btn { @apply bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition; }
+  .iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; margin-bottom: 1rem; }
+  .iframe-container iframe { position: absolute; width: 100%; height: 100%; border: none; }
+  .dashboard-card { @apply bg-white shadow p-4 rounded mb-4; }
+  .premium-card { @apply bg-yellow-100 p-4 rounded mb-4 border border-yellow-300; }
+  .section-title { @apply text-xl font-bold mb-2; }
+  .link-btn { @apply bg-green-500 text-white px-3 py-1 rounded mb-2 inline-block hover:bg-green-600; }
+  .hidden { display: none; }
+</style>
 </head>
 <body>
 
-<!-- Main App Container -->
-<div id="app" class="min-h-screen bg-gray-900 text-white">
+<!-- HEADER -->
+<header class="flex justify-between items-center">
+  <h1 class="text-xl font-bold">Ad4U Dashboard</h1>
+  <div>
+    <button id="login-btn" class="btn">Login with Gmail</button>
+    <button id="logout-btn" class="btn hidden">Logout</button>
+  </div>
+</header>
 
-    <!-- Header & Navigation -->
-    <header id="header" class="bg-gray-800 shadow-lg sticky top-0 z-10"></header>
-    <nav id="nav" class="bg-gray-900 border-t border-indigo-700"></nav>
+<!-- DASHBOARD STATS -->
+<section class="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+  <div class="dashboard-card">
+    <h2 class="font-bold">Total Coins</h2>
+    <p id="coins-total">0</p>
+  </div>
+  <div class="dashboard-card">
+    <h2 class="font-bold">Web Coins</h2>
+    <p id="w-coins">0</p>
+  </div>
+  <div class="dashboard-card">
+    <h2 class="font-bold">Direct Link Coins</h2>
+    <p id="d-coins">0</p>
+  </div>
+  <div class="dashboard-card">
+    <h2 class="font-bold">YouTube Watch Time (s)</h2>
+    <p id="yt-watch">0</p>
+  </div>
+</section>
 
-    <!-- Main Content Area -->
-    <main id="main-content" class="container mx-auto px-4 py-8 main-content"></main>
+<!-- REFERRAL -->
+<section class="p-4">
+  <h2 class="section-title">Referral Link</h2>
+  <input type="text" id="ref-link" class="border p-2 w-full mb-2" readonly>
+  <button id="copy-ref-link" class="btn">Copy Referral Link</button>
+</section>
 
-</div>
+<!-- WEB TRAFFIC -->
+<section class="p-4">
+  <h2 class="section-title">Web Traffic Ads</h2>
+  <div class="iframe-container">
+    <iframe id="web-iframe" src="http://cludymovie.com/"></iframe>
+  </div>
+</section>
 
-<!-- Firebase Imports -->
+<!-- DIRECT LINKS -->
+<section class="p-4">
+  <h2 class="section-title">Direct Links</h2>
+  <div id="direct-links-container">
+    <a href="https://otieu.com/4/9677163" target="_blank" class="link-btn">Open Link & Earn 1000 Coins</a>
+  </div>
+</section>
+
+<!-- YOUTUBE WATCH -->
+<section class="p-4">
+  <h2 class="section-title">YouTube Watch</h2>
+  <div class="iframe-container">
+    <iframe id="yt-iframe" src="https://www.youtube.com/embed/Uw9bqrrV-yI?enablejsapi=1" allow="autoplay"></iframe>
+  </div>
+</section>
+
+<!-- PREMIUM PLAN -->
+<section class="p-4">
+  <h2 class="section-title">Premium Plans</h2>
+  <div class="flex gap-2 mb-4">
+    <button id="buy-weekly" class="btn">Weekly $3</button>
+    <button id="buy-monthly" class="btn">Monthly $10</button>
+  </div>
+  <div class="premium-card">
+    <h3 class="font-bold">Why Upgrade?</h3>
+    <ul class="list-disc list-inside">
+      <li>Priority ad display</li>
+      <li>Extra coins multiplier</li>
+      <li>Access to premium ads</li>
+      <li>Exclusive referral rewards</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FIREBASE & LOGIC -->
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { 
-        getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously,
-        onAuthStateChanged, signInWithCustomToken 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { 
-        getFirestore, doc, setDoc, getDoc, 
-        onSnapshot, collection, query, where, 
-        serverTimestamp, increment, getDocs
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-auth.js";
 
-    // --- Global Variables (Mandatory for Canvas Environment) ---
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-traffic-exchange-app';
+// FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
+  authDomain: "ad-4-u.firebaseapp.com",
+  projectId: "ad-4-u",
+  storageBucket: "ad-4-u.firebasestorage.app",
+  messagingSenderId: "775864010731",
+  appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
+  measurementId: "G-3R9DDSM2XK"
+};
 
-    // --- Initialization ---
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-    let currentUserId = null;
-    let currentUserData = null;
-    let isAuthReady = false;
-    let activePage = 'Dashboard';
-    let heartbeatIntervalId = null; // Store interval ID for clearing
+// LOGIN / LOGOUT
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
 
-    // --- Constants ---
-    const PLANS = {
-        weekly: { id: "weekly", name: "Weekly Plan", price: 5, duration_days: 7 },
-        monthly: { id: "monthly", name: "Monthly Plan", price: 15, duration_days: 30 }
-    };
-    const COST_PER_IMPRESSION = 500; // Base coin cost for web traffic
-    const HEARTBEAT_INTERVAL_MS = 5000; // Time between secure server calls (5 seconds)
-    const AD_VIEW_TIME_SECONDS = 15; // Required time to complete a cycle
+loginBtn.addEventListener('click', async () => {
+  const result = await signInWithPopup(auth, provider);
+  const user = result.user;
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      email: user.email,
+      displayName: user.displayName,
+      username: user.displayName.toUpperCase(),
+      role: "free",
+      plan: "none",
+      premium_expiry: null,
+      coins: { usable: 0, pending: 0 },
+      W_coins: 0,
+      D_coins: 0,
+      yt_views: 0,
+      yt_watch_seconds: 0,
+      referrer: null,
+      createdAt: serverTimestamp()
+    });
+  }
+});
 
-    const PAGE_MAP = [
-        { name: 'Dashboard', icon: '<i class="fas fa-chart-line"></i>' },
-        { name: 'Web Traffic', icon: '<i class="fas fa-globe"></i>', type: 'web', reward: 500, coinField: 'W_coins' },
-        { name: 'Direct Link', icon: '<i class="fas fa-link"></i>', type: 'direct', reward: 1000, coinField: 'D_coins' },
-        { name: 'YT Watch Time', icon: '<i class="fab fa-youtube"></i>', type: 'youtube_watch', reward: 1, coinField: 'yt_watch_seconds' },
-        { name: 'YT Views', icon: '<i class="fas fa-eye"></i>', type: 'youtube_view', reward: 1, coinField: 'yt_views' },
-        { name: 'Ad Launch', icon: '<i class="fas fa-rocket"></i>' },
-        { name: 'Referrals', icon: '<i class="fas fa-user-friends"></i>' },
-        { name: 'Premium', icon: '<i class="fas fa-dollar-sign"></i>' },
-    ];
+logoutBtn.addEventListener('click', () => signOut(auth));
 
-    // --- Firebase Pathing Helpers ---
-    // User data is private: artifacts/{appId}/users/{userId}/profile/{documentId}
-    const getUserDocRef = (uid) => {
-        return doc(db, `artifacts/${appId}/users/${uid}/profile`, 'main');
-    };
-    // Ads are public: artifacts/{appId}/public/data/ads/{documentId}
-    const getAdsCollectionRef = () => {
-        return collection(db, `artifacts/${appId}/public/data/ads`);
-    };
+// DASHBOARD LIVE STATS
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loginBtn.classList.add('hidden');
+    logoutBtn.classList.remove('hidden');
+    const userRef = doc(db, "users", user.uid);
 
-    // --- Utility Functions ---
-    const formatNumber = (num) => (num || 0).toLocaleString();
-    const getAdPageProps = (pageName) => PAGE_MAP.find(p => p.name === pageName);
+    // Live update coins & stats
+    onSnapshot(userRef, snap => {
+      const data = snap.data();
+      document.getElementById('coins-total').innerText = (data.coins.usable || 0) + (data.coins.pending || 0);
+      document.getElementById('w-coins').innerText = data.W_coins || 0;
+      document.getElementById('d-coins').innerText = data.D_coins || 0;
+      document.getElementById('yt-watch').innerText = (data.yt_watch_seconds || 0) + "s";
+      document.getElementById('ref-link').value = window.location.origin + "?ref=" + user.uid;
+    });
 
-    /**
-     * @description Fixes the fetch URL issue by ensuring the path is absolute relative 
-     * to the window's origin, which is crucial for serverless function calls in 
-     * sandboxed environments. This addresses the "Failed to parse URL" error.
-     * @param {string} path The relative path (e.g., '/.netlify/functions/...')
-     * @returns {string} The absolute URL
-     */
-    const getFunctionUrl = (path) => {
-        try {
-            // Use the URL constructor to robustly resolve the relative path against the current origin
-            return new URL(path, window.location.origin).href;
-        } catch (e) {
-            console.error("URL parsing failed for path:", path, e);
-            // Fallback: return the path itself, although this is what was failing initially
-            return path;
-        }
-    };
+    // WEB TRAFFIC AUTOMATION (placeholder logic)
+    setInterval(async () => {
+      const snap = await getDoc(userRef);
+      const current = snap.data();
+      await updateDoc(userRef, {
+        W_coins: (current.W_coins || 0) + Math.floor(Math.random() * 10 + 1),
+        "coins.usable": (current.coins?.usable || 0) + Math.floor(Math.random() * 10 + 1)
+      });
+    }, 15000);
 
-
-    // --- Routing and Rendering ---
-
-    const navigateTo = (pageName) => {
-        // Stop any running heartbeat when switching away from earning pages
-        if (heartbeatIntervalId !== null) {
-            clearInterval(heartbeatIntervalId);
-            heartbeatIntervalId = null;
-            console.log("Heartbeat stopped.");
-        }
-        activePage = pageName;
-        render();
-    };
-
-    const render = () => {
-        renderHeader();
-        renderNav();
-        renderMainContent();
-    };
-
-    const renderHeader = () => {
-        const headerEl = document.getElementById('header');
-        // Handle case where currentUserData might be null during loading
-        const usableBalance = formatNumber(currentUserData?.balance?.usable);
-        const userIdDisplay = currentUserId ? (currentUserId.substring(0, 8) + '...') : 'Guest';
-        const isPremium = currentUserData?.role === 'premium';
-        
-        headerEl.innerHTML = `
-            <div class="container mx-auto p-4 flex justify-between items-center">
-                <h1 class="text-2xl font-extrabold text-indigo-400">TrafficForge</h1>
-                <div class="flex space-x-4 items-center">
-                    <div class="flex flex-col items-end text-sm">
-                        <span class="font-semibold text-green-400 flex items-center">
-                            <i class="fas fa-wallet w-4 h-4 mr-1"></i>
-                            Usable Coins: ${usableBalance}
-                        </span>
-                        <span class="text-xs text-gray-400">ID: ${userIdDisplay}</span>
-                    </div>
-                    ${isPremium ? '<span class="text-xs font-bold text-yellow-400 bg-gray-700 px-2 py-1 rounded-full">PREMIUM</span>' : ''}
-                </div>
-            </div>
-        `;
-    };
-
-    const renderNav = () => {
-        const navEl = document.getElementById('nav');
-        navEl.innerHTML = `
-            <div class="container mx-auto flex overflow-x-auto whitespace-nowrap">
-                ${PAGE_MAP.map(item => `
-                    <button
-                        onclick="window.navigateTo('${item.name}')"
-                        class="flex items-center px-4 py-2 transition duration-200 ease-in-out border-b-2 text-sm
-                            ${activePage === item.name ? 'border-indigo-400 text-indigo-400 font-bold' : 'border-transparent text-gray-300 hover:text-indigo-300 hover:bg-gray-800'}"
-                    >
-                        ${item.icon}
-                        <span class="ml-2">${item.name}</span>
-                    </button>
-                `).join('')}
-            </div>
-        `;
-    };
-
-    const renderMainContent = () => {
-        const contentEl = document.getElementById('main-content');
-        if (!isAuthReady) {
-            contentEl.innerHTML = renderLoadingScreen();
-        } else if (currentUserId === 'anonymous' || !currentUserId) { 
-            contentEl.innerHTML = renderAuthScreen();
-            attachAuthListener();
-        } else {
-            // Render specific page content for authenticated users
-            switch (activePage) {
-                case 'Dashboard':
-                    contentEl.innerHTML = renderDashboard();
-                    break;
-                case 'Ad Launch':
-                    contentEl.innerHTML = renderAdLaunch();
-                    attachAdLaunchListeners();
-                    break;
-                case 'Referrals':
-                    contentEl.innerHTML = renderReferralSystem();
-                    attachReferralListeners();
-                    break;
-                case 'Premium':
-                    contentEl.innerHTML = renderPremiumPlan();
-                    attachPremiumListeners();
-                    break;
-                case 'Web Traffic':
-                case 'Direct Link':
-                case 'YT Watch Time':
-                case 'YT Views':
-                    contentEl.innerHTML = renderAdEarningScreen(getAdPageProps(activePage));
-                    attachAdEarningListeners(getAdPageProps(activePage));
-                    break;
-                default:
-                    contentEl.innerHTML = renderDashboard();
-            }
-        }
-    };
-
-    // --- Screen Renderers ---
-
-    const renderLoadingScreen = () => `
-        <div class="min-h-screen flex items-center justify-center">
-            <div class="text-white flex items-center">
-                <i class="fas fa-cog fa-spin w-6 h-6 mr-3 text-indigo-400"></i>
-                <p>Building the secure foundation...</p>
-            </div>
-        </div>
-    `;
-
-    const renderAuthScreen = () => `
-        <div class="flex flex-col items-center justify-center min-h-screen -mt-20">
-            <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md">
-                <h2 class="text-3xl font-bold mb-6 text-indigo-400 text-center">Welcome to TrafficForge</h2>
-                <p class="text-gray-400 mb-8 text-center">Sign up or log in with a **Gmail account** to start earning coins and launch your campaigns.</p>
-                <button
-                    id="signInBtn"
-                    class="w-full flex items-center justify-center px-4 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-lg font-semibold transition duration-200 shadow-md transform hover:scale-[1.01]"
-                >
-                    <i class="fas fa-sign-in-alt w-5 h-5 mr-3"></i>
-                    Sign In / Sign Up with Gmail
-                </button>
-                <p class="text-xs text-gray-500 mt-4 text-center">Anonymous users cannot earn or launch ads. Please sign in.</p>
-                <div id="authMessage" class="text-center mt-3 text-red-400 font-semibold"></div>
-            </div>
-        </div>
-    `;
-
-    const renderStatCard = (title, value, iconClass, color) => `
-        <div class="bg-gray-800 p-4 rounded-lg shadow-xl border border-gray-700 flex flex-col">
-            <i class="${iconClass} w-6 h-6 ${color}"></i>
-            <p class="text-sm text-gray-400 mt-2">${title}</p>
-            <p class="text-2xl font-extrabold ${color}">${value}</p>
-        </div>
-    `;
-
-    const renderDashboard = () => {
-        const user = currentUserData;
-        const isPremium = user?.role === 'premium';
-        const expiryDate = user?.premium_expiry ? new Date(user.premium_expiry).toLocaleDateString() : 'N/A';
-        
-        return `
-            <div class="p-6 space-y-8">
-                <h2 class="text-3xl font-bold text-white border-b border-gray-700 pb-3">Your Dashboard</h2>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    ${renderStatCard("Usable Coins", formatNumber(user?.balance?.usable), "fas fa-wallet", "text-green-400")}
-                    ${renderStatCard("Web Traffic Coins (W)", formatNumber(user?.W_coins), "fas fa-globe", "text-yellow-400")}
-                    ${renderStatCard("Direct Link Coins (D)", formatNumber(user?.D_coins), "fas fa-link", "text-red-400")}
-                    ${renderStatCard("Total Referrals", formatNumber(user?.referrals?.invitedCount), "fas fa-user-friends", "text-indigo-400")}
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-indigo-900/50 border border-indigo-700 p-4 rounded-lg shadow-inner">
-                        <h3 class="text-xl font-extrabold text-indigo-300 mb-2">🔥 Premium Benefits</h3>
-                        <ul class="list-disc list-inside text-sm text-gray-300 space-y-1">
-                            <li>2x Coin Earning Multiplier</li>
-                            <li>Priority Ad Access (Category 07 & 10)</li>
-                            <li>Custom Geographic Targeting</li>
-                        </ul>
-                    </div>
-                    <div class="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 space-y-2">
-                        <h3 class="text-xl font-bold text-white">Account Status</h3>
-                        <p class="text-sm text-gray-400">Role: <span class="font-semibold ${isPremium ? 'text-yellow-400' : 'text-gray-300'}">${isPremium ? 'Premium' : 'Free'}</span></p>
-                        <p class="text-sm text-gray-400">Premium Expires: <span class="font-semibold text-white">${expiryDate}</span></p>
-                        <p class="text-sm text-gray-400">Total Commissions: <span class="font-semibold text-white">${formatNumber(user?.referrals?.commission_balance)} Coins</span></p>
-                    </div>
-                </div>
-            </div>
-        `;
-    };
-
-    const renderAdEarningScreen = (props) => {
-        const user = currentUserData;
-        
-        return `
-            <div class="p-6 space-y-6">
-                <h2 class="text-3xl font-bold text-white border-b border-gray-700 pb-3 flex items-center">
-                    ${props.icon}
-                    <span class="ml-2">${props.title || props.name}</span>
-                </h2>
-                <div class="text-sm text-gray-400">
-                    <span class="font-semibold text-indigo-300">Instructions:</span> 
-                    Keep the ad visible in the frame for ${AD_VIEW_TIME_SECONDS} seconds to complete the cycle and earn coins. Do not navigate away.
-                </div>
-
-                <div class="grid grid-cols-3 gap-4">
-                    ${renderStatCard("Ad Coins Balance", formatNumber(user?.[props.coinField]), "fas fa-money-check-alt", "text-yellow-400")}
-                    ${renderStatCard("Time Verified", '<span id="timerDisplay">0</span>s', "fas fa-clock", "text-gray-300")}
-                    ${renderStatCard("Reward Cycle", `${props.reward} coins/${AD_VIEW_TIME_SECONDS}s`, "fas fa-award", "text-green-400")}
-                </div>
-
-                <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
-                    <p class="font-bold text-indigo-400 mb-2" id="adStatus">Loading next ad...</p>
-                    <div class="ad-iframe">
-                        <iframe 
-                            id="adFrame"
-                            src="about:blank"
-                            sandbox="allow-scripts allow-same-origin allow-popups"
-                            title="Ad View Frame"
-                            class="w-full h-full"
-                            style="border: none;"
-                        ></iframe>
-                    </div>
-                </div>
-
-                <div class="flex justify-between items-center pt-4">
-                    <button 
-                        id="nextAdBtn"
-                        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition duration-200 shadow-md flex items-center disabled:bg-gray-500"
-                        disabled
-                    >
-                        <i class="fas fa-arrow-right mr-2"></i>
-                        Skip Ad / Next
-                    </button>
-                    <p class="text-sm text-gray-400" id="heartbeatStatus">Secure verification pending...</p>
-                </div>
-            </div>
-        `;
-    };
-
-    const renderAdLaunch = () => {
-        const currentBalance = currentUserData?.balance?.usable || 0;
-
-        return `
-            <div class="p-6 space-y-6">
-                <h2 class="text-3xl font-bold text-white border-b border-gray-700 pb-3">Ad Launch & Management</h2>
-                
-                <div class="bg-gray-800 p-6 rounded-xl shadow-2xl space-y-6">
-                    <h3 class="text-2xl font-semibold text-indigo-400">Launch New Campaign</h3>
-                    
-                    <form id="adLaunchForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Ad Category</label>
-                            <select id="adCategory" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
-                                <option value="web">Web Traffic (${formatNumber(COST_PER_IMPRESSION)} Coins)</option>
-                                <option value="direct">Direct Link (1000 Coins)</option>
-                                <option value="youtube_watch">YT Watch Time (Variable)</option>
-                                <option value="youtube_view">YT Views (Variable)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Website/Video Link</label>
-                            <input 
-                                type="url" id="adUrl" placeholder="https://yourwebsite.com/..."
-                                class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white" required
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Total Budget in Coins</label>
-                            <input 
-                                type="number" id="adBudget" value="${COST_PER_IMPRESSION}" min="${COST_PER_IMPRESSION}" step="${COST_PER_IMPRESSION}"
-                                class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white" required
-                            />
-                            <p class="text-xs text-gray-500 mt-1">Available Usable Balance: ${formatNumber(currentBalance)} Coins</p>
-                        </div>
-
-                        <div class="bg-indigo-900/50 p-3 rounded-lg border border-indigo-700">
-                            <p class="text-sm text-indigo-300 font-semibold">
-                                Estimated Web Impressions: 
-                                <span class="text-lg font-bold ml-2" id="estImpressions">1</span>
-                            </p>
-                        </div>
-
-                        <button
-                            type="submit" id="launchBtn"
-                            class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition duration-200 shadow-lg disabled:bg-gray-500"
-                        >
-                            Launch Ad Campaign
-                        </button>
-                        <div id="launchMessage" class="text-center font-semibold mt-3"></div>
-                    </form>
-                </div>
-                
-                <h3 class="text-2xl font-semibold text-white mt-8">Your Running Ads</h3>
-                <div id="activeAdsList" class="space-y-4 text-gray-400">
-                    Loading your active ads...
-                </div>
-            </div>
-        `;
-    };
-
-    const renderReferralSystem = () => {
-        const user = currentUserData;
-        const commissionBalance = user?.referrals?.commission_balance || 0;
-        const referralLink = `${window.location.origin}/?ref=${user?.userId}`;
-
-        return `
-            <div class="p-6 space-y-6">
-                <h2 class="text-3xl font-bold text-white border-b border-gray-700 pb-3 flex items-center">
-                    <i class="fas fa-user-friends w-6 h-6 mr-2 text-indigo-400"></i>
-                    Referral System
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    ${renderStatCard("Total Invited Users", formatNumber(user?.referrals?.invitedCount), "fas fa-users", "text-indigo-400")}
-                    ${renderStatCard("Pending Commission", formatNumber(commissionBalance), "fas fa-money-check-alt", "text-yellow-400")}
-                </div>
-
-                <div class="bg-gray-800 p-6 rounded-xl shadow-2xl space-y-4">
-                    <h3 class="text-xl font-semibold text-white">Your Full User ID (For Referrals)</h3>
-                    <div class="flex">
-                        <input 
-                            type="text" value="${user?.userId}" id="userIdInput" readonly
-                            class="flex-grow p-3 bg-gray-700 border border-gray-600 rounded-l-lg text-sm text-white overflow-x-auto"
-                        />
-                        <button 
-                            id="copyIdBtn"
-                            class="p-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-r-lg transition duration-200"
-                        >
-                            Copy ID
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-400">Your referral link: <span class="font-mono text-indigo-300">${referralLink.substring(0, 60)}...</span></p>
-                    <div id="referralMessage" class="text-sm text-green-400"></div>
-                </div>
-
-                <div class="bg-indigo-900/50 p-6 rounded-xl shadow-inner border border-indigo-700 space-y-4">
-                    <h3 class="text-xl font-extrabold text-indigo-300">Lifetime Commission Rule (15%)</h3>
-                    <p class="text-white text-sm">
-                        You receive a **15% commission** of all **Coins earned** by your referred users, which accumulates in your commission balance.
-                    </p>
-                    <button
-                        id="collectCommissionBtn"
-                        class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition duration-200 disabled:bg-gray-500"
-                        ${commissionBalance <= 0 ? 'disabled' : ''}
-                    >
-                        Collect ${formatNumber(commissionBalance)} Coins
-                    </button>
-                    <p class="text-xs text-gray-400 mt-2">After collecting, coins will be moved to your Usable Balance. This uses a secure server function.</p>
-                </div>
-            </div>
-        `;
-    };
-
-    const renderPremiumPlan = () => {
-        const user = currentUserData;
-        const isPremium = user?.role === 'premium';
-        const expiryDate = user?.premium_expiry ? new Date(user.premium_expiry).toLocaleDateString() : 'N/A';
-        
-        const planButtons = Object.values(PLANS).map(plan => `
-            <button
-                data-plan-id="${plan.id}"
-                data-price="${plan.price}"
-                class="plan-select flex-1 p-4 rounded-xl border-2 transition duration-200 border-gray-700 hover:border-indigo-500 bg-gray-700"
-            >
-                <p class="text-xl font-bold text-white">${plan.name}</p>
-                <p class="text-3xl font-extrabold text-yellow-400">${plan.price} <span class="text-xl">USDT</span></p>
-                <p class="text-sm text-gray-400 mt-1">Access for ${plan.duration_days} Days</p>
-            </button>
-        `).join('');
-
-        return `
-            <div class="p-6 space-y-6">
-                <h2 class="text-3xl font-bold text-white border-b border-gray-700 pb-3 flex items-center">
-                    <i class="fas fa-dollar-sign w-6 h-6 mr-2 text-yellow-400"></i>
-                    Premium Subscription
-                </h2>
-
-                ${isPremium ? `
-                    <div class="bg-green-900/50 p-6 rounded-xl border border-green-700 shadow-xl text-center">
-                        <p class="text-2xl font-bold text-green-300 mb-2">You are currently a PREMIUM member!</p>
-                        <p class="text-white">Your subscription will expire on: <span class="font-extrabold">${expiryDate}</span></p>
-                        <p class="text-sm text-gray-400 mt-3">Enjoy your 2x earning multiplier and priority ads.</p>
-                    </div>
-                ` : `
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-2xl space-y-6">
-                        <h3 class="text-2xl font-semibold text-indigo-400">Choose Your Plan (Pay with USDT - TRC20)</h3>
-                        
-                        <div id="planContainer" class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                            ${planButtons}
-                        </div>
-                        <div id="planMessage" class="text-center text-yellow-400 font-semibold">Please select a plan.</div>
-
-                        <button
-                            id="checkoutBtn"
-                            disabled
-                            class="w-full py-3 bg-yellow-600 hover:bg-yellow-700 text-gray-900 font-bold rounded-lg transition duration-200 shadow-xl flex items-center justify-center disabled:bg-gray-500"
-                        >
-                            Pay with USDT
-                        </button>
-                        <p class="text-xs text-gray-500 text-center">Payment handled securely by NOWPayments (requires a secure Netlify Function). Instant activation upon payment confirmation.</p>
-                        <div id="checkoutMessage" class="p-3 rounded-lg text-center font-semibold hidden"></div>
-                    </div>
-                `}
-            </div>
-        `;
-    };
-
-    // --- Listener Attachments and Logic ---
-
-    // 1. Authentication
-    const attachAuthListener = () => {
-        const signInBtn = document.getElementById('signInBtn');
-        const authMessage = document.getElementById('authMessage');
-
-        if (signInBtn) {
-            signInBtn.addEventListener('click', async () => {
-                const provider = new GoogleAuthProvider();
-                try {
-                    const result = await signInWithPopup(auth, provider);
-                    const user = result.user;
-
-                    if (!user.email.endsWith('@gmail.com')) {
-                        await auth.signOut();
-                        authMessage.textContent = "Error: Only Gmail accounts are accepted for security.";
-                        return;
-                    }
-
-                    // Check if user profile exists using the correct path
-                    const userRef = getUserDocRef(user.uid);
-                    const userSnap = await getDoc(userRef);
-
-                    if (!userSnap.exists()) {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const referrerId = urlParams.get('ref');
-
-                        // Initial setup for a new user
-                        await setDoc(userRef, {
-                            userId: user.uid,
-                            email: user.email,
-                            displayName: user.displayName,
-                            role: 'free',
-                            premium_expiry: null,
-                            balance: { usable: 5000, pending: 0 }, // Initial bonus
-                            W_coins: 0, D_coins: 0, yt_views: 0, yt_watch_seconds: 0,
-                            referrals: { invitedCount: 0, commission_balance: 0 },
-                            referrerId: referrerId || null,
-                            createdAt: serverTimestamp(),
-                        });
-                        authMessage.textContent = "Account created! Welcome.";
-                    }
-                    // onAuthStateChanged listener handles the rest
-                } catch (error) {
-                    console.error("Sign-in failed:", error);
-                    authMessage.textContent = `Login failed: ${error.message}`;
-                }
-            });
-        }
-    };
-
-    // 2. Ad Launch
-    const attachAdLaunchListeners = () => {
-        const form = document.getElementById('adLaunchForm');
-        const budgetInput = document.getElementById('adBudget');
-        const estImpressionsEl = document.getElementById('estImpressions');
-        const launchMessageEl = document.getElementById('launchMessage');
-        const launchBtn = document.getElementById('launchBtn');
-        const currentBalance = currentUserData?.balance?.usable || 0;
-
-        const updateImpressions = () => {
-            const budget = parseInt(budgetInput.value) || 0;
-            const impressions = budget >= COST_PER_IMPRESSION ? Math.floor(budget / COST_PER_IMPRESSION) : 0;
-            estImpressionsEl.textContent = formatNumber(impressions);
-            
-            const isSufficient = budget <= currentBalance && budget >= COST_PER_IMPRESSION;
-            launchBtn.disabled = !isSufficient;
-            
-            if (budget > currentBalance) {
-                launchMessageEl.className = "text-red-400 font-semibold mt-3";
-                launchMessageEl.textContent = "Error: Insufficient usable balance.";
-            } else if (budget < COST_PER_IMPRESSION && budget > 0) {
-                 launchMessageEl.className = "text-red-400 font-semibold mt-3";
-                launchMessageEl.textContent = `Error: Minimum budget is ${formatNumber(COST_PER_IMPRESSION)} coins for Web Traffic.`;
-            } else {
-                 launchMessageEl.textContent = "";
-            }
-        };
-
-        budgetInput.addEventListener('input', updateImpressions);
-        updateImpressions(); // Initial calculation
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const url = document.getElementById('adUrl').value;
-            const budget = parseInt(budgetInput.value);
-            const category = document.getElementById('adCategory').value;
-            const impressions = Math.floor(budget / COST_PER_IMPRESSION);
-
-            if (budget > currentBalance || impressions === 0) return;
-
-            launchBtn.textContent = 'Launching...';
-            launchBtn.disabled = true;
-            launchMessageEl.textContent = '';
-
-            try {
-                // FIX: Use getFunctionUrl to ensure absolute path resolution
-                const functionUrl = getFunctionUrl('/.netlify/functions/ad-launch');
-                
-                const response = await fetch(functionUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        userId: currentUserId, url, budget, impressions, category, 
-                        costPerImpression: COST_PER_IMPRESSION 
-                    })
-                });
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    launchMessageEl.className = "text-green-400 font-semibold mt-3";
-                    launchMessageEl.textContent = `Success! Ad launched. Goal: ${formatNumber(impressions)} impressions.`;
-                    // Clear form
-                    document.getElementById('adUrl').value = '';
-                    budgetInput.value = COST_PER_IMPRESSION;
-                } else {
-                    launchMessageEl.className = "text-red-400 font-semibold mt-3";
-                    launchMessageEl.textContent = `Launch failed: ${data.message || 'Server error.'}`;
-                }
-
-            } catch (error) {
-                console.error("Launch error:", error);
-                launchMessageEl.className = "text-red-400 font-semibold mt-3";
-                launchMessageEl.textContent = "Launch failed due to a network error.";
-            } finally {
-                launchBtn.textContent = 'Launch Ad Campaign';
-                updateImpressions();
-            }
+    // DIRECT LINK LOGIC
+    document.getElementById('direct-links-container').addEventListener('click', async (e)=>{
+      if(e.target.tagName === 'A'){
+        e.preventDefault();
+        const snap = await getDoc(userRef);
+        const current = snap.data();
+        await updateDoc(userRef,{
+          D_coins: (current.D_coins || 0) + 1000,
+          "coins.usable": (current.coins?.usable || 0) + 1000
         });
+        window.open(e.target.href,'_blank');
+      }
+    });
 
-        // Real-time Ad List Listener (Uses Public Data Path)
-        const activeAdsList = document.getElementById('activeAdsList');
-        // Ensure currentUserId is not null before querying
-        if (currentUserId) {
-            const adsQ = query(getAdsCollectionRef(), where('ownerId', '==', currentUserId));
-            
-            onSnapshot(adsQ, (snapshot) => {
-                if (snapshot.empty) {
-                    activeAdsList.innerHTML = '<p class="text-gray-400">You have no active or completed campaigns.</p>';
-                    return;
-                }
+    // PREMIUM PURCHASE
+    document.getElementById('buy-weekly').addEventListener('click', async () => {
+      await updateDoc(userRef, {
+        role: "premium",
+        plan: "weekly",
+        premium_expiry: new Date(new Date().getTime() + 7*24*60*60*1000)
+      });
+      alert("Weekly Premium Activated!");
+    });
+    document.getElementById('buy-monthly').addEventListener('click', async () => {
+      await updateDoc(userRef, {
+        role: "premium",
+        plan: "monthly",
+        premium_expiry: new Date(new Date().getTime() + 30*24*60*60*1000)
+      });
+      alert("Monthly Premium Activated!");
+    });
 
-                activeAdsList.innerHTML = snapshot.docs.map(doc => {
-                    const ad = doc.data();
-                    const adTypeMap = { web: 'Web Traffic', direct: 'Direct Link', youtube_watch: 'YT Watch Time', youtube_view: 'YT Views' };
-                    const isActive = ad.budget_coins > 0 && ad.is_active;
-                    return `
-                        <div class="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 flex justify-between items-center">
-                            <div>
-                                <p class="text-lg font-semibold text-white">${adTypeMap[ad.type]} - ${ad.targetUrl.substring(0, 40)}...</p>
-                                <p class="text-sm text-gray-400">Budget Left: ${formatNumber(ad.budget_coins)} / Run: ${formatNumber(ad.impressions_run)} of ${formatNumber(ad.impressions_goal)}</p>
-                            </div>
-                            <span class="px-3 py-1 text-xs font-bold rounded-full ${isActive ? 'bg-green-500 text-green-900' : 'bg-red-500 text-red-900'}">
-                                ${isActive ? 'AD ACTIVE' : 'EXPIRED'}
-                            </span>
-                        </div>
-                    `;
-                }).join('');
-            });
-        }
-    };
+    // REFERRAL COPY
+    document.getElementById('copy-ref-link').addEventListener('click', ()=>{
+      const refInput = document.getElementById('ref-link');
+      refInput.select();
+      refInput.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(refInput.value);
+      alert("Referral Link Copied!");
+    });
 
-    // 3. Ad Earning Screen (Heartbeat)
-    const attachAdEarningListeners = (props) => {
-        const adFrame = document.getElementById('adFrame');
-        const nextAdBtn = document.getElementById('nextAdBtn');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const heartbeatStatus = document.getElementById('heartbeatStatus');
-        const adStatusEl = document.getElementById('adStatus');
-
-        let currentAd = null;
-        let timer = 0;
-        let currentSessionId = null;
-
-        const fetchNextAd = async () => {
-            if (heartbeatIntervalId !== null) clearInterval(heartbeatIntervalId);
-            heartbeatIntervalId = null;
-            
-            adStatusEl.textContent = 'Loading next ad...';
-            nextAdBtn.disabled = true;
-            adFrame.src = 'about:blank';
-            timer = 0;
-            timerDisplay.textContent = '0';
-            currentAd = null;
-            heartbeatStatus.textContent = 'Ready to start.';
-
-            try {
-                // FIX: Single-field query to avoid index requirement
-                const adsQ = query(getAdsCollectionRef(), where('type', '==', props.type));
-                const adsSnap = await getDocs(adsQ);
-
-                // Filter the results client-side to ensure sufficient budget
-                const activeAds = adsSnap.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .filter(ad => ad.budget_coins > COST_PER_IMPRESSION); 
-
-                if (activeAds.length === 0) {
-                    adStatusEl.textContent = 'No active ads available. Check back later.';
-                    return;
-                }
-
-                // Simple client-side random selection
-                currentAd = activeAds[Math.floor(Math.random() * activeAds.length)];
-                
-                // --- SIMULATED START SESSION VIA NETLIFY FUNCTION ---
-                // FIX: Use getFunctionUrl to ensure absolute path resolution
-                const startSessionUrl = getFunctionUrl('/.netlify/functions/ad-heartbeat');
-                
-                const sessionResponse = await fetch(startSessionUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'start_session', userId: currentUserId, adId: currentAd.id, type: props.type })
-                });
-                const sessionData = await sessionResponse.json();
-
-                if (sessionData.status === 'success' && sessionData.sessionId) {
-                    currentSessionId = sessionData.sessionId;
-                    adFrame.src = currentAd.targetUrl;
-                    adStatusEl.textContent = `Viewing: ${currentAd.targetUrl.substring(0, 50)}...`;
-                    nextAdBtn.disabled = false;
-                    startHeartbeat();
-                } else {
-                    adStatusEl.textContent = `Failed to start secure session: ${sessionData.message || 'Server error'}.`;
-                    nextAdBtn.disabled = false;
-                }
-                
-            } catch (e) {
-                console.error("Error fetching/starting ad:", e);
-                adStatusEl.textContent = 'Network error loading ad. Try again.';
-                nextAdBtn.disabled = false;
-            }
-        };
-
-        const startHeartbeat = () => {
-            // Clear any previous interval before starting a new one
-            if (heartbeatIntervalId !== null) clearInterval(heartbeatIntervalId);
-
-            heartbeatIntervalId = setInterval(async () => {
-                timer += HEARTBEAT_INTERVAL_MS / 1000;
-                timerDisplay.textContent = Math.floor(timer);
-
-                heartbeatStatus.textContent = 'Sending secure heartbeat...';
-                
-                try {
-                    // FIX: Use getFunctionUrl to ensure absolute path resolution
-                    const reportTimeUrl = getFunctionUrl('/.netlify/functions/ad-heartbeat');
-
-                    // This secure call reports time and server determines if reward/decrement is due.
-                    const response = await fetch(reportTimeUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            action: 'report_time',
-                            userId: currentUserId, sessionId: currentSessionId, 
-                            seconds_reported: HEARTBEAT_INTERVAL_MS / 1000, 
-                            requiredTime: AD_VIEW_TIME_SECONDS, 
-                            reward: props.reward, 
-                            coinField: props.coinField, 
-                            adId: currentAd.id 
-                        })
-                    });
-                    const data = await response.json();
-                    
-                    if (data.status === 'success') {
-                        if (data.reward_awarded) {
-                            heartbeatStatus.textContent = `✅ ${formatNumber(data.reward_awarded)} Coins awarded! Ready for next ad.`;
-                            // Stop heartbeat and go to next ad immediately after reward
-                            clearInterval(heartbeatIntervalId);
-                            heartbeatIntervalId = null;
-                            fetchNextAd(); 
-                        } else {
-                           heartbeatStatus.textContent = `Verification OK. (${data.seconds_verified || 0}/${AD_VIEW_TIME_SECONDS}s)`;
-                        }
-                    } else {
-                       heartbeatStatus.textContent = `Verification failed: ${data.message || 'Server error.'}`;
-                    }
-                } catch (e) {
-                    console.error("Heartbeat error:", e);
-                    heartbeatStatus.textContent = 'Network error during heartbeat.';
-                }
-            }, HEARTBEAT_INTERVAL_MS);
-        };
-
-        // Event listeners
-        nextAdBtn.addEventListener('click', fetchNextAd);
-        fetchNextAd(); // Start the first ad load automatically
-    };
-
-    // 4. Referrals
-    const attachReferralListeners = () => {
-        const copyIdBtn = document.getElementById('copyIdBtn');
-        const userIdInput = document.getElementById('userIdInput');
-        const referralMessageEl = document.getElementById('referralMessage');
-        const collectCommissionBtn = document.getElementById('collectCommissionBtn');
-
-        copyIdBtn.addEventListener('click', () => {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(userIdInput.value).then(() => {
-                    referralMessageEl.className = "text-sm text-green-400 mt-2";
-                    referralMessageEl.textContent = 'User ID copied to clipboard!';
-                }).catch(err => {
-                    console.error('Could not copy text: ', err);
-                    referralMessageEl.className = "text-sm text-red-400 mt-2";
-                    referralMessageEl.textContent = 'Failed to copy ID.';
-                });
-            } else {
-                userIdInput.select();
-                document.execCommand('copy');
-                referralMessageEl.className = "text-sm text-yellow-400 mt-2";
-                referralMessageEl.textContent = 'ID copied (using fallback)!';
-            }
-        });
-
-        collectCommissionBtn.addEventListener('click', async () => {
-            const currentCommission = currentUserData.referrals.commission_balance;
-            if (currentCommission <= 0) return;
-
-            collectCommissionBtn.textContent = 'Collecting...';
-            collectCommissionBtn.disabled = true;
-
-            try {
-                // --- SECURE SERVERLESS FUNCTION CALL ---
-                // FIX: Use getFunctionUrl to ensure absolute path resolution
-                const functionUrl = getFunctionUrl('/.netlify/functions/collect-commission');
-
-                const response = await fetch(functionUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: currentUserId, commissionAmount: currentCommission })
-                });
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    referralMessageEl.className = "text-sm text-green-400 mt-2";
-                    referralMessageEl.textContent = `Successfully collected ${formatNumber(currentCommission)} coins!`;
-                } else {
-                    referralMessageEl.className = "text-sm text-red-400 mt-2";
-                    referralMessageEl.textContent = `Collection failed: ${data.message || 'Server error.'}`;
-                }
-
-            } catch (error) {
-                console.error("Collection error:", error);
-                referralMessageEl.className = "text-sm text-red-400 mt-2";
-                referralMessageEl.textContent = "Network error during collection. Try again later.";
-            } finally {
-                // Re-render will update the button state via onSnapshot
-                collectCommissionBtn.textContent = `Collect ${formatNumber(currentCommission)} Coins`;
-            }
-        });
-    };
-    
-    // 5. Premium
-    const attachPremiumListeners = () => {
-        const container = document.getElementById('planContainer');
-        const checkoutBtn = document.getElementById('checkoutBtn');
-        const checkoutMessageEl = document.getElementById('checkoutMessage');
-        const planMessageEl = document.getElementById('planMessage');
-
-        let selectedPlan = null;
-
-        container?.querySelectorAll('.plan-select').forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove active style from all
-                container.querySelectorAll('.plan-select').forEach(btn => {
-                    btn.classList.remove('border-indigo-400', 'bg-indigo-900/30', 'shadow-lg');
-                    btn.classList.add('border-gray-700', 'bg-gray-700');
-                });
-
-                // Add active style to selected
-                button.classList.add('border-indigo-400', 'bg-indigo-900/30', 'shadow-lg');
-                button.classList.remove('border-gray-700', 'bg-gray-700');
-
-                selectedPlan = {
-                    id: button.getAttribute('data-plan-id'),
-                    price: parseFloat(button.getAttribute('data-price'))
-                };
-                
-                planMessageEl.textContent = `Selected: ${PLANS[selectedPlan.id].name}.`;
-                checkoutBtn.disabled = false;
-                checkoutBtn.textContent = `Pay $${selectedPlan.price} USDT Now`;
-                checkoutMessageEl.classList.add('hidden');
-            });
-        });
-
-        checkoutBtn?.addEventListener('click', async () => {
-            if (!selectedPlan) return;
-
-            checkoutBtn.textContent = 'Redirecting...';
-            checkoutBtn.disabled = true;
-            checkoutMessageEl.classList.remove('hidden');
-            checkoutMessageEl.className = "p-3 rounded-lg text-center font-semibold bg-indigo-500/20 text-indigo-300";
-            checkoutMessageEl.textContent = 'Preparing secure invoice...';
-
-            try {
-                // FIX: Use getFunctionUrl to ensure absolute path resolution
-                const functionUrl = getFunctionUrl('/.netlify/functions/create-invoice');
-
-                // Call secure Netlify Function for NOWPayments invoice
-                const response = await fetch(functionUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        userId: currentUserId, 
-                        planId: selectedPlan.id, 
-                        amount: selectedPlan.price 
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.status === 'success' && data.invoice_url) {
-                    checkoutMessageEl.textContent = 'Invoice created! Redirecting to payment gateway...';
-                    window.location.href = data.invoice_url; // Redirect user
-                } else {
-                    checkoutMessageEl.className = "p-3 rounded-lg text-center font-semibold bg-red-500/20 text-red-300";
-                    checkoutMessageEl.textContent = `Payment setup failed: ${data.message || 'Could not generate invoice.'}`;
-                    checkoutBtn.textContent = `Pay $${selectedPlan.price} USDT Now`;
-                    checkoutBtn.disabled = false;
-                }
-
-            } catch (error) {
-                console.error("Checkout error:", error);
-                checkoutMessageEl.className = "p-3 rounded-lg text-center font-semibold bg-red-500/20 text-red-300";
-                checkoutMessageEl.textContent = "Network error during checkout. Please try again.";
-                checkoutBtn.textContent = `Pay $${selectedPlan.price} USDT Now`;
-                checkoutBtn.disabled = false;
-            }
-        });
-    };
-
-    // --- Core Application Setup ---
-
-    const setupAuthAndDataListeners = () => {
-        // 1. Initial Auth check and custom token login or anonymous fallback
-        const authenticate = async () => {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    // Fallback to anonymous sign-in if no custom token is available
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.warn("Initial authentication failed:", error.message);
-            }
-        };
-
-        authenticate();
-
-        // 2. Auth State Listener
-        onAuthStateChanged(auth, async (user) => {
-            // Set readiness flag immediately after the first auth state check
-            if (!isAuthReady) isAuthReady = true; 
-
-            if (user && !user.isAnonymous) {
-                currentUserId = user.uid;
-                
-                // 3. Firestore Real-time Listener for User Data
-                const userRef = getUserDocRef(user.uid);
-                onSnapshot(userRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        currentUserData = { ...docSnap.data(), userId: docSnap.id };
-                    } else {
-                        // User is authenticated but profile doesn't exist
-                        currentUserData = { 
-                            userId: user.uid, 
-                            balance: { usable: 0 }, 
-                            W_coins: 0, D_coins: 0, 
-                            referrals: { invitedCount: 0, commission_balance: 0 },
-                            role: 'free'
-                        };
-                    }
-                    render(); // Re-render with fetched data
-                }, (error) => {
-                    console.error("Firestore user data error:", error);
-                    render(); // Render even on error to show app state
-                });
-
-            } else if (user && user.isAnonymous) {
-                currentUserId = 'anonymous';
-                currentUserData = { 
-                    userId: 'anonymous', 
-                    balance: { usable: 0 }, 
-                    W_coins: 0, D_coins: 0, 
-                    referrals: { invitedCount: 0, commission_balance: 0 },
-                    role: 'free'
-                };
-                render(); // Render Auth screen for anonymous user
-            } else {
-                currentUserId = null;
-                currentUserData = null;
-                render(); // Render Auth screen for unauthenticated user
-            }
-        });
-    };
-
-    // Expose navigateTo to the global scope for onclick events
-    window.navigateTo = navigateTo;
-
-    // Start the application setup
-    setupAuthAndDataListeners();
-    
-    // CRITICAL FIX: Render immediately to show the loading screen 
-    // before the asynchronous Firebase setup completes, addressing blank screen issues.
-    render();
-
+  } else {
+    loginBtn.classList.remove('hidden');
+    logoutBtn.classList.add('hidden');
+  }
+});
 </script>
 
 </body>
