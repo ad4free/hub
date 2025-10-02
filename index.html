@@ -70,7 +70,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, addDoc, updateDoc, increment, runTransaction, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // FIX: Ensure all required Firestore functions, including getDocs, are imported
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, addDoc, updateDoc, increment, runTransaction, arrayUnion, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global Firebase variables provided by the environment
@@ -383,13 +384,17 @@
         // 5. Referral Registration (Called on new sign-up)
         const registerReferral = async (newUserId, refererCode) => {
             if (!db) return;
-            const referrerQuery = query(getUserDocRef(refererCode).parent.parent, where('referral_code', '==', refererCode));
+            // Query for the referrer based on their unique referral_code
+            const referrerQuery = query(collection(db, 'artifacts', appId, 'users'), where('referral_code', '==', refererCode));
 
             try {
-                // Find the user who owns the referral code
+                // Use getDocs, which is now correctly imported
                 const referrerSnapshot = await getDocs(referrerQuery);
+                
                 if (!referrerSnapshot.empty) {
-                    const referrerId = referrerSnapshot.docs[0].id;
+                    // Assuming referral codes are unique across users, take the first match
+                    const referrerDoc = referrerSnapshot.docs[0];
+                    const referrerId = referrerDoc.id; // This is the UID
                     const newUserDocRef = getUserDocRef(newUserId);
                     
                     // 1. Give the referrer the initial bonus
@@ -399,9 +404,9 @@
                     });
                     
                     // 2. Link the new user to the referrer
-                    await updateDoc(newUserDocRef, {
+                    await setDoc(newUserDocRef, {
                         referred_by: refererCode
-                    });
+                    }, { merge: true });
 
                     console.log(`Referral successful: ${newUserId} referred by ${referrerId}. Bonus awarded.`);
                 } else {
@@ -499,6 +504,7 @@
             const loadNextAd = async () => {
                 // 1. Try to load an active user ad
                 try {
+                    // Use getDocs, which is now correctly imported and used for the query
                     const adsQuery = query(getPublicAdsCollection(), where('ad_type', '==', 'WEB'), where('status', '==', 'ACTIVE'));
                     const snapshot = await getDocs(adsQuery);
                     const activeAds = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(ad => ad.actions_completed < ad.total_actions_needed);
@@ -520,6 +526,7 @@
                     }
                 } catch (error) {
                     console.error("Error loading web ad:", error);
+                    // Use exponential backoff or similar retry logic here in a production environment
                     currentAdUrl = PLACEHOLDER_WEB_ADS[0];
                     currentAdDocId = null;
                     document.getElementById('ad-info').textContent = 'Ad Source: Fallback Placeholder Ad (Error)';
