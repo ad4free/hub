@@ -114,20 +114,6 @@
             border-left: 4px solid var(--accent);
         }
 
-        /* Timed Promo Modal Styling */
-        .promo-modal-overlay {
-            z-index: 50;
-            /* Start hidden */
-            display: none; 
-            opacity: 0;
-        }
-
-        .promo-modal-overlay.visible {
-            /* End state visible */
-            display: flex;
-            opacity: 1;
-        }
-
     </style>
 </head>
 <body>
@@ -202,12 +188,12 @@
                         </button>
                     </div>
 
-                    <!-- Timed Promo Notice -->
+                    <!-- Additional Info (Placeholder for what was the modal notice) -->
                     <div class="card">
-                        <h3 class="text-lg font-semibold mb-3">Timed Promotions</h3>
+                        <h3 class="text-lg font-semibold mb-3">Priority Ad Status</h3>
                         <div class="p-3 highlight-notice text-sm">
-                            <p class="font-bold text-yellow-400">Recurring Content Alert:</p>
-                            <p class="text-gray-300">A special promotion window with key links will automatically appear every 2 minutes. This ensures maximum visibility for all users.</p>
+                            <p class="font-bold text-yellow-400">Priority Links Active:</p>
+                            <p class="text-gray-300">Your custom links are guaranteed to be the first displayed in the Website Traffic and YouTube earning cycles.</p>
                         </div>
                     </div>
                 </div>
@@ -215,26 +201,7 @@
         </div>
     </div>
     
-    <!-- 2-Minute Promotion Modal Overlay -->
-    <div id="promo-modal-overlay" class="promo-modal-overlay fixed inset-0 bg-black bg-opacity-80 items-center justify-center transition-opacity duration-300">
-        <div id="promo-modal" class="bg-gray-800 rounded-xl shadow-2xl max-w-xl w-11/12 p-2 relative transform transition-transform duration-300">
-            <!-- Close Button -->
-            <button onclick="closePromoModal()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-200 z-10 p-2 bg-gray-900 rounded-full">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-
-            <h3 class="text-xl font-bold text-center text-indigo-400 pt-4 pb-2">Related Subpage Promotion (Every 2 Min)</h3>
-            <p class="text-sm text-center text-gray-400 mb-2">Exclusive links for website traffic and YouTube growth.</p>
-
-            <div class="iframe-container-promo h-96 w-full rounded-lg overflow-hidden border-4 border-indigo-500">
-                <iframe id="promo-iframe" src="about:blank" class="w-full h-full" frameborder="0"></iframe>
-            </div>
-
-            <button onclick="closePromoModal()" class="w-full mt-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">
-                Continue to Platform
-            </button>
-        </div>
-    </div>
+    <!-- NOTE: The 2-Minute Promotion Modal Overlay HTML has been completely removed. -->
 
 
     <!-- Firebase SDK Imports and App Logic -->
@@ -286,9 +253,7 @@
         const DLINK_REWARD = 1000;
         const YT_VIEW_DURATION = 5; // seconds per view
         
-        const PROMO_INTERVAL_TIME = 120000; // 2 minutes
-
-        // Links that MUST be displayed in the earning cycles and the 2-minute modal
+        // Links that MUST be displayed in the earning cycles
         const HARDCODED_ADS = [
             // Website Traffic
             { title: "Website Traffic: cludymovie.com (PROMO)", url: "http://cludymovie.com/", category: 'web', type: 'promo', id: 'promo-web-1' },
@@ -615,6 +580,7 @@
              console.log(`Attempting to fetch ads for category: ${category}`);
              
              // 1. Get Hardcoded Promo Ads
+             // IMPORTANT: Filters and gets the required promo links first.
              let fetchedAds = HARDCODED_ADS
                  .filter(ad => ad.category === category)
                  .map(ad => ({...ad, budget: 999999999 })); // Set high budget for promo links
@@ -633,7 +599,7 @@
                         [userAds[i], userAds[j]] = [userAds[j], userAds[i]];
                     }
 
-                    // Combine hardcoded first, then shuffled user ads
+                    // Combine hardcoded first (guaranteed to be index 0/1/etc.), then shuffled user ads
                     fetchedAds = [...fetchedAds, ...userAds];
 
                  } catch(e) {
@@ -699,7 +665,7 @@
                 nextButton.disabled = true;
             }
 
-            loadNextAd(); // Load the first ad
+            loadNextAd(); // Load the first ad (which will be a HARDCODED_ADS link)
             
             const runTimer = async () => {
                 adTimerSeconds--;
@@ -868,85 +834,6 @@
                 updateEstimate(); // Initial call
             }
         };
-
-        // --- Timed Promotional Modal Logic ---
-
-        const promoOverlayEl = document.getElementById('promo-modal-overlay');
-        const promoModalEl = document.getElementById('promo-modal');
-        const promoIframeEl = document.getElementById('promo-iframe');
-
-        const generateIframeContent = (links) => {
-             // Use the original URLs for listing in the modal, not the embed ones
-            const modalLinks = [
-                { title: "Website Traffic: cludymovie.com", url: "http://cludymovie.com/" },
-                { title: "Website Traffic: newswithsk.com", url: "http://newswithsk.com" },
-                { title: "Direct Link: otieu.com", url: DIRECT_LINK_URL },
-                { title: "YouTube Watch Time/Views Video", url: "https://www.youtube.com/watch?v=Uw9bqrrV-yI" },
-            ];
-
-            const listItems = modalLinks.map(item => `
-                <li style="padding: 0.5rem; border-bottom: 1px solid #30363d; display: flex; align-items: center;">
-                    <span style="color: #FFD700; font-weight: bold; margin-right: 8px;">&bull;</span>
-                    <a href="${item.url}" target="_blank" style="color: #63b3ed; text-decoration: none; overflow-wrap: break-word; flex-grow: 1; font-size: 0.875rem;">
-                        <span style="color: #c9d1d9; font-weight: 600;">${item.title}:</span> ${item.url}
-                    </a>
-                </li>
-            `).join('');
-
-            return `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        body { background-color: #161b22; color: #c9d1d9; font-family: 'Inter', sans-serif; margin: 0; padding: 1rem; }
-                        ul { list-style: none; padding: 0; margin: 0; }
-                    </style>
-                </head>
-                <body>
-                    <ul>${listItems}</ul>
-                </body>
-                </html>
-            `;
-        };
-
-        const showPromoModal = () => {
-            // Only show if the user is logged in
-            if (!currentUserId) return;
-
-            // Generate the content URL and set it to the iframe
-            const htmlContent = generateIframeContent(HARDCODED_ADS);
-            const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
-            promoIframeEl.src = dataUrl;
-            
-            // Show modal with transition classes
-            promoOverlayEl.classList.remove('hidden', 'opacity-0');
-            promoOverlayEl.classList.add('flex', 'opacity-100');
-            promoModalEl.classList.remove('scale-95');
-            promoModalEl.classList.add('scale-100');
-        };
-
-        const closePromoModal = () => {
-            // Hide modal with transition classes
-            promoModalEl.classList.remove('scale-100');
-            promoModalEl.classList.add('scale-95');
-            
-            setTimeout(() => {
-                promoOverlayEl.classList.remove('flex', 'opacity-100');
-                promoOverlayEl.classList.add('hidden', 'opacity-0');
-                promoIframeEl.src = 'about:blank'; // Clear iframe content
-            }, 300); // Match transition duration
-        };
-        
-        const startPromoTimer = () => {
-            // Immediately show the first modal on load, and then start the interval
-            showPromoModal(); 
-            setInterval(showPromoModal, PROMO_INTERVAL_TIME);
-            console.log(`Promotion timer started. Modal will reappear every ${PROMO_INTERVAL_TIME / 1000} seconds.`);
-        };
-        
-        // Expose closePromoModal globally since it's used in the onclick attribute
-        window.closePromoModal = closePromoModal;
 
         // --- Event Handlers & Initialization ---
         
@@ -1118,7 +1005,7 @@
         window.onload = () => {
             initAuthListeners();
             initGlobalListeners();
-            startPromoTimer(); // Start the 2-minute promotional cycle
+            // Removed startPromoTimer() call as requested.
         };
 
     </script>
