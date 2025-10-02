@@ -3,1056 +3,713 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdExchange Platform - Earn Coins & Run Ads</title>
-    <!-- Load Tailwind CSS via CDN for rapid styling -->
+    <title>Secure Ad Revenue Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a72199b9c9.js" crossorigin="anonymous"></script>
     <style>
-        /* Custom Dark Mode Styling for a Professional Look */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        
-        :root {
-            --bg: #0d1117;
-            --card: #161b22;
-            --accent: #FFD700; /* Gold for coins/main action */
-            --primary: #2d82ff; /* Blue for premium/referral */
-            --text-muted: #8b949e;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: #c9d1d9;
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background-color: var(--card);
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .tab {
-            padding: 0.75rem 1.25rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background-color: #21262d;
-            border: 1px solid transparent;
-            white-space: nowrap;
-        }
-
-        .tab.active {
-            background-color: var(--primary);
-            color: #fff;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(45, 130, 255, 0.4);
-        }
-        
-        button:not(.tab) {
-            transition: all 0.2s;
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            color: #0d1117;
-        }
-        
-        .btn-primary {
-            background-color: var(--accent);
-        }
-        .btn-primary:hover:not(:disabled) {
-            background-color: #e5c100;
-        }
-
-        .btn-secondary {
-            background-color: var(--primary);
-            color: white;
-        }
-        .btn-secondary:hover:not(:disabled) {
-            background-color: #246ac2;
-        }
-
-        .btn-disabled, button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Input styling */
-        input[type="text"], input[type="number"], select {
-            background-color: #010409;
-            border: 1px solid #30363d;
-            padding: 0.6rem;
-            border-radius: 6px;
-            color: #c9d1d9;
-            width: 100%;
-        }
-
-        /* Iframe container */
-        .iframe-container {
-            height: 400px;
-            background-color: #010409;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid #30363d;
-        }
-        .iframe-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        /* Highlighted Notice */
-        .highlight-notice {
-            background-color: rgba(255, 215, 0, 0.1);
-            border-left: 4px solid var(--accent);
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        /* Custom scrollbar for better look */
+        .ad-container::-webkit-scrollbar { width: 8px; }
+        .ad-container::-webkit-scrollbar-thumb { background-color: #6366f1; border-radius: 4px; }
+        .ad-container::-webkit-scrollbar-track { background-color: #e5e7eb; }
     </style>
 </head>
 <body>
-    <div id="app" class="p-4 sm:p-8 container">
-        <!-- Main Application Header -->
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 border-b border-[#30363d]">
-            <h1 class="text-3xl font-extrabold text-white">AdExchange Platform</h1>
-            <div class="flex items-center space-x-2 mt-3 sm:mt-0">
-                <!-- Authentication Status/Buttons -->
-                <div id="auth-status" class="flex items-center space-x-2">
-                    <!-- Dynamic content will be injected here -->
-                </div>
-            </div>
-        </header>
 
-        <!-- Balance Bar -->
-        <div class="mt-6 flex flex-wrap gap-4 justify-between card p-4">
-            <div class="flex items-center space-x-2">
-                <span class="text-xs text-yellow-400 font-semibold">W-Coins (Usable):</span>
-                <span id="w-balance" class="text-2xl font-bold text-white">0</span>
-            </div>
-            <div class="flex items-center space-x-2">
-                <span class="text-xs text-yellow-400 font-semibold">D-Coins (Direct):</span>
-                <span id="d-balance" class="text-2xl font-bold text-white">0</span>
-            </div>
-            <div class="flex items-center space-x-2">
-                <span class="text-xs text-blue-400 font-semibold">Referral (Uncollected):</span>
-                <span id="ref-balance" class="text-2xl font-bold text-white">0</span>
-                <button id="btn-collect-ref" class="btn-secondary text-sm px-3 py-1 ml-2" disabled>Collect</button>
-            </div>
-            <div class="text-sm">
-                <span id="user-status" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-600 text-white">Guest</span>
+<div id="app" class="min-h-screen flex flex-col">
+
+    <!-- Header / Secure Balance Display -->
+    <header class="bg-indigo-700 shadow-lg p-4 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white tracking-wider">AdCore Pro</h1>
+            <div class="flex items-center space-x-6">
+                <div class="text-right">
+                    <p id="user-balance" class="text-3xl font-extrabold text-green-300">$0.00</p>
+                    <p class="text-xs text-gray-200 uppercase tracking-widest mt-[-4px]">Current Balance</p>
+                </div>
+                <div class="text-right">
+                    <p id="user-status" class="text-lg font-semibold text-yellow-300">Loading...</p>
+                    <p class="text-xs text-gray-200 uppercase tracking-widest mt-[-4px]">Account Status</p>
+                </div>
+                <button id="profile-btn" onclick="app.navigate('profile')" class="text-white hover:text-indigo-200 transition duration-150 p-2 rounded-full hover:bg-indigo-600">
+                    <i class="fas fa-user-circle text-2xl"></i>
+                </button>
             </div>
         </div>
+    </header>
 
-        <!-- Main Content Area -->
-        <div class="mt-6">
-            <!-- Navigation Tabs -->
-            <div id="nav-tabs" class="flex flex-wrap gap-2 mb-6 overflow-x-auto pb-2">
-                <div class="tab active" data-tab="dashboard">Dashboard</div>
-                <div class="tab" data-tab="web">Website Traffic</div>
-                <div class="tab" data-tab="dlink">Direct Link</div>
-                <div class="tab" data-tab="ytwatch">YouTube Watch Time</div>
-                <div class="tab" data-tab="ytviews">YouTube Views</div>
-                <div class="tab" data-tab="adlaunch">Ad Launch</div>
-                <div class="tab" data-tab="referral">Referrals</div>
+    <!-- Main Content Area -->
+    <main class="flex-grow flex max-w-6xl mx-auto w-full p-4">
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 bg-white p-4 rounded-xl shadow-xl h-fit sticky top-20">
+            <h2 class="text-lg font-semibold text-gray-700 mb-4">Menu</h2>
+            <ul class="space-y-2">
+                <li><button onclick="app.navigate('dashboard')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150"><i class="fas fa-chart-line w-5"></i><span>Dashboard</span></button></li>
+                <li><button onclick="app.navigate('web_traffic')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 text-gray-700 hover:bg-gray-100 transition duration-150"><i class="fas fa-globe w-5"></i><span>Web Traffic (Ads)</span></button></li>
+                <li><button onclick="app.navigate('premium')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 text-gray-700 hover:bg-gray-100 transition duration-150"><i class="fas fa-crown w-5"></i><span>Get Premium</span></button></li>
+                <li><button onclick="app.navigate('profile')" class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 text-gray-700 hover:bg-gray-100 transition duration-150"><i class="fas fa-id-card w-5"></i><span>Profile</span></button></li>
+            </ul>
+            <div class="mt-6 pt-4 border-t border-gray-200">
+                <p id="user-id-display" class="text-xs text-gray-500 break-all"></p>
             </div>
+        </nav>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Main Content Panel (2/3 width) -->
-                <div id="main-panel" class="lg:col-span-2 card">
-                    <h2 class="text-xl font-semibold mb-4" id="main-title">Dashboard</h2>
-                    <div id="tab-content">
-                        <!-- Content will be injected here -->
-                    </div>
-                </div>
-
-                <!-- Side Panel (1/3 width) -->
-                <div class="lg:col-span-1 space-y-6">
-                    <!-- User Info & Premium -->
-                    <div class="card">
-                        <h3 class="text-lg font-semibold mb-3">Account Details</h3>
-                        <p class="text-sm truncate mb-2">
-                            <span class="text-gray-400">User ID:</span> 
-                            <span id="user-id-display" class="font-mono text-xs bg-[#21262d] p-1 rounded">...</span>
-                        </p>
-                        <button class="btn-secondary w-full" id="btn-toggle-premium" disabled>
-                             Go Premium (Simulated)
-                        </button>
-                    </div>
-
-                    <!-- Additional Info -->
-                    <div class="card">
-                        <h3 class="text-lg font-semibold mb-3">Priority Ad Status</h3>
-                        <div class="p-3 highlight-notice text-sm">
-                            <p class="font-bold text-yellow-400">Ad Earning Security:</p>
-                            <p class="text-gray-300">Earning timers **pause automatically** if you switch tabs or minimize the window.</p>
-                        </div>
-                    </div>
-                </div>
+        <!-- Dynamic Content Area -->
+        <section id="content-area" class="flex-grow ml-6 bg-white p-8 rounded-xl shadow-xl">
+            <!-- Content will be injected here -->
+            <div class="text-center py-20">
+                <i class="fas fa-spinner fa-spin text-indigo-500 text-4xl"></i>
+                <p class="mt-4 text-gray-500">Loading application...</p>
             </div>
+        </section>
+    </main>
+</div>
+
+<!-- Custom Modal Placeholder for alerts/confirmations -->
+<div id="custom-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
+        <h3 id="modal-title" class="text-xl font-bold mb-3 text-gray-800">Alert</h3>
+        <p id="modal-message" class="text-gray-600 mb-6"></p>
+        <div class="flex justify-end space-x-3">
+            <button id="modal-cancel" class="hidden px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">Cancel</button>
+            <button id="modal-confirm" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">OK</button>
         </div>
     </div>
-    
-    <!-- Firebase SDK Imports and App Logic -->
-    <script type="module">
-        // ---------- Firebase Configuration (User Provided) ----------
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, onSnapshot, increment } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCUnWnmNHHJPFKzkyJ59-cK8kag6OpIoIM",
-            authDomain: "website-5636d.firebaseapp.com",
-            projectId: "website-5636d",
-            storageBucket: "website-5636d.firebase-storage.app",
-            messagingSenderId: "737574321288",
-            appId: "1:737574321288:web:e92da5e5b4d63b87d8b33d",
-            measurementId: "G-S64W6JR12C"
-        };
+<script type="module">
+    // Firebase Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, onSnapshot, updateDoc, collection, getDocs, runTransaction, setDoc, query, where, limit, arrayUnion, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // Firestore App ID from environment (mandatory)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    // --- Global Canvas Variables ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Global State
-        let currentUserId = null;
-        let isAuthReady = false;
-        let userData = {
-            wCoins: 0, 
-            dCoins: 0, 
-            refBalance: 0, 
+    // --- Firebase Initialization ---
+    let app, db, auth;
+    let userId = null;
+    let isAuthReady = false;
+
+    // Set Firestore log level for debugging
+    setLogLevel('Debug');
+
+    // --- App State ---
+    const appState = {
+        currentPage: 'dashboard',
+        user: {
+            balance: 0.00,
+            status: 'Loading...',
             isPremium: false,
-            ytHours: 0,
-            ytMinutes: 0,
-            ytSeconds: 0,
-            ytViews: 0
-        };
-        let activeTab = 'dashboard';
-        let earningInterval = null; // Changed from adIntervalId
-        let adCyclePaused = false;
-        let adTimerSeconds = 0;
-        let currentAds = []; 
-        let currentAdIndex = -1;
+            expiryDate: null,
+            uid: null,
+        },
+        ads: [], // Stores available ads fetched from Firebase
+        watching: {
+            isActive: false,
+            timerSeconds: 0,
+            intervalId: null,
+            adsShown: [],
+        },
+    };
+
+    // --- Utility Functions ---
+
+    /** Shows a custom modal (replaces alert/confirm) */
+    function showModal(title, message, isConfirm = false, onConfirm = () => {}) {
+        const modal = document.getElementById('custom-modal');
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-message').textContent = message;
         
-        // --- Constants ---
-        const WEB_REWARD = 500;
-        const WEB_DURATION = 15;
-        const DLINK_REWARD = 1000;
-        const YT_VIEW_DURATION = 5; // seconds per view
-        
-        // Links that MUST be displayed in the earning cycles
-        const HARDCODED_ADS = [
-            // Website Traffic
-            { title: "Website Traffic: cludymovie.com (PROMO)", url: "http://cludymovie.com/", category: 'web', type: 'promo', id: 'promo-web-1' },
-            { title: "Website Traffic: newswithsk.com (PROMO)", url: "http://newswithsk.com", category: 'web', type: 'promo', id: 'promo-web-2' },
-            // Direct Link
-            { title: "Direct Link: otieu.com (PROMO)", url: "https://otieu.com/4/9677163", category: 'dlink', type: 'promo', id: 'promo-dlink-1' },
-            { title: "Direct Link: otieu.com (Duplicate PROMO)", url: "https://otieu.com/4/9677163", category: 'dlink', type: 'promo', id: 'promo-dlink-2' },
-            // YouTube (Note: Removed 'mute=1' to allow volume)
-            { title: "YouTube Watch Time/Views Video (PROMO)", 
-              url: "https://www.youtube.com/embed/Uw9bqrrV-yI?autoplay=1&controls=1&loop=1", 
-              category: 'yt', 
-              type: 'promo', 
-              id: 'promo-yt-1' 
-            },
-        ];
-        const DIRECT_LINK_URL = HARDCODED_ADS.find(ad => ad.id === 'promo-dlink-1')?.url || 'about:blank';
+        const confirmBtn = document.getElementById('modal-confirm');
+        const cancelBtn = document.getElementById('modal-cancel');
 
+        modal.classList.remove('hidden');
 
-        // --- Firebase Helpers ---
-        const getUserDocRef = (uid) => doc(db, 'artifacts', appId, 'users', uid, 'user_data', 'profile');
-        const getPublicAdsCollection = () => collection(db, 'artifacts', appId, 'public', 'data', 'ads');
-
-        // --- UI Update Functions ---
-        const updateUIBalances = () => {
-            document.getElementById('w-balance').textContent = userData.wCoins.toLocaleString();
-            document.getElementById('d-balance').textContent = userData.dCoins.toLocaleString();
-            document.getElementById('ref-balance').textContent = userData.refBalance.toLocaleString();
-            document.getElementById('user-id-display').textContent = currentUserId ? currentUserId.substring(0, 12) + '...' : 'Guest';
-            document.getElementById('btn-collect-ref').disabled = userData.refBalance <= 0 || !currentUserId;
-            document.getElementById('btn-toggle-premium').disabled = !currentUserId;
-            
-            const statusEl = document.getElementById('user-status');
-            statusEl.textContent = currentUserId ? (userData.isPremium ? '💎 Premium' : 'Free User') : 'Guest';
-            statusEl.className = `px-3 py-1 rounded-full text-xs font-semibold ${
-                userData.isPremium ? 'bg-purple-600 text-white' : (currentUserId ? 'bg-green-600 text-white' : 'bg-gray-600 text-white')
-            }`;
-            
-            const premiumBtn = document.getElementById('btn-toggle-premium');
-            if (premiumBtn) {
-                premiumBtn.textContent = userData.isPremium ? 'Downgrade (Simulated)' : 'Go Premium (Simulated)';
-            }
-        };
-        
-        // --- Security/Visibility Check ---
-        const checkVisibility = () => {
-            const isVisible = document.visibilityState === 'visible' && !document.hidden;
-            const hasFocus = document.hasFocus();
-            const shouldRun = isVisible && hasFocus;
-            
-            const statusContainer = document.getElementById('ad-info');
-            if (!statusContainer) return;
-            let pauseStatusEl = document.getElementById('pause-status');
-
-            if (shouldRun && adCyclePaused) {
-                adCyclePaused = false;
-                if (activeTab === 'web') {
-                    startWebTrafficTimer();
-                } else if (activeTab.startsWith('yt')) {
-                    startYoutubeTimer();
-                }
-                pauseStatusEl?.remove();
-                console.log(`Earning resumed for ${activeTab}`);
-
-            } else if (!shouldRun && !adCyclePaused && earningInterval) {
-                adCyclePaused = true;
-                clearInterval(earningInterval);
-                earningInterval = null;
-                console.log(`Earning PAUSED for ${activeTab}. Tab inactive.`);
-                
-                // Show status message
-                if (!pauseStatusEl) {
-                     pauseStatusEl = document.createElement('div');
-                     pauseStatusEl.id = 'pause-status';
-                     pauseStatusEl.className = 'text-red-400 font-bold mt-2';
-                     pauseStatusEl.textContent = 'EARNING PAUSED: Return to Tab!';
-                     statusContainer.appendChild(pauseStatusEl);
-                }
-            }
+        confirmBtn.onclick = () => {
+            modal.classList.add('hidden');
+            onConfirm();
         };
 
-        // --- Database Update Functions ---
-        const earnCoins = async (category, amount) => {
-            if (!currentUserId) return console.error("Not authenticated.");
-            try {
-                const updateData = { wCoins: increment(amount) };
+        if (isConfirm) {
+            cancelBtn.classList.remove('hidden');
+            cancelBtn.onclick = () => modal.classList.add('hidden');
+        } else {
+            cancelBtn.classList.add('hidden');
+        }
+    }
 
-                if (category === 'dlink') {
-                    updateData.dCoins = increment(amount);
-                }
+    /** Helper to format currency */
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    };
 
-                await updateDoc(getUserDocRef(currentUserId), updateData);
-                return true;
-            } catch (e) {
-                console.error("Error updating coin balance:", e);
-                return false;
-            }
-        };
+    /** Shuffles an array (Fisher-Yates) */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
 
-        // --- Navigation/Tab Logic ---
-        const stopAdCycle = () => {
-            if (earningInterval) {
-                clearInterval(earningInterval);
-                earningInterval = null;
-            }
-            // Reset state
-            currentAds = [];
-            currentAdIndex = -1;
-            adTimerSeconds = 0;
-            adCyclePaused = false;
-            console.log("Ad cycle stopped.");
-        };
 
-        const changeTab = (newTab) => {
-            stopAdCycle(); // Stop any running intervals before switching
-            activeTab = newTab;
+    // --- Core UI Rendering & State Management ---
 
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.tab === newTab);
-            });
-            
-            renderPage();
-        };
+    function updateUI() {
+        // 1. Update Header
+        document.getElementById('user-balance').textContent = formatCurrency(appState.user.balance);
+        const statusEl = document.getElementById('user-status');
+        statusEl.textContent = appState.user.status;
+        statusEl.className = appState.user.isPremium ? 'text-lg font-semibold text-pink-400' : 'text-lg font-semibold text-yellow-300';
+        document.getElementById('user-id-display').textContent = `User ID: ${appState.user.uid || 'N/A'}`;
 
-        // --- Render Current Tab Content ---
-        const renderPage = async () => {
-            const contentContainer = document.getElementById('tab-content');
-            let title = '';
-            let html = '';
-            
-            document.getElementById('main-title').textContent = 'Loading...';
-
-            if (!isAuthReady) {
-                 contentContainer.innerHTML = '<p class="text-xl text-center text-gray-500 mt-12">Checking authentication status...</p>';
-                 return;
-            }
-
-            if (!currentUserId) {
-                contentContainer.innerHTML = '<p class="text-xl text-center text-gray-500 mt-12">Please **sign in with Gmail** to access the platform features.</p>';
-                document.getElementById('main-title').textContent = 'Welcome: Authentication Required';
-                return;
-            }
-
-            switch (activeTab) {
-                case 'dashboard':
-                    title = 'Dashboard Overview';
-                    html = renderDashboard();
-                    break;
-                case 'web':
-                    title = 'Earn W-Coins: Website Traffic';
-                    html = renderEarningPage('web', `${WEB_REWARD} W-Coins`, `${WEB_DURATION} sec`); 
-                    break;
-                case 'dlink':
-                    title = 'Earn D-Coins: Direct Link Views';
-                    html = renderEarningPage('dlink', `${DLINK_REWARD} D-Coins`, 'Click/Open');
-                    break;
-                case 'ytwatch':
-                    title = 'Earn YouTube Watch Time';
-                    html = renderEarningPage('ytwatch', 'Earn Hours/Minutes', 'Live Counting (Visible Tab Only)');
-                    break;
-                case 'ytviews':
-                    title = 'Earn YouTube Views';
-                    html = renderEarningPage('ytviews', 'Earn Views', `Every ${YT_VIEW_DURATION} Sec (Visible Tab Only)`);
-                    break;
-                case 'referral':
-                    title = 'Referral System & Commissions';
-                    html = renderReferral();
-                    break;
-                case 'adlaunch':
-                    title = 'Launch New Ad Campaign & Manage';
-                    html = renderAdLaunch();
-                    break;
-                default:
-                    title = 'Dashboard Overview';
-                    html = renderDashboard();
-            }
-
-            document.getElementById('main-title').textContent = title;
-            contentContainer.innerHTML = html;
-            
-            // Post-render actions (must run after DOM is updated)
-            if (activeTab === 'web') {
-                 await setupWebEarningPage();
-            } else if (activeTab === 'dlink') {
-                 // Nothing specific needed, button is global listener
-            } else if (activeTab.startsWith('yt')) {
-                 await setupYtEarningPage(activeTab);
-            } else if (activeTab === 'adlaunch') {
-                 setupAdLaunchPage();
-            }
-        };
-
-        // --- HTML Content Generators ---
-
-        const formatTime = (totalSeconds) => {
-            const h = Math.floor(totalSeconds / 3600);
-            const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = totalSeconds % 60;
-            return `${h}h ${m}m ${s}s`;
-        };
-
-        const renderDashboard = () => {
-            return `
-                <div class="space-y-4">
-                    <div class="highlight-notice p-4 rounded-lg">
-                        <p class="font-bold text-lg text-yellow-400">IMPORTANT NOTE on Iframe Traffic:</p>
-                        <p class="mt-2 text-sm text-gray-300">
-                            Many modern websites block embedding in iframes due to security policies (like X-Frame-Options). For **Website Traffic**, the iframe will display the target URL, but the actual site loading is simulated/validated in the background. **Only embeddable YouTube videos will load directly.**
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="card p-3 text-center">
-                            <p class="text-xs text-gray-400">Total W-Coins</p>
-                            <p class="text-xl font-bold text-yellow-400">${userData.wCoins.toLocaleString()}</p>
-                        </div>
-                        <div class="card p-3 text-center">
-                            <p class="text-xs text-gray-400">Total D-Coins</p>
-                            <p class="text-xl font-bold text-yellow-400">${userData.dCoins.toLocaleString()}</p>
-                        </div>
-                        <div class="card p-3 text-center">
-                            <p class="text-xs text-gray-400">YT Watch Time</p>
-                            <p class="text-xl font-bold text-blue-400">${formatTime(userData.ytHours * 3600 + userData.ytMinutes * 60 + userData.ytSeconds)}</p>
-                        </div>
-                        <div class="card p-3 text-center">
-                            <p class="text-xs text-gray-400">YT Total Views</p>
-                            <p class="text-xl font-bold text-blue-400">${userData.ytViews.toLocaleString()}</p>
-                        </div>
-                    </div>
-                    
-                    <h3 class="text-lg font-semibold mt-6">Platform Details</h3>
-                    <ul class="list-disc list-inside text-sm text-gray-400 pl-4 space-y-2">
-                        <li>All earnings from **Website Traffic**, **Direct Link**, **YouTube Watch Time**, and **YouTube Views** contribute to your usable **W-Coins**.</li>
-                        <li>**Referral Commission:** 15% of your referred users' lifetime earnings.</li>
-                        <li>Ad campaigns **auto-close** when the budget runs out.</li>
-                    </ul>
-                </div>
-            `;
-        };
-
-        const renderEarningPage = (category, rewardText, durationText) => {
-            const isDirectLink = category === 'dlink';
-            const isYT = category.startsWith('yt');
-
-            let iframeContent = '';
-            if (isDirectLink) {
-                 iframeContent = `<p class="text-center pt-20 text-gray-500">Click the button below to open the link in a new tab and earn D-Coins.</p>`;
-            } else if (isYT) {
-                 // For YT, the iframe src will be set in setupYtEarningPage to load the actual video embed.
-                 iframeContent = `<iframe id="ad-iframe" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+        // 2. Navigation Styling
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            const page = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+            if (page === appState.currentPage) {
+                btn.classList.add('text-indigo-600', 'bg-indigo-50');
+                btn.classList.remove('text-gray-700', 'hover:bg-gray-100');
             } else {
-                 // For Web Traffic, we load a placeholder that shows the URL due to security restrictions.
-                 iframeContent = `<iframe id="ad-iframe" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+                btn.classList.remove('text-indigo-600', 'bg-indigo-50');
+                btn.classList.add('text-gray-700', 'hover:bg-gray-100');
             }
+        });
+        
+        // 3. Render Current Page
+        renderPage(appState.currentPage);
+    }
 
-            return `
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center mb-4 card p-3">
-                        <div class="text-base font-bold text-green-400">Reward: ${rewardText}</div>
-                        <div class="text-base text-gray-400">Duration: ${durationText}</div>
-                    </div>
-                    
-                    <div id="ad-info" class="text-center p-3 rounded-lg bg-[#21262d] mb-4">
-                        <p id="ad-status" class="font-semibold text-lg text-white">Ad Loading...</p>
-                        <p id="ad-timer" class="text-xl font-extrabold text-yellow-400 mt-1">00</p>
-                    </div>
+    // --- FIREBASE LISTENERS & DATA FLOW ---
 
-                    <div class="iframe-container">
-                        ${iframeContent}
-                    </div>
+    function setupDataListeners() {
+        if (!db || !userId) {
+            console.error("Firebase not initialized or userId not available.");
+            return;
+        }
 
-                    <div class="flex justify-center space-x-4 pt-2">
-                        <button 
-                            id="btn-direct-link" 
-                            data-category="${category}"
-                            class="${isDirectLink ? 'btn-primary' : 'hidden'} w-full sm:w-1/2 py-3"
-                        >
-                            Open Link & Earn ${DLINK_REWARD} D-Coins
-                        </button>
-                        <button 
-                            id="btn-earn-next" 
-                            data-category="${category}"
-                            class="${!isDirectLink ? 'btn-primary' : 'hidden'} w-full sm:w-1/2 py-3" 
-                            disabled
-                        >
-                            Next Ad/Video (Skip)
-                        </button>
+        // 1. User Profile Listener (Private Data)
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'user_data');
+        onSnapshot(userDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                appState.user.balance = data.balance || 0.00;
+                appState.user.isPremium = data.isPremium || false;
+                appState.user.expiryDate = data.expiryDate ? data.expiryDate.toDate() : null;
+                appState.user.status = appState.user.isPremium 
+                    ? `Premium (Expires: ${appState.user.expiryDate ? appState.user.expiryDate.toLocaleDateString() : 'N/A'})` 
+                    : 'Free User';
+                
+                // Check for expired subscription
+                if (appState.user.isPremium && appState.user.expiryDate && new Date() > appState.user.expiryDate) {
+                    console.log("Premium subscription expired. Downgrading...");
+                    // Note: This check should ideally be done by an Admin/Backend service, 
+                    // but we include client-side logic for demonstration.
+                    updateDoc(userDocRef, { isPremium: false, status: 'Free User', expiryDate: null });
+                }
+
+                console.log("User data updated:", appState.user);
+                updateUI();
+            } else {
+                // Initialize user profile if it doesn't exist
+                setDoc(userDocRef, { 
+                    uid: userId, 
+                    balance: 0.00, 
+                    isPremium: false, 
+                    status: 'Free User',
+                    createdAt: serverTimestamp()
+                }, { merge: true });
+            }
+        }, (error) => console.error("Error listening to user profile:", error));
+
+
+        // 2. Available Ads Listener (Public Data)
+        const adsCollectionRef = collection(db, `artifacts/${appId}/public/data/available_ads`);
+        onSnapshot(adsCollectionRef, (querySnapshot) => {
+            appState.ads = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log(`Fetched ${appState.ads.length} available ads.`);
+            if (appState.currentPage === 'web_traffic' && !appState.watching.isActive) {
+                 renderPage('web_traffic'); // Re-render if on the ad page
+            }
+        }, (error) => console.error("Error listening to available ads:", error));
+    }
+
+
+    // --- SECURE MATH & COUNTING (TRANSACTIONS) ---
+
+    /**
+     * Securely increments the user balance using a Firestore Transaction.
+     * This prevents concurrent writes from overwriting each other (race conditions),
+     * ensuring that every watch/view is counted exactly once.
+     * @param {number} amount - The amount to add to the balance (e.g., 0.001 per view).
+     */
+    async function secureIncrementBalance(amount) {
+        if (!db || !userId) return console.error("Database or User ID not ready for transaction.");
+
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'user_data');
+
+        try {
+            await runTransaction(db, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                
+                if (!userDoc.exists()) {
+                    throw "User Document does not exist!";
+                }
+
+                // Retrieve current balance, default to 0 if not set
+                const currentBalance = userDoc.data().balance || 0;
+                const newBalance = currentBalance + amount;
+
+                // Update the balance securely within the transaction
+                transaction.update(userDocRef, { balance: newBalance });
+                console.log(`Transaction successful. Added ${amount} to balance. New balance: ${newBalance.toFixed(4)}`);
+                
+                // Update local state immediately for a smooth UI experience
+                appState.user.balance = newBalance;
+                updateUI();
+
+            });
+        } catch (e) {
+            console.error("Secure transaction failed: ", e);
+            showModal("Error", "Failed to count view securely. Please try again.");
+        }
+    }
+
+    // --- Ad Watching System ---
+
+    /**
+     * Initializes the multi-iFrame ad watching session.
+     * @param {number} numAds - Number of iFrames to generate (max 15).
+     */
+    function startWatching(numAds) {
+        if (appState.watching.isActive) return;
+
+        // Reset state
+        appState.watching.timerSeconds = 0;
+        appState.watching.isActive = true;
+        appState.watching.adsShown = [];
+
+        // Determine max duration: 60 seconds for Free, unlimited for Premium (simulated here)
+        const maxDuration = appState.user.isPremium ? 300 : 60; // 5 mins for premium demo, 60s for free
+
+        // 1. Select the ads to show (ensure different ads are shown)
+        let selectedAds = shuffleArray([...appState.ads]).slice(0, numAds);
+        if (selectedAds.length === 0) {
+            appState.watching.isActive = false;
+            showModal("Ad Error", "No ads available to watch. Please try again later.");
+            renderPage('web_traffic');
+            return;
+        }
+
+        // 2. Render the iFrames and start the simulation
+        const contentArea = document.getElementById('content-area');
+        let html = `
+            <div class="mb-6 p-4 bg-indigo-50 rounded-xl">
+                <h2 class="text-2xl font-bold text-indigo-700">Ad Watching Session Active</h2>
+                <p id="timer-display" class="text-xl font-mono mt-2 text-indigo-900">Time Left: ${maxDuration}s</p>
+                <button onclick="app.stopWatching()" class="mt-3 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition shadow">Stop Watching</button>
+            </div>
+            <div id="iframe-grid" class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+        `;
+
+        const watchValuePerAd = 0.001; // $0.001 per ad view
+        const adWatchDuration = 5; // Simulate a 5-second watch before counting
+
+        selectedAds.forEach((ad, index) => {
+            appState.watching.adsShown.push(ad.id);
+            // iFrame FIX: We use the ad.url from the Firestore document. If the external site prevents embedding (X-Frame-Options), 
+            // the iFrame will show an error. This is a browser security feature, not a code bug. 
+            // We use sandbox attributes for security but allow forms/scripts from the same origin if necessary.
+            html += `
+                <div class="ad-card bg-gray-100 p-3 rounded-lg shadow-md border border-gray-200">
+                    <p class="text-sm font-semibold mb-2 text-gray-700">Ad Slot ${index + 1} (${ad.id})</p>
+                    <div class="w-full aspect-video bg-gray-300 rounded-lg overflow-hidden relative">
+                        <!-- Simulation of Ad Content - Replace the placeholder URL with real ad tracking URLs -->
+                        <iframe id="ad-iframe-${index}" 
+                                src="${ad.url || 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1'}" 
+                                frameborder="0" 
+                                allow="autoplay; encrypted-media; fullscreen" 
+                                sandbox="allow-scripts allow-same-origin"
+                                class="w-full h-full"></iframe>
+                        <div id="watch-overlay-${index}" class="absolute inset-0 bg-indigo-500 bg-opacity-75 flex items-center justify-center text-white font-bold text-lg opacity-0 transition duration-500">Watching...</div>
                     </div>
                 </div>
             `;
-        };
-        
-        // --- Core Ad Fetching Logic ---
+        });
 
-        const getAdsForCategory = async (category) => {
-             console.log(`Attempting to fetch ads for category: ${category}`);
-             
-             // 1. Get Hardcoded Promo Ads (always first)
-             let fetchedAds = HARDCODED_ADS
-                 .filter(ad => ad.category === category)
-                 .map(ad => ({...ad, budget: 999999999 })); 
-                 
-             // 2. Fetch User-Launched Ads from Firestore (only for web and dlink)
-             if (category === 'web' || category === 'dlink') {
-                 try {
-                    // Only fetch active ads
-                    const q = query(getPublicAdsCollection(), where('category', '==', category), where('status', '==', 'active'));
-                    const querySnapshot = await getDocs(q);
-                    
-                    const userAds = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'user' }));
-                    
-                    // Shuffle the user ads
-                    for (let i = userAds.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [userAds[i], userAds[j]] = [userAds[j], userAds[i]];
-                    }
+        html += '</div>';
+        contentArea.innerHTML = html;
 
-                    // Combine hardcoded first, then shuffled user ads
-                    fetchedAds = [...fetchedAds, ...userAds];
-
-                 } catch(e) {
-                     console.error("Error fetching ads:", e);
-                 }
-             }
-
-             console.log(`Available ${category} ads: ${fetchedAds.length}`);
-             return fetchedAds;
-        }
-
-
-        const processAdComplete = async (category, reward) => {
-            const ad = currentAds[currentAdIndex];
+        // 3. Start the main session timer
+        appState.watching.intervalId = setInterval(() => {
+            appState.watching.timerSeconds++;
+            const timeLeft = maxDuration - appState.watching.timerSeconds;
             
-            // For promo links, just earn coins for the user
-            if (ad.type === 'promo') {
-                 await earnCoins(category, reward);
-                 return;
-            }
+            document.getElementById('timer-display').textContent = `Time Left: ${timeLeft}s`;
 
-            // For user-launched ad: earn coins and deduct budget
-            if (ad.type === 'user' && ad.budget > 0) {
-                 const success = await earnCoins(category, reward);
-                
-                if (success) {
-                    try {
-                        const adRef = doc(getPublicAdsCollection(), ad.id);
-                        const newBudget = ad.budget - reward;
-                        
-                        const updateData = { 
-                            budget: increment(-reward),
-                            impressions: increment(1),
-                            // Auto-close ad if budget is consumed
-                            status: newBudget <= 0 ? 'closed' : 'active' 
-                        };
-
-                        await updateDoc(adRef, updateData);
-                        console.log(`Ad budget for ${ad.id} deducted by ${reward}. New status: ${newBudget <= 0 ? 'CLOSED' : 'ACTIVE'}.`);
-                    } catch (e) { 
-                        console.error("Could not update ad budget:", e); 
-                    }
-                }
-            }
-        }
-        
-        // --- Web Traffic Earning Cycle ---
-
-        let runWebTrafficTimer = null;
-        const startWebTrafficCycle = (ads) => {
-            stopAdCycle(); 
-            currentAds = ads;
-            
-            if (currentAds.length === 0) {
-                document.getElementById('ad-status').textContent = 'No Ads Available. Please try later.';
+            // Check if the 60-second limit is reached for Free users
+            if (!appState.user.isPremium && timeLeft <= 0) {
+                stopWatching();
+                app.navigate('premium');
+                showModal("Time Limit Reached", "Your 60-second ad watching session has ended. Go Premium to unlock unlimited ad time!", false, () => {});
                 return;
             }
-            
-            const adTimerEl = document.getElementById('ad-timer');
-            const adStatusEl = document.getElementById('ad-status');
-            const iframe = document.getElementById('ad-iframe');
-            const nextButton = document.getElementById('btn-earn-next');
-            
-            const createIframeContent = (url) => {
-                const base64Content = btoa(`
-                    <body style="background:#0d1117; color:#c9d1d9; font-family:Inter, sans-serif; padding:20px; text-align:center;">
-                        <h2 style="color:#FFD700;">Ad Display Simulation</h2>
-                        <p>Website is blocked from embedding due to security policies (X-Frame-Options/CSP).</p>
-                        <p>Generating traffic for:</p>
-                        <a href="${url}" target="_blank" style="color:#2d82ff; text-decoration:underline;">${url}</a>
-                        <p style="margin-top:20px; font-size:small; color:#8b949e;">Keep this tab active for the duration to earn coins.</p>
-                    </body>
-                `);
-                return `data:text/html;base64,${base64Content}`;
-            }
 
-            const loadNextAd = () => {
-                currentAdIndex = (currentAdIndex + 1) % currentAds.length;
-                const ad = currentAds[currentAdIndex];
-                
-                iframe.src = createIframeContent(ad.url); // Load local placeholder with target URL
-                adStatusEl.textContent = `Viewing Ad: ${ad.title} (${ad.url.substring(0, 30)}...)`;
-                adTimerSeconds = WEB_DURATION;
-                nextButton.disabled = true;
-            }
-
-            loadNextAd(); // Load the first ad
-            
-            runWebTrafficTimer = async () => {
-                adTimerSeconds--;
-                adTimerEl.textContent = adTimerSeconds < 10 ? `0${adTimerSeconds}` : adTimerSeconds;
-
-                if (adTimerSeconds <= 0) {
-                    await processAdComplete('web', WEB_REWARD);
-                    await updateUIBalances(); // Update balances immediately after earning
-                    
-                    // Re-fetch ads to ensure closed ads are removed and re-start the cycle
-                    currentAds = await getAdsForCategory('web');
-                    if (currentAds.length === 0) {
-                         stopAdCycle();
-                         adStatusEl.textContent = 'No Ads Available. Campaign Ended.';
-                         adTimerEl.textContent = '00';
-                         return;
-                    }
-                    loadNextAd();
-                }
-                
-                // User can skip after 5 seconds
-                nextButton.disabled = adTimerSeconds > WEB_DURATION - 5;
-            };
-            
-            // Start the timer only if not paused by visibility check
-            if (!adCyclePaused) {
-                earningInterval = setInterval(runWebTrafficTimer, 1000);
-            }
-        };
-
-
-        const setupWebEarningPage = async () => {
-            stopAdCycle();
-            currentAds = await getAdsForCategory('web');
-            startWebTrafficCycle(currentAds);
-            
-            const nextButton = document.getElementById('btn-earn-next');
-            if (nextButton) {
-                nextButton.onclick = async () => {
-                    if (adTimerSeconds <= WEB_DURATION - 5 && !adCyclePaused) {
-                        // Immediately process ad and manually trigger next ad logic
-                        await processAdComplete('web', WEB_REWARD);
-                        await updateUIBalances(); 
-                        
-                        currentAds = await getAdsForCategory('web');
-                        if (currentAds.length === 0) {
-                             stopAdCycle();
-                             document.getElementById('ad-status').textContent = 'No Ads Available. Campaign Ended.';
-                             document.getElementById('ad-timer').textContent = '00';
-                             return;
-                        }
-                        
-                        currentAdIndex = (currentAdIndex + 1) % currentAds.length;
-                        const ad = currentAds[currentAdIndex];
-                        document.getElementById('ad-iframe').src = createIframeContent(ad.url); 
-                        document.getElementById('ad-status').textContent = `Viewing Ad: ${ad.title} (${ad.url.substring(0, 30)}...)`;
-                        adTimerSeconds = WEB_DURATION;
-                        document.getElementById('btn-earn-next').disabled = true;
-                        
-                    } else {
-                        console.warn('You must view the ad for at least 5 seconds before skipping.');
-                    }
-                };
-            }
-        };
-        
-        // --- YouTube Earning Cycle ---
-
-        let updateYoutubeStats = null;
-        const startYoutubeTimer = () => {
-            if (adCyclePaused) {
-                // Timer will be restarted by checkVisibility when focus returns
-                return; 
-            }
-            earningInterval = setInterval(updateYoutubeStats, 1000);
-            console.log("Youtube timer resumed/started.");
-        }
-        
-        const setupYtEarningPage = async (category) => {
-            stopAdCycle();
-            
-            const isViews = category === 'ytviews';
-            const duration = isViews ? YT_VIEW_DURATION : 1;
-            
-            const adTimerEl = document.getElementById('ad-timer');
-            const statusEl = document.getElementById('ad-status');
-            const iframe = document.getElementById('ad-iframe'); 
-            const ytPromoAd = HARDCODED_ADS.find(ad => ad.category === 'yt');
-            
-            if (!ytPromoAd) {
-                 statusEl.textContent = 'YouTube Promo Link Configuration Missing.';
+            // Check if the overall session limit is reached (for Premium demo)
+            if (timeLeft <= 0) {
+                 stopWatching();
+                 showModal("Session Ended", "Your current ad session has concluded.", false, () => {});
                  return;
             }
 
-            // Set the iframe source to the YouTube link (autoplay/controls enabled, not muted)
-            iframe.src = ytPromoAd.url;
-            
-            statusEl.textContent = isViews 
-                ? `Video Playing. Views are counting! (Link: ${ytPromoAd.url.substring(0, 30)})` 
-                : `Video Playing. Watch Time is counting! (Link: ${ytPromoAd.url.substring(0, 30)})`;
-
-            document.getElementById('btn-earn-next').textContent = "Next Video (Simulated)";
-            document.getElementById('btn-earn-next').onclick = () => setupYtEarningPage(category);
-            
-            let ytCounter = 0; 
-
-            // Timer logic function
-            updateYoutubeStats = async () => {
-                ytCounter++;
-
-                if (isViews) {
-                    adTimerEl.textContent = `${duration - (ytCounter % duration)}s to Next View`;
-                    if (ytCounter % duration === 0) {
-                         const newViews = userData.ytViews + 1;
-                         // The view count is saved every time a view is earned
-                         await updateDoc(getUserDocRef(currentUserId), { ytViews: newViews });
-                         userData.ytViews = newViews; 
-                         updateUIBalances();
-                         console.log("YouTube View incremented and saved.");
-                    }
-                } else { // ytwatch (Watch Time)
-                    const totalSeconds = (userData.ytHours * 3600) + (userData.ytMinutes * 60) + userData.ytSeconds + 1;
-                    const h = Math.floor(totalSeconds / 3600);
-                    const m = Math.floor((totalSeconds % 3600) / 60);
-                    const s = totalSeconds % 60;
-                    
-                    adTimerEl.textContent = `${h}h ${m}m ${s}s Earned (Saving every 10s)`;
-                    
-                    // Only save to DB every 10 seconds to reduce writes
-                    if (totalSeconds % 10 === 0) { 
-                        await updateDoc(getUserDocRef(currentUserId), { 
-                            ytHours: h, 
-                            ytMinutes: m, 
-                            ytSeconds: s 
-                        });
-                        userData.ytHours = h;
-                        userData.ytMinutes = m;
-                        userData.ytSeconds = s;
-                        updateUIBalances();
-                        console.log("YouTube Watch Time saved to DB.");
-                    }
-                }
-            };
-            
-            startYoutubeTimer();
-        };
-
-        const setupAdLaunchPage = () => {
-            // Ad Launch Form Logic
-            const budgetInput = document.getElementById('ad-budget');
-            const categorySelect = document.getElementById('ad-category');
-            
-            if (budgetInput && categorySelect) {
-                const updateEstimate = () => {
-                    const estimateEl = document.getElementById('impression-estimate');
-                    if (!estimateEl) return;
-                    
-                    const budget = parseInt(budgetInput.value) || 0;
-                    const category = categorySelect.value;
-                    let costPer = category === 'dlink' ? DLINK_REWARD : WEB_REWARD;
-                    
-                    const impressions = Math.floor(budget / costPer);
-                    estimateEl.textContent = `Estimated Impressions: ${impressions.toLocaleString()} (${costPer.toLocaleString()} W-Coins per impression)`;
-                };
-
-                budgetInput.oninput = updateEstimate;
-                categorySelect.onchange = updateEstimate;
-                updateEstimate(); 
-            }
-            
-            // Real-time Running Ads List
-            const listContainer = document.getElementById('running-ads-list');
-            if (listContainer) {
-                 // Listen for all ads globally
-                 const q = query(getPublicAdsCollection(), where('userId', '==', currentUserId));
-                 onSnapshot(q, (snapshot) => {
-                    let html = '<div class="space-y-4">';
-                    
-                    if (snapshot.empty) {
-                        html += '<p>No active or closed ad campaigns yet. Launch one above!</p>';
-                    } else {
-                        snapshot.docs.forEach(doc => {
-                            const ad = doc.data();
-                            const statusColor = ad.status === 'active' ? 'text-green-400' : 'text-red-400';
-                            const impressions = ad.impressions || 0;
-                            const remainingBudget = ad.budget || 0;
-                            const category = ad.category.toUpperCase();
-
-                            html += `
-                                <div class="p-3 border border-[#30363d] rounded-lg">
-                                    <p class="font-bold text-base text-white truncate">${ad.url}</p>
-                                    <p class="text-xs text-gray-400">Category: ${category} | Status: <span class="${statusColor}">${ad.status.toUpperCase()}</span></p>
-                                    <p class="text-sm mt-1">
-                                        Budget Left: <span class="text-yellow-400 font-semibold">${remainingBudget.toLocaleString()} W-Coins</span>
-                                    </p>
-                                    <p class="text-sm">
-                                        Total Impressions/Opens: <span class="font-semibold">${impressions.toLocaleString()}</span>
-                                    </p>
-                                </div>
-                            `;
-                        });
-                    }
-                    
-                    html += '</div>';
-                    listContainer.innerHTML = html;
-                 }, (error) => console.error("Error fetching running ads:", error));
-            }
-        };
-
-        // --- Event Handlers & Initialization ---
-        
-        const handleAuth = async () => {
-            const provider = new GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Google sign in error:", error);
-            }
-        };
-
-        const handleSignOut = () => signOut(auth);
-
-        const initAuthListeners = () => {
-            onAuthStateChanged(auth, (user) => {
-                isAuthReady = true;
-                const authStatus = document.getElementById('auth-status');
+            // 4. Counting/Earning Logic (Simulate view count after adWatchDuration)
+            if (appState.watching.timerSeconds % adWatchDuration === 0) {
+                const totalEarned = selectedAds.length * watchValuePerAd;
+                secureIncrementBalance(totalEarned);
                 
-                if (user) {
-                    currentUserId = user.uid;
-                    authStatus.innerHTML = `
-                        <p class="text-sm text-gray-400 hidden sm:block truncate">${user.email}</p>
-                        <button id="btn-signout" class="btn-secondary text-sm">Sign Out</button>
-                    `;
-                    document.getElementById('btn-signout').onclick = handleSignOut;
-                    
-                    // Start listening for user data changes
-                    onSnapshot(getUserDocRef(currentUserId), (docSnap) => {
-                        if (docSnap.exists()) {
-                            userData = { ...userData, ...docSnap.data() };
-                        } else {
-                            // Initialize new user profile
-                            setDoc(getUserDocRef(currentUserId), {
-                                wCoins: 10000, // Initial sign-up bonus
-                                dCoins: 0,
-                                refBalance: 0,
-                                isPremium: false,
-                                ytHours: 0,
-                                ytMinutes: 0,
-                                ytSeconds: 0,
-                                ytViews: 0,
-                                createdAt: new Date().toISOString()
-                            });
-                        }
-                        updateUIBalances();
-                        renderPage(); // Initial render after auth/data load
-                    }, (error) => console.error("Firestore data snapshot error:", error));
+                // Show visual feedback
+                selectedAds.forEach((_, index) => {
+                     const overlay = document.getElementById(`watch-overlay-${index}`);
+                     if(overlay) {
+                         overlay.textContent = `+${(watchValuePerAd).toFixed(3)}$!`;
+                         overlay.style.opacity = '1';
+                         setTimeout(() => overlay.style.opacity = '0', 2000);
+                     }
+                });
 
-                } else {
-                    currentUserId = null;
-                    userData = { wCoins: 0, dCoins: 0, refBalance: 0, isPremium: false };
-                    authStatus.innerHTML = `
-                        <button id="btn-signup" class="btn-secondary text-sm">Sign Up</button>
-                        <button id="btn-signin" class="btn-secondary text-sm">Sign In</button>
-                        <button id="btn-gmail-auth" class="btn-primary text-sm">Login with Gmail</button>
-                    `;
-                    document.getElementById('btn-signup').onclick = handleAuth;
-                    document.getElementById('btn-signin').onclick = handleAuth;
-                    document.getElementById('btn-gmail-auth').onclick = handleAuth;
-                    updateUIBalances();
-                    renderPage(); // Render unauthenticated page
-                }
-            });
-        };
-        
-        const initGlobalListeners = () => {
-            
-            // 1. Tab Navigation
-            document.getElementById('nav-tabs').addEventListener('click', (e) => {
-                if (e.target.classList.contains('tab')) {
-                    changeTab(e.target.dataset.tab);
-                }
-            });
-            
-            // 2. Visibility and Focus Check for Earning Security
-            window.addEventListener('blur', checkVisibility);
-            window.addEventListener('focus', checkVisibility);
-            document.addEventListener('visibilitychange', checkVisibility);
-            
-            // 3. Collect Referral Button
-            document.getElementById('btn-collect-ref').onclick = async () => {
-                if (userData.refBalance > 0 && currentUserId) {
-                    try {
-                        await updateDoc(getUserDocRef(currentUserId), {
-                            wCoins: increment(userData.refBalance),
-                            refBalance: 0
-                        });
-                        console.log(`Successfully collected ${userData.refBalance.toLocaleString()} W-Coins from referrals!`);
-                    } catch (e) {
-                        console.error("Collection error:", e);
-                    }
-                }
-            };
-            
-            // 4. Premium Button (Simulated)
-            document.getElementById('btn-toggle-premium').onclick = async () => {
-                if (!currentUserId) return;
-                const newStatus = !userData.isPremium;
-                
-                try {
-                    await updateDoc(getUserDocRef(currentUserId), { isPremium: newStatus });
-                } catch (e) {
-                    console.error("Failed to update premium status:", e);
-                }
-            };
-            
-            // 5. Delegated Listeners for Dynamic Content (#tab-content)
-            document.getElementById('tab-content').addEventListener('click', async (e) => {
-                const target = e.target;
-                
-                // Direct Link Earning 
-                if (target.id === 'btn-direct-link') {
-                    e.preventDefault(); 
-                    if (!currentUserId) return;
-                    
-                    window.open(DIRECT_LINK_URL, '_blank');
-                    
-                    // Simulate the user completing the link view after 2 seconds
-                    setTimeout(async () => {
-                        const earned = await earnCoins('dlink', DLINK_REWARD);
-                        if(earned) console.log(`You earned ${DLINK_REWARD} D-Coins!`);
-                    }, 2000); 
-                }
-            });
-            
-            document.getElementById('tab-content').addEventListener('submit', async (e) => {
-                // Ad Launch Form Submission
-                if (e.target.id === 'ad-launch-form') {
-                    e.preventDefault();
-                    if (!currentUserId) return;
-                    
-                    const form = e.target;
-                    const category = form.elements['category'].value;
-                    const url = form.elements['url'].value;
-                    const budget = parseInt(form.elements['budget'].value);
-                    
-                    if (budget > userData.wCoins) return console.error("Budget exceeds your W-Coins balance.");
-                    if (budget < 500) return console.error("Minimum budget is 500 W-Coins.");
+                console.log(`Counted ${selectedAds.length} views. Earned: ${totalEarned.toFixed(4)}`);
+            }
 
-                    const costPerImpression = category === 'dlink' ? DLINK_REWARD : WEB_REWARD;
-                    
-                    // Deduct budget from W-Coins and create ad document
-                    try {
-                        await updateDoc(getUserDocRef(currentUserId), {
-                            wCoins: increment(-budget)
-                        });
-                        
-                        await addDoc(getPublicAdsCollection(), {
-                            userId: currentUserId,
-                            category: category,
-                            url: url,
-                            initialBudget: budget,
-                            budget: budget,
-                            impressions: 0,
-                            costPerImpression: costPerImpression,
-                            status: 'active',
-                            createdAt: new Date().toISOString()
-                        });
-                        
-                        console.log(`Ad campaign launched successfully! ${budget} W-Coins deducted.`);
-                        // Navigate to Ad Launch tab and re-render
-                        changeTab('adlaunch'); 
-                        
-                    } catch (e) {
-                        console.error("Ad Launch Error:", e);
-                    }
-                }
-            });
-        };
+        }, 1000);
+
+        console.log(`Started watching ${numAds} ads for max ${maxDuration} seconds.`);
+    }
+    
+    /** Stops the ad watching session and resets the state. */
+    function stopWatching() {
+        if (appState.watching.intervalId) {
+            clearInterval(appState.watching.intervalId);
+            appState.watching.intervalId = null;
+        }
+        appState.watching.isActive = false;
+        appState.watching.timerSeconds = 0;
+        appState.watching.adsShown = [];
+        renderPage('web_traffic');
+        console.log("Ad watching session stopped.");
+    }
+
+    // --- Premium Payment System ---
+
+    /** Handles the submission of the payment request to Firestore. */
+    async function submitPaymentRequest(e) {
+        e.preventDefault();
         
-        // Helper function for web traffic iframe content
-        const createIframeContent = (url) => {
-            const base64Content = btoa(`
-                <body style="background:#0d1117; color:#c9d1d9; font-family:Inter, sans-serif; padding:20px; text-align:center;">
-                    <h2 style="color:#FFD700;">Ad Display Simulation</h2>
-                    <p>Website is blocked from embedding due to security policies (X-Frame-Options/CSP).</p>
-                    <p>Generating traffic for:</p>
-                    <a href="${url}" target="_blank" style="color:#2d82ff; text-decoration:underline;">${url}</a>
-                    <p style="margin-top:20px; font-size:small; color:#8b949e;">Keep this tab active for the duration to earn coins.</p>
-                </body>
-            `);
-            return `data:text/html;base64,${base64Content}`;
+        const form = e.target;
+        const trxId = form.elements['trxId'].value.trim();
+        const plan = form.elements['plan'].value;
+        const screenshotFile = form.elements['screenshot'].files[0];
+        const paymentMethod = form.elements['paymentMethod'].value;
+
+        if (!trxId || !plan || !screenshotFile || !paymentMethod) {
+            return showModal("Missing Info", "Please provide the Transaction ID, select a plan, and upload the payment screenshot.");
         }
 
-        // Initialize the app
-        window.onload = () => {
-            initAuthListeners();
-            initGlobalListeners();
-        };
+        // 1. Simulate File Upload (In a real app, this goes to Firebase Storage, then the URL is saved to Firestore)
+        // For this single-file environment, we will *simulate* the upload and mention the file name/type.
+        const mockScreenshotPath = `gs://storage-bucket/premium_proofs/${userId}/${Date.now()}_${screenshotFile.name}`;
 
-    </script>
+        const requestData = {
+            userId: userId,
+            plan: plan,
+            amount: plan === '$5/week' ? 5 : 30,
+            paymentMethod: paymentMethod,
+            trxId: trxId,
+            screenshotPath: mockScreenshotPath, // The path for Admin to find the file
+            status: 'Pending Review', // Crucial: Admin needs to change this
+            requestedAt: serverTimestamp(),
+        };
+        
+        const requestsCollectionRef = collection(db, `artifacts/${appId}/public/data/premium_requests`);
+
+        try {
+            // Save the request to the public collection for Admin visibility
+            await addDoc(requestsCollectionRef, requestData);
+            form.reset();
+            showModal("Request Submitted", 
+                "Your premium request is now **Pending Review**. Please allow the admin time to verify the TRX ID and screenshot. You will be automatically upgraded once approved.",
+                false, 
+                () => app.navigate('dashboard'));
+        } catch (error) {
+            console.error("Error submitting payment request:", error);
+            showModal("Submission Failed", "There was an error submitting your request. Check the console for details.");
+        }
+    }
+
+
+    // --- View Rendering Logic ---
+
+    function renderPage(page) {
+        appState.currentPage = page;
+        const contentArea = document.getElementById('content-area');
+        let html = '';
+
+        if (appState.watching.isActive && page === 'web_traffic') {
+             // Do nothing, the watching view is already rendered and manages its own state
+             return; 
+        }
+
+        switch (page) {
+            case 'dashboard':
+                html = `
+                    <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">Dashboard Overview</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-indigo-500 text-white p-6 rounded-xl shadow-lg">
+                            <i class="fas fa-wallet text-3xl mb-3"></i>
+                            <p class="text-sm uppercase font-semibold opacity-80">Total Earnings</p>
+                            <p class="text-4xl font-extrabold mt-1">${formatCurrency(appState.user.balance)}</p>
+                        </div>
+                        <div class="bg-yellow-500 text-white p-6 rounded-xl shadow-lg">
+                            <i class="fas fa-eye text-3xl mb-3"></i>
+                            <p class="text-sm uppercase font-semibold opacity-80">Views Today (Simulated)</p>
+                            <p class="text-4xl font-extrabold mt-1">~${(appState.user.balance * 1000).toFixed(0)}</p>
+                        </div>
+                        <div class="bg-pink-500 text-white p-6 rounded-xl shadow-lg">
+                            <i class="fas fa-medal text-3xl mb-3"></i>
+                            <p class="text-sm uppercase font-semibold opacity-80">Account Tier</p>
+                            <p class="text-3xl font-extrabold mt-1">${appState.user.isPremium ? 'PREMIUM' : 'FREE'}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <h3 class="text-xl font-bold text-gray-700 mb-4">Quick Actions</h3>
+                        <div class="flex flex-wrap gap-4">
+                            <button onclick="app.navigate('web_traffic')" class="bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition shadow-md">Start Watching Ads</button>
+                            ${!appState.user.isPremium ? `<button onclick="app.navigate('premium')" class="bg-pink-500 text-white px-6 py-3 rounded-full hover:bg-pink-600 transition shadow-md">Upgrade to Premium</button>` : ''}
+                        </div>
+                    </div>
+                `;
+                break;
+            
+            case 'web_traffic':
+                html = `
+                    <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">Web Traffic (Ad Watcher)</h2>
+                    <div class="p-6 bg-yellow-50 rounded-xl border border-yellow-200 mb-6">
+                        <p class="text-yellow-800 font-medium"><i class="fas fa-info-circle mr-2"></i> **iFrame Fix Note:** Embedding external websites often fails due to browser security settings (X-Frame-Options, CORS). The system below uses ad URLs from Firebase, but **only URLs you control** will reliably display.</p>
+                        ${appState.user.isPremium 
+                            ? `<p class="mt-2 text-pink-700 font-bold"><i class="fas fa-crown mr-2"></i> **PREMIUM:** You have unlimited watching time and can watch up to 15 ads simultaneously!</p>`
+                            : `<p class="mt-2 text-red-600 font-bold"><i class="fas fa-lock mr-2"></i> **FREE LIMIT:** You can only watch for 60 seconds. Upgrade to Premium for unlimited time!</p>`
+                        }
+                    </div>
+
+                    <div class="bg-gray-100 p-6 rounded-xl shadow-inner">
+                        <h3 class="text-xl font-bold text-gray-700 mb-4">Watch More at a Time</h3>
+                        <p class="mb-4 text-gray-600">How many ads do you want to run simultaneously? (Max: ${appState.user.isPremium ? 15 : 5})</p>
+                        <form id="ad-watch-form">
+                            <div class="flex items-end space-x-4">
+                                <div class="flex-grow">
+                                    <label for="numAds" class="block text-sm font-medium text-gray-700">Number of Ads to Watch</label>
+                                    <input type="number" id="numAds" name="numAds" value="1" min="1" max="${appState.user.isPremium ? 15 : 5}" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3">
+                                </div>
+                                <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-lg flex-shrink-0">
+                                    <i class="fas fa-play mr-2"></i> Start Watching
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="ad-info-container" class="mt-6 text-center">
+                        ${appState.ads.length > 0 ? `<p class="text-sm text-gray-500">Currently ${appState.ads.length} unique ads are available.</p>` : `<p class="text-sm text-red-500">No ads available. Please launch ads in the admin panel.</p>`}
+                    </div>
+                `;
+                break;
+
+            case 'premium':
+                html = `
+                    <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">Get Premium Account</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div class="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                            <h3 class="text-2xl font-bold text-gray-700 mb-4">Premium Benefits</h3>
+                            <ul class="space-y-3 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-infinity text-green-500 w-5 mr-3"></i> Unlimited Ad Watching Time</li>
+                                <li class="flex items-center"><i class="fas fa-layer-group text-green-500 w-5 mr-3"></i> Watch Up to 15 Ads Simultaneously</li>
+                                <li class="flex items-center"><i class="fas fa-shield-alt text-green-500 w-5 mr-3"></i> Higher View Count Security</li>
+                                <li class="flex items-center"><i class="fas fa-star text-green-500 w-5 mr-3"></i> Priority Customer Support</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-indigo-600 text-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-2xl font-bold mb-4">Pricing Plans</h3>
+                            <ul class="space-y-4">
+                                <li class="flex justify-between items-center bg-indigo-700 p-3 rounded-lg">
+                                    <span class="text-xl font-semibold">Weekly Plan</span>
+                                    <span class="text-3xl font-extrabold">$5 / Week</span>
+                                </li>
+                                <li class="flex justify-between items-center bg-indigo-700 p-3 rounded-lg border-4 border-yellow-400">
+                                    <span class="text-xl font-semibold">Monthly Plan (Best Value)</span>
+                                    <span class="text-3xl font-extrabold">$30 / Month</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-100 p-6 rounded-xl shadow-inner">
+                        <h3 class="text-2xl font-bold text-indigo-700 mb-4">Payment Submission</h3>
+                        <form id="payment-submission-form">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="plan" class="block text-sm font-medium text-gray-700">Select Plan</label>
+                                    <select id="plan" name="plan" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+                                        <option value="">-- Select a Plan --</option>
+                                        <option value="$5/week">$5 Every Week</option>
+                                        <option value="$30/month">$30 Per Month</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="trxId" class="block text-sm font-medium text-gray-700">Transaction ID (TRX ID)</label>
+                                    <input type="text" id="trxId" name="trxId" placeholder="Enter Easypaisa/Upaisa TRX ID" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3">
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Methods & Details</label>
+                                <ul class="space-y-2 p-3 bg-white rounded-lg border">
+                                    <li><strong class="text-indigo-600">Easypaisa / Upaisa:</strong> 03326849518</li>
+                                    <li><strong class="text-red-500">Action:</strong> Send payment, take a screenshot, and submit it below.</li>
+                                </ul>
+                                <input type="hidden" name="paymentMethod" value="Easypaisa/Upaisa">
+                            </div>
+
+                            <div class="mt-4">
+                                <label for="screenshot" class="block text-sm font-medium text-gray-700">Payment Screenshot Submission</label>
+                                <input type="file" id="screenshot" name="screenshot" accept="image/*" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                            </div>
+
+                            <button type="submit" class="mt-6 w-full px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg hover:bg-green-700 transition shadow-xl">
+                                Submit Payment Proof
+                            </button>
+                        </form>
+                    </div>
+                `;
+                break;
+            
+            case 'profile':
+                html = `
+                    <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">User Profile</h2>
+                    <div class="bg-gray-100 p-6 rounded-xl shadow-inner space-y-4">
+                        <div class="p-4 bg-white rounded-lg border">
+                            <p class="text-sm font-medium text-gray-500">User ID</p>
+                            <p class="text-lg font-mono text-gray-800 break-all">${appState.user.uid || 'N/A'}</p>
+                        </div>
+                        <div class="p-4 bg-white rounded-lg border">
+                            <p class="text-sm font-medium text-gray-500">Account Status</p>
+                            <p class="text-xl font-bold ${appState.user.isPremium ? 'text-pink-600' : 'text-yellow-600'}">${appState.user.status}</p>
+                        </div>
+                        ${appState.user.isPremium ? `
+                            <div class="p-4 bg-white rounded-lg border">
+                                <p class="text-sm font-medium text-gray-500">Subscription Expiry</p>
+                                <p class="text-lg font-semibold text-gray-800">${appState.user.expiryDate ? appState.user.expiryDate.toLocaleDateString() : 'N/A'}</p>
+                            </div>
+                        ` : `
+                            <button onclick="app.navigate('premium')" class="w-full px-4 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition font-semibold mt-4">
+                                <i class="fas fa-arrow-up mr-2"></i> Upgrade to Premium Now
+                            </button>
+                        `}
+                        <div class="mt-6 border-t pt-4">
+                             <p class="text-sm text-gray-500">**Note on Security:** Password and account detail management (like updating name/password) are handled securely by Firebase Authentication, which is separate from Firestore data.</p>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            default:
+                html = '<p class="text-gray-500">Page not found.</p>';
+        }
+
+        contentArea.innerHTML = html;
+        
+        // Attach event listeners for forms after rendering
+        if (page === 'web_traffic' && !appState.watching.isActive) {
+            document.getElementById('ad-watch-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const numAds = parseInt(document.getElementById('numAds').value, 10);
+                const maxAllowed = appState.user.isPremium ? 15 : 5;
+
+                if (numAds > maxAllowed) {
+                     showModal("Limit Exceeded", `You can only watch up to ${maxAllowed} ads simultaneously in your current tier.`, false, () => {});
+                     document.getElementById('numAds').value = maxAllowed;
+                     return;
+                }
+                if (appState.ads.length < numAds) {
+                     showModal("Ad Shortage", `You requested ${numAds} ads, but only ${appState.ads.length} are currently available.`, false, () => {});
+                     return;
+                }
+                startWatching(numAds);
+            });
+        } else if (page === 'premium') {
+            document.getElementById('payment-submission-form').addEventListener('submit', submitPaymentRequest);
+        }
+    }
+
+
+    // --- Initialization and Public API ---
+
+    /** Initialize Firebase and setup Auth Listener */
+    async function init() {
+        if (!Object.keys(firebaseConfig).length) {
+             console.error("Firebase config is missing. Cannot initialize app.");
+             return;
+        }
+
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        try {
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                await signInAnonymously(auth);
+            }
+        } catch (error) {
+            console.error("Firebase Auth failed:", error);
+            showModal("Authentication Error", "Failed to sign in. Please refresh.", false, () => {});
+        }
+
+        // Auth state listener to get the current user ID
+        onAuthStateChanged(auth, (user) => {
+            if (user && !isAuthReady) {
+                userId = user.uid;
+                appState.user.uid = userId;
+                isAuthReady = true;
+                setupDataListeners();
+                updateUI();
+            } else if (!user) {
+                 // Fallback for unauthenticated users, though we expect a token
+                 userId = crypto.randomUUID();
+                 appState.user.uid = userId;
+                 isAuthReady = true;
+                 setupDataListeners();
+                 updateUI();
+            }
+        });
+    }
+
+    // Public API for HTML access
+    window.app = {
+        navigate: (page) => {
+            appState.currentPage = page;
+            updateUI();
+        },
+        startWatching,
+        stopWatching,
+    };
+
+    // Start the application
+    init();
+</script>
+
 </body>
 </html>
