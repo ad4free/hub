@@ -3,421 +3,519 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ad-4-U — Free Ads & Earn Coins</title>
+  <title>Ad-4-U — Professional Demo</title>
+
+  <!-- Tailwind Play CDN for quick styling (Light + Dark support) -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Basic styling */
-    :root { --brand:#2563eb; --muted:#6b7280; --bg:#f8fafc; --card:#fff; }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:#0f172a}
-    header{background:var(--brand);color:white;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
-    header h1{margin:0;font-size:20px}
-    header .right{display:flex;gap:10px;align-items:center}
-    .container{max-width:1100px;margin:18px auto;padding:0 16px}
-    nav{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-    button{background:white;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--brand);font-weight:700}
-    .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(12,12,20,.06)}
-    main{display:grid;grid-template-columns:1fr 320px;gap:18px}
-    .wide{grid-column:1/span 2}
-    .small{font-size:13px;color:var(--muted)}
-    .iframe-grid{display:grid;gap:8px}
-    input,select{width:100%;padding:8px;margin-top:6px;border-radius:8px;border:1px solid #e6edf3}
-    label{font-weight:700;font-size:13px;margin-top:10px;display:block}
-    footer{padding:14px;text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
-    .badge{background:#eef2ff;color:var(--brand);padding:6px 8px;border-radius:999px;font-weight:800}
-    .danger{color:#ef4444}
-    .muted{color:var(--muted)}
-    a.link{color:var(--brand);text-decoration:none}
-    #multiTimer{font-weight:800;color:var(--brand)}
-    .grid-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-    .btn-primary{background:var(--brand);color:white;border-radius:8px;padding:8px 12px;border:0;font-weight:700}
+    /* small custom styles */
+    .glass { background: rgba(255,255,255,0.6); backdrop-filter: blur(6px); }
+    .glass-dark { background: rgba(12,18,30,0.5); backdrop-filter: blur(6px); }
+    .iframe-box { border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); }
+    .btn { @apply px-4 py-2 rounded-lg font-semibold shadow-sm; }
+    /* simple animated counter */
+    .count { transition: all .6s cubic-bezier(.2,.9,.2,1); }
   </style>
 </head>
-<body>
+<body class="antialiased bg-gray-50 text-slate-800">
 
-<header>
-  <h1>Ad-4-U</h1>
-  <div class="right">
-    <div id="coinsHeader" class="small">W: 0 | D: 0</div>
-    <div id="userHeader" class="small muted">Not signed in</div>
-    <button id="btnSignUp">Sign up (Gmail)</button>
-    <button id="btnSignIn" style="display:none">Sign in</button>
-    <button id="btnSignOut" style="display:none">Sign out</button>
+<!-- HEADER -->
+<header class="w-full sticky top-0 z-40">
+  <div id="headerWrap" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="rounded-md px-3 py-1 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-bold">Ad-4-U</div>
+      <div class="text-sm text-slate-600 dark:text-slate-300">Free Ads Demo • Safe Simulation</div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div id="coinsHeader" class="text-sm font-bold text-slate-700">W: 0 • D: 0</div>
+      <button id="themeToggle" class="btn border bg-white/80" title="Toggle theme">🌗</button>
+      <div id="authArea" class="flex items-center gap-2">
+        <button id="btnSignUp" class="btn bg-white text-indigo-600 border">Sign up</button>
+        <button id="btnSignIn" class="btn bg-white text-indigo-600 border">Sign in</button>
+        <button id="btnSignOut" class="btn bg-indigo-600 text-white hidden">Sign out</button>
+      </div>
+    </div>
   </div>
 </header>
 
-<div class="container">
-  <nav>
-    <button onclick="show('dashboard')">Dashboard</button>
-    <button onclick="show('traffic')">Website Traffic</button>
-    <button onclick="show('youtube_watch')">YouTube Watch Time</button>
-    <button onclick="show('youtube_views')">YouTube Views</button>
-    <button onclick="show('direct')">Direct Links</button>
-    <button onclick="show('ad_launch')">Launch Ad</button>
-    <button onclick="show('account')">Account</button>
-  </nav>
+<!-- MAIN -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-  <main>
-    <!-- LEFT: main pages -->
-    <section id="dashboard" class="card">
-      <h2>Dashboard</h2>
-      <p class="small">Welcome — watch ads to earn coins, then use coins to launch your own ads. Each ad watch rewards coins and decreases the ad owner's budget; ads auto-close when budget or impressions are reached.</p>
-
-      <div style="display:flex;gap:12px;margin-top:12px">
-        <div class="card" style="flex:1">
-          <div class="small">W Coins</div>
-          <div id="statW" style="font-weight:800;font-size:20px">0</div>
+    <!-- LEFT: navigation & quick -->
+    <aside class="lg:col-span-1 space-y-6">
+      <div class="card glass p-4 rounded-lg shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <div id="userName" class="font-bold">Guest</div>
+            <div id="userEmail" class="text-xs text-slate-500">not signed in</div>
+            <div id="userPlan" class="mt-2 text-xs text-slate-600">Plan: <span class="font-semibold">Free</span></div>
+          </div>
         </div>
-        <div class="card" style="flex:1">
-          <div class="small">D Coins</div>
-          <div id="statD" style="font-weight:800;font-size:20px">0</div>
+        <div class="mt-3 grid grid-cols-2 gap-2">
+          <div class="p-2 bg-white/60 rounded-md text-center">
+            <div class="text-xs text-slate-500">W coins</div>
+            <div id="statW" class="text-lg font-bold">0</div>
+          </div>
+          <div class="p-2 bg-white/60 rounded-md text-center">
+            <div class="text-xs text-slate-500">D coins</div>
+            <div id="statD" class="text-lg font-bold">0</div>
+          </div>
         </div>
-      </div>
-
-      <div style="margin-top:12px">
-        <h3>Active Ads (live)</h3>
-        <div id="activeAds" class="small muted">Loading...</div>
-      </div>
-
-      <div style="margin-top:12px">
-        <h3>Recent activity</h3>
-        <div id="recentTx" class="small muted">Loading...</div>
-      </div>
-    </section>
-
-    <!-- Traffic: website iframes -->
-    <section id="traffic" class="card" style="display:none">
-      <h2>Website Traffic</h2>
-      <div class="small">Each website ad watch completes **30 seconds** and rewards <span class="badge">100 W</span>. Multiple-watch mode allows opening N iframes simultaneously (Free users: 2 minutes daily; Premium: unlimited).</div>
-
-      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-        <button class="btn-primary" onclick="openSingleTraffic()">Open Rotating Viewer</button>
-        <button onclick="promptMulti('traffic')">Open Multiple Iframes</button>
-        <div style="margin-left:auto" class="small">Multiple left today: <span id="multiLeft">—</span></div>
-      </div>
-
-      <div id="trafficArea" style="margin-top:12px"></div>
-    </section>
-
-    <!-- YouTube watch time -->
-    <section id="youtube_watch" class="card" style="display:none">
-      <h2>YouTube Watch Time</h2>
-      <div class="small">You earn <span class="badge">100 W</span> for each full minute played while the video is playing in the iframe. Switching tabs pauses earning.</div>
-      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-        <button class="btn-primary" onclick="openSingleYTWatch()">Open Rotating YT Viewer</button>
-        <button onclick="promptMulti('youtube_watch')">Open Multiple Players</button>
-      </div>
-      <div id="ytWatchArea" style="margin-top:12px"></div>
-    </section>
-
-    <!-- YouTube views -->
-    <section id="youtube_views" class="card" style="display:none">
-      <h2>YouTube Views</h2>
-      <div class="small">Each view credited after ~5 seconds of playback rewards <span class="badge">10 W</span>.</div>
-      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-        <button class="btn-primary" onclick="openSingleYTViews()">Open Rotating YT Views</button>
-        <button onclick="promptMulti('youtube_views')">Open Multiple Views</button>
-      </div>
-      <div id="ytViewsArea" style="margin-top:12px"></div>
-    </section>
-
-    <!-- Direct -->
-    <section id="direct" class="card" style="display:none">
-      <h2>Direct Links</h2>
-      <div class="small">Click a direct link to earn <span class="badge">200 D</span>. After clicking, the link hides for that ad.</div>
-      <div id="directList" style="margin-top:12px"></div>
-    </section>
-
-    <!-- Launch Ad -->
-    <section id="ad_launch" class="card" style="display:none">
-      <h2>Launch Ad (use coins)</h2>
-      <div class="small">You launch a **website ad** only (the platform accepts website URLs). Budget and coins must come from your W balance. A 15% fee applies at launch.</div>
-
-      <label>Website URL</label>
-      <input id="launchLink" placeholder="https://example.com">
-
-      <label>Budget (W coins)</label>
-      <input id="launchBudget" type="number" placeholder="e.g. 1000">
-
-      <label>Coins per impression/watch (default 100 W)</label>
-      <input id="launchCPI" type="number" placeholder="default 100">
-
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button class="btn-primary" onclick="launchAd()">Launch Ad</button>
-      </div>
-      <div id="launchMsg" style="margin-top:8px" class="small muted"></div>
-    </section>
-
-    <!-- Account -->
-    <section id="account" class="card" style="display:none">
-      <h2>Account</h2>
-      <div id="accountBox" class="small muted">Sign in to see account details</div>
-
-      <div style="margin-top:12px">
-        <h3>Change password (email/password accounts)</h3>
-        <label>New password</label>
-        <input id="newPass" type="password" placeholder="New password">
-        <label>Confirm password</label>
-        <input id="confirmPass" type="password" placeholder="Confirm">
-        <div style="margin-top:8px"><button onclick="changePassword()">Update password</button></div>
-        <div id="passMsg" class="small muted"></div>
-      </div>
-    </section>
-
-    <!-- RIGHT: sidebar -->
-    <aside>
-      <div class="card">
-        <div class="small">Quick info</div>
-        <div style="margin-top:8px">
-          <div id="whoami" class="small muted">Not signed in</div>
-          <div style="margin-top:8px" class="small">Referral / Multi-options are managed in your account.</div>
+        <div class="mt-4 flex gap-2">
+          <button class="btn w-full bg-indigo-600 text-white" onclick="nav('dashboard')">Dashboard</button>
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px">
-        <div class="small">Need Premium?</div>
-        <div style="margin-top:8px" class="small">Premium removes multi-iframe daily limit. Click the button below to contact via WhatsApp to upgrade.</div>
-        <div style="margin-top:8px">
-          <a id="whatsappPremium" class="link" href="https://wa.me/923330737987?text=I%20want%20premium" target="_blank"><button>Contact WhatsApp</button></a>
-        </div>
-      </div>
+      <nav class="space-y-3">
+        <button class="w-full text-left p-3 bg-white rounded-lg shadow hover:scale-[1.01] transition" onclick="nav('traffic')">Website Traffic</button>
+        <button class="w-full text-left p-3 bg-white rounded-lg shadow hover:scale-[1.01] transition" onclick="nav('ytwatch')">YouTube Watch Time</button>
+        <button class="w-full text-left p-3 bg-white rounded-lg shadow hover:scale-[1.01] transition" onclick="nav('ytviews')">YouTube Views</button>
+        <button class="w-full text-left p-3 bg-white rounded-lg shadow hover:scale-[1.01] transition" onclick="nav('direct')">Direct Links</button>
+        <button class="w-full text-left p-3 bg-white rounded-lg shadow hover:scale-[1.01] transition" onclick="nav('adlaunch')">Ad Launch</button>
+        <button class="w-full text-left p-3 bg-white rounded-lg shadow hover:scale-[1.01] transition" onclick="nav('account')">Account</button>
+      </nav>
 
-      <div class="card" style="margin-top:12px">
-        <div class="small">System links (rotated every ~2 minutes)</div>
-        <ul class="small muted">
-          <li>http://cludymovie.com/</li>
-          <li>https://newswithsk.com/</li>
-          <li>https://otieu.com/4/9677163</li>
-          <li>https://www.youtube.com/watch?v=Uw9bqrrV-yI</li>
-        </ul>
+      <div class="card glass p-4 rounded-lg shadow">
+        <div class="text-xs text-slate-600">Premium</div>
+        <div class="mt-2 text-sm">Upgrade removes limitations (multi-iframe time limit) and unlocks support.</div>
+        <div class="mt-3">
+          <a id="waPremium" class="block w-full text-center btn bg-green-600 text-white" href="https://wa.me/923330737987?text=I%20want%20premium" target="_blank">Contact via WhatsApp</a>
+        </div>
       </div>
     </aside>
 
-    <!-- Full-width area for multi-iframe popups / modals -->
-    <div class="wide" id="wideArea"></div>
-  </main>
+    <!-- CENTER: pages -->
+    <section class="lg:col-span-3 space-y-6">
 
-  <footer class="small muted">
-    Prototype — For production you must add server-side verification (Cloud Functions) & stricter Firestore rules. Embedding HTTP sites inside HTTPS pages may be blocked by browsers.
-  </footer>
-</div>
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="card p-6 rounded-lg shadow glass-dark">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold">Dashboard</h2>
+            <p class="text-sm text-slate-400 mt-1">Simulated ad ecosystem — safe demo. Coins and behavior are for demo/testing only.</p>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-slate-400">Multi-iframe left today</div>
+            <div id="multiLeft" class="font-bold text-indigo-500">2m</div>
+          </div>
+        </div>
 
-<!-- Firebase modular SDK (v10) and YouTube IFrame API loader -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 bg-white rounded-lg shadow">
+            <div class="text-xs text-slate-500">Active Ads</div>
+            <div id="activeCount" class="text-xl font-bold mt-1">0</div>
+            <div class="text-xs text-slate-400 mt-1">Live rotating ads from users & system</div>
+          </div>
+
+          <div class="p-4 bg-white rounded-lg shadow">
+            <div class="text-xs text-slate-500">Earnings (24h)</div>
+            <div id="earn24" class="text-xl font-bold mt-1">0 W</div>
+            <div class="text-xs text-slate-400 mt-1">Simulated — updated while watching</div>
+          </div>
+
+          <div class="p-4 bg-white rounded-lg shadow">
+            <div class="text-xs text-slate-500">Quick Actions</div>
+            <div class="mt-2 flex gap-2">
+              <button class="btn bg-indigo-600 text-white" onclick="nav('traffic')">Open Traffic Viewer</button>
+              <button class="btn bg-white border" onclick="nav('adlaunch')">Launch Ad</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="p-4 bg-white rounded-lg shadow">
+            <div class="flex items-center justify-between mb-2"><div class="text-sm font-semibold">Live Ads Preview</div></div>
+            <div id="adsPreview" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+          </div>
+
+          <div class="p-4 bg-white rounded-lg shadow">
+            <div class="text-sm font-semibold mb-2">Recent Activity</div>
+            <div id="recentActivity" class="text-sm text-slate-500 space-y-2">No activity</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRAFFIC PAGE -->
+      <div id="page-traffic" class="card p-6 rounded-lg shadow hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-semibold">Website Traffic — Rotating Iframe Viewer</h3>
+            <p class="text-sm text-slate-400">Each ad completes in <strong>30 seconds</strong> and awards <span class="badge inline-block bg-indigo-50 text-indigo-700 px-2 py-1 rounded">100 W</span> (simulated).</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn bg-white border" onclick="openTrafficSingle()">Open Single Viewer</button>
+            <button class="btn bg-indigo-600 text-white" onclick="promptMulti('traffic')">Open Multiple</button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div id="trafficContainer" class="iframe-box bg-black h-96 flex items-center justify-center rounded-lg">
+            <!-- rotating iframe appears here -->
+            <div id="trafficInner" class="w-full h-full flex items-center justify-center text-white/60">Open viewer to load ads</div>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between text-sm text-slate-500">
+            <div id="trafficTimer">—</div>
+            <div id="trafficAdInfo">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- YT WATCH -->
+      <div id="page-ytwatch" class="card p-6 rounded-lg shadow hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-semibold">YouTube Watch Time (Simulated)</h3>
+            <p class="text-sm text-slate-400">You earn <span class="badge inline-block bg-indigo-50 text-indigo-700 px-2 py-1 rounded">100 W</span> per 1 minute of active playback (demo only).</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn bg-white border" onclick="openYTSingle('watch')">Open Single</button>
+            <button class="btn bg-indigo-600 text-white" onclick="promptMulti('youtube_watch')">Open Multiple</button>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div id="ytWatchContainer" class="grid grid-cols-1 gap-3"></div>
+        </div>
+      </div>
+
+      <!-- YT VIEWS -->
+      <div id="page-ytviews" class="card p-6 rounded-lg shadow hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-semibold">YouTube Views (Simulated)</h3>
+            <p class="text-sm text-slate-400">Each ~5 seconds of active playback gives a view credit (10 W).</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn bg-white border" onclick="openYTSingle('views')">Open Single</button>
+            <button class="btn bg-indigo-600 text-white" onclick="promptMulti('youtube_views')">Open Multiple</button>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div id="ytViewsContainer" class="grid grid-cols-1 gap-3"></div>
+        </div>
+      </div>
+
+      <!-- DIRECT -->
+      <div id="page-direct" class="card p-6 rounded-lg shadow hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-semibold">Direct Links</h3>
+            <p class="text-sm text-slate-400">Click any link to earn <span class="badge inline-block bg-indigo-50 text-indigo-700 px-2 py-1 rounded">200 D</span>. Link hides after click (simulated).</p>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3" id="directLinksList"></div>
+      </div>
+
+      <!-- AD LAUNCH -->
+      <div id="page-adlaunch" class="card p-6 rounded-lg shadow hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-semibold">Launch Website Ad</h3>
+            <p class="text-sm text-slate-400">Use W coins to fund your ad. A 15% fee is taken at launch and credited to system (simulation).</p>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm font-semibold">Website (must be a URL)</label>
+            <input id="inputAdUrl" class="w-full mt-2 p-3 rounded-lg border" placeholder="https://example.com" />
+            <label class="text-sm font-semibold mt-3">Budget (W coins)</label>
+            <input id="inputAdBudget" type="number" class="w-full mt-2 p-3 rounded-lg border" placeholder="e.g. 5000" />
+            <label class="text-sm font-semibold mt-3">Coins per impression (default 100)</label>
+            <input id="inputAdCPI" type="number" class="w-full mt-2 p-3 rounded-lg border" placeholder="100" />
+            <div class="mt-4">
+              <button class="btn bg-indigo-600 text-white" onclick="launchAd()">Launch Ad</button>
+              <div id="launchMsg" class="text-sm text-slate-500 mt-2"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-sm text-slate-500">Preview: your ad will be added to the live ad pool and rotate into viewers.</div>
+            <div class="mt-4">
+              <div id="adPreview" class="p-3 bg-white rounded-lg shadow text-sm text-slate-600">No preview</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div id="page-account" class="card p-6 rounded-lg shadow hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-semibold">Account</h3>
+            <p class="text-sm text-slate-400">Edit profile or switch plan (premium opens WhatsApp link).</p>
+          </div>
+          <div class="text-right">
+            <button id="btnUpgrade" class="btn bg-green-600 text-white" onclick="openWhatsApp()">Upgrade to Premium</button>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-semibold">Full name</label>
+            <input id="acctName" class="w-full mt-2 p-3 rounded-lg border" />
+            <label class="text-sm font-semibold mt-3">Email (Gmail only)</label>
+            <input id="acctEmail" class="w-full mt-2 p-3 rounded-lg border" />
+            <div class="mt-3">
+              <button class="btn bg-indigo-600 text-white" onclick="saveProfile()">Save profile</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-sm font-semibold">Change password (email accounts)</label>
+            <input id="acctPass" type="password" class="w-full mt-2 p-3 rounded-lg border" placeholder="New password" />
+            <input id="acctPass2" type="password" class="w-full mt-2 p-3 rounded-lg border" placeholder="Confirm password" />
+            <div class="mt-3">
+              <button class="btn bg-white border" onclick="changePassword()">Change Password</button>
+            </div>
+
+            <div class="mt-6 text-sm text-slate-500">
+              Note: Google Sign-In users manage password via Google account settings.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</main>
+
+<footer class="text-center text-sm text-slate-400 py-6">Ad-4-U Demo — UI + simulated behavior. For production, add server-side verification & comply with third-party terms.</footer>
+
+<!-- ===== FIREBASE (modular v10) + Demo Logic ===== -->
 <script type="module">
-/* =========  FIREBASE + APP LOGIC  =========
-   This single-file app uses Firestore & Auth. All "awarding" logic uses Firestore transactions.
-   PRODUCTION: move award/validation into Cloud Functions and tighten Firestore rules.
-*/
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword,
+    signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, getDoc, addDoc, collection, onSnapshot, query, where, orderBy,
+    serverTimestamp, runTransaction, updateDoc, increment
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ---------- Imports ---------- */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup,
-  GoogleAuthProvider, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, collection, doc, setDoc, getDoc, addDoc, onSnapshot, query, where, orderBy,
-  serverTimestamp, runTransaction, updateDoc, increment
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  // ---- Firebase config (your config) ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
+    authDomain: "ad-4-u.firebaseapp.com",
+    projectId: "ad-4-u",
+    storageBucket: "ad-4-u.firebasestorage.app",
+    messagingSenderId: "775864010731",
+    appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
+    measurementId: "G-3R9DDSM2XK"
+  };
 
-/* ---------- Firebase config (your provided config) ---------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
-  authDomain: "ad-4-u.firebaseapp.com",
-  projectId: "ad-4-u",
-  storageBucket: "ad-4-u.firebasestorage.app",
-  messagingSenderId: "775864010731",
-  appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
-  measurementId: "G-3R9DDSM2XK"
-};
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+  // ---- Demo state ----
+  let currentUser = null;
+  let currentUserDoc = null;
+  let adPool = []; // live ads
+  let multiSessionActive = false;
+  const MULTI_FREE_SECONDS = 120; // free users allowed 2 minutes/day
 
-/* ---------- App State ---------- */
-let currentUser = null;
-let currentUserDoc = null;
-let adsLocal = []; // active ads cache
-let recentTxCache = [];
-
-/* ---------- Utility ---------- */
-const $ = id => document.getElementById(id);
-const show = (id) => {
-  // hide all main sections
-  ['dashboard','traffic','youtube_watch','youtube_views','direct','ad_launch','account'].forEach(s=>{
-    $(s).style.display = 'none';
-  });
-  $(id).style.display = 'block';
-};
-show('dashboard');
-
-function formatDate(ts){
-  if(!ts) return '';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleString();
-}
-
-/* ---------- Authentication UI & flows ---------- */
-$('btnSignUp').addEventListener('click', ()=> openSignupPopup());
-$('btnSignIn').addEventListener('click', ()=> openSigninPopup());
-$('btnSignOut').addEventListener('click', async ()=> { await signOut(auth); });
-
-async function openSignupPopup(){
-  // Simple prompt-based sign up (no modal to keep one-file)
-  const name = prompt('Full name (display name):');
-  if(!name) return alert('Name required');
-  const email = prompt('Gmail address (must end with @gmail.com):');
-  if(!email || !email.endsWith('@gmail.com')) return alert('Gmail required');
-  const pass = prompt('Password (min 6 chars):');
-  const pass2 = prompt('Confirm password:');
-  if(pass !== pass2) return alert('Passwords do not match');
-  const plan = confirm('Click OK for Premium, Cancel for Free') ? 'premium' : 'free';
-  try {
-    const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-    const user = userCred.user;
-    // Save profile
-    await setDoc(doc(db,'users', user.uid), {
-      fullName: name,
-      email: email,
-      plan,
-      premium: plan === 'premium',
-      coins: { W: 0, D: 0 },
-      createdAt: serverTimestamp(),
-      multiUsedDate: null
+  // ---- small helpers ----
+  const $ = id => document.getElementById(id);
+  function nav(page){
+    // hide all pages
+    ['dashboard','traffic','ytwatch','ytviews','direct','adlaunch','account'].forEach(p=>{
+      $('page-'+p).classList.add('hidden');
     });
-    // If premium chosen, redirect to WhatsApp for manual premium activation
-    if(plan === 'premium'){
-      const wa = `https://wa.me/923330737987?text=${encodeURIComponent('I want premium. Name:'+name+' Email:'+email)}`;
-      window.open(wa,'_blank');
-    }
-    alert('Account created & signed in. Welcome!');
-  } catch(e){
-    alert('Signup error: '+e.message);
+    $('page-'+page).classList.remove('hidden');
+    // occasionally refresh preview
+    renderAdsPreview();
   }
-}
 
-async function openSigninPopup(){
-  const method = prompt('Type "google" for Google sign-in or "email" for email/password:');
-  if(!method) return;
-  if(method.toLowerCase() === 'google'){
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch(e){ alert('Google sign-in failed: '+e.message); }
-    return;
+  // Theme toggle (light/dark)
+  const root = document.documentElement;
+  const themeToggle = $('themeToggle');
+  function setDark(on){
+    if(on) { document.body.classList.add('dark'); root.classList.add('dark'); document.documentElement.style.background = '#0b1220'; }
+    else { document.body.classList.remove('dark'); root.classList.remove('dark'); document.documentElement.style.background = ''; }
   }
-  if(method.toLowerCase() === 'email'){
-    const email = prompt('Email:');
-    const pass = prompt('Password:');
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-    } catch(e){ alert('Sign-in failed: '+e.message); }
-  }
-}
+  // initial: prefer light; allow toggle
+  let isDark = false;
+  themeToggle.addEventListener('click', ()=> { isDark = !isDark; setDark(isDark); });
 
-/* ---------- Firestore listeners ---------- */
-onAuthStateChanged(auth, async user => {
-  currentUser = user;
-  if(user){
-    $('userHeader').innerText = user.displayName || user.email;
-    $('btnSignUp').style.display = 'none';
-    $('btnSignIn').style.display = 'none';
-    $('btnSignOut').style.display = 'inline-block';
-    // Ensure user doc exists
-    const uRef = doc(db,'users', user.uid);
-    const uSnap = await getDoc(uRef);
-    if(!uSnap.exists()){
-      await setDoc(uRef, {
-        fullName: user.displayName || '',
-        email: user.email || '',
+  // ---- Auth UI ----
+  $('btnSignUp').addEventListener('click', async ()=>{
+    // friendly modal-free flow: prompt
+    const name = prompt('Full name (display name):');
+    if(!name) return;
+    const email = prompt('Gmail address (must end with @gmail.com):');
+    if(!email || !email.endsWith('@gmail.com')) { alert('Please provide a Gmail address'); return; }
+    const pass = prompt('Password (min 6 chars):');
+    const pass2 = prompt('Confirm password:');
+    if(pass !== pass2){ alert('Passwords do not match'); return; }
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const user = cred.user;
+      await setDoc(doc(db,'users', user.uid), {
+        fullName: name,
+        email,
         plan: 'free',
         premium: false,
         coins: { W: 0, D: 0 },
-        createdAt: serverTimestamp(),
-        multiUsedDate: null
+        multiUsedDate: null,
+        createdAt: serverTimestamp()
       });
+      alert('Account created — signed in.');
+    } catch(e){ alert('Signup error: ' + e.message); }
+  });
+
+  $('btnSignIn').addEventListener('click', async ()=>{
+    const method = prompt('Type "google" for Google sign-in or "email" for email/password:');
+    try {
+      if(method && method.toLowerCase() === 'google'){
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      } else {
+        const email = prompt('Email:');
+        const pass = prompt('Password:');
+        await signInWithEmailAndPassword(auth, email, pass);
+      }
+    } catch(e){ alert('Sign-in failed: ' + e.message); }
+  });
+
+  $('btnSignOut').addEventListener('click', async ()=>{
+    await signOut(auth);
+  });
+
+  onAuthStateChanged(auth, async user => {
+    currentUser = user;
+    if(user){
+      // ensure gmail
+      if(!user.email || !user.email.endsWith('@gmail.com')){
+        alert('Only Gmail accounts allowed. Signing out.');
+        await signOut(auth);
+        return;
+      }
+      $('btnSignUp').classList.add('hidden');
+      $('btnSignIn').classList.add('hidden');
+      $('btnSignOut').classList.remove('hidden');
+      $('userName').innerText = user.displayName || user.email.split('@')[0];
+      $('userEmail').innerText = user.email;
+      // ensure user doc exists
+      const uRef = doc(db,'users',user.uid);
+      const snap = await getDoc(uRef);
+      if(!snap.exists()){
+        await setDoc(uRef, {
+          fullName: user.displayName || '',
+          email: user.email,
+          plan: 'free',
+          premium: false,
+          coins: { W: 0, D: 0 },
+          multiUsedDate: null,
+          createdAt: serverTimestamp()
+        });
+      }
+      // listen to user doc
+      onSnapshot(uRef, usnap=> {
+        if(!usnap.exists()) return;
+        currentUserDoc = usnap.data();
+        // update UI
+        $('statW').innerText = (currentUserDoc.coins && currentUserDoc.coins.W) || 0;
+        $('statD').innerText = (currentUserDoc.coins && currentUserDoc.coins.D) || 0;
+        $('coinsHeader').innerText = `W: ${$('statW').innerText} • D: ${$('statD').innerText}`;
+        $('userPlan').innerText = `Plan: ${currentUserDoc.premium ? 'Premium' : 'Free'}`;
+        computeMultiLeft();
+      });
+      // start global listeners
+      startAdsListener();
+      startTxListener();
+    } else {
+      // reset UI for guest
+      $('btnSignUp').classList.remove('hidden');
+      $('btnSignIn').classList.remove('hidden');
+      $('btnSignOut').classList.add('hidden');
+      $('userName').innerText = 'Guest';
+      $('userEmail').innerText = 'not signed in';
+      $('userPlan').innerText = 'Plan: Free';
+      $('statW').innerText = '0';
+      $('statD').innerText = '0';
+      $('coinsHeader').innerText = `W: 0 • D: 0`;
+      adPool = [];
+      renderAdsPreview();
+      renderDirectLinks();
     }
-    // listen to user doc
-    onSnapshot(uRef, snap => {
-      if(!snap.exists()) return;
-      currentUserDoc = snap.data();
-      $('statW').innerText = currentUserDoc.coins?.W || 0;
-      $('statD').innerText = currentUserDoc.coins?.D || 0;
-      $('coinsHeader').innerText = `W: ${currentUserDoc.coins?.W||0} | D: ${currentUserDoc.coins?.D||0}`;
-      $('whoami').innerText = `${currentUserDoc.fullName || ''} (${currentUserDoc.email}) — ${currentUserDoc.premium ? 'Premium' : 'Free'}`;
-      $('accountBox').innerHTML = `
-        <div><strong>${currentUserDoc.fullName||''}</strong></div>
-        <div class="small muted">${currentUserDoc.email}</div>
-        <div style="margin-top:8px"><b>Plan:</b> ${currentUserDoc.premium ? 'Premium' : 'Free'}</div>
-      `;
-      // compute multi-left for today
-      computeMultiLeft();
-    });
-    // start listening to ads & transactions
-    startAdsListener();
-    startTxListener();
-    // ensure system ads (insert system links once, only by the first signed in user)
-    ensureSystemAds();
-  } else {
-    // signed out
-    $('userHeader').innerText = 'Not signed in';
-    $('btnSignUp').style.display = 'inline-block';
-    $('btnSignIn').style.display = 'inline-block';
-    $('btnSignOut').style.display = 'none';
-    $('statW').innerText = '0';
-    $('statD').innerText = '0';
-    $('coinsHeader').innerText = `W: 0 | D: 0`;
-    // stop listeners by reloading page or resetting state (simple approach)
-    // We'll just clear ui elements:
-    $('activeAds').innerText = 'Sign in to see live ads';
-    $('directList').innerHTML = 'Sign in to see links';
-  }
-});
-
-/* ---------- Ads & transactions listeners ---------- */
-
-function startAdsListener(){
-  const adsCol = collection(db,'ads');
-  const q = query(adsCol, orderBy('createdAt'));
-  onSnapshot(q, snap => {
-    const arr = [];
-    snap.forEach(d => {
-      const data = d.data();
-      data.id = d.id;
-      arr.push(data);
-    });
-    // Active only
-    adsLocal = arr.filter(a => a.status === 'active');
-    renderActiveAds();
   });
-}
 
-function startTxListener(){
-  const txCol = collection(db,'transactions');
-  const q = query(txCol, orderBy('createdAt'));
-  onSnapshot(q, snap => {
-    const arr = [];
-    let count = 0;
-    snap.forEach(d => {
-      if(count++ > 30) return;
-      const dt = d.data();
-      arr.push(dt);
-    });
-    recentTxCache = arr;
-    $('recentTx').innerHTML = arr.length ? arr.map(x=>`<div>${x.type} • ${x.amount} ${x.currency||''} <span class="muted">(${x.userId})</span></div>`).join('') : '<div class="small muted">No recent transactions</div>';
-  });
-}
-
-/* ---------- System default ads insertion ---------- */
-async function ensureSystemAds(){
-  // Insert system ads only if none exist with ownerId 'system' (first signer)
-  // Note: this will run each time someone signs in, but will early-return if system ads exist.
-  const exist = adsLocal.some(a => a.ownerId === 'system');
-  if(exist) return;
-  if(!currentUser) return;
-  try {
+  // ---- Ads listener (live pool stored in Firestore) ----
+  async function startAdsListener(){
+    // watch ads collection
     const adsCol = collection(db,'ads');
-    // Add the exact links you requested. Keep them as-is.
+    const q = query(adsCol, orderBy('createdAt'));
+    onSnapshot(q, snap => {
+      const arr = [];
+      snap.forEach(d => {
+        const data = d.data(); data.id = d.id;
+        arr.push(data);
+      });
+      adPool = arr.filter(a => a.status === 'active');
+      renderAdsPreview();
+      renderDirectLinks();
+      updateActiveCount();
+    });
+  }
+
+  // transactions listener for recent activity (demo)
+  function startTxListener(){
+    const txCol = collection(db,'transactions');
+    const q = query(txCol, orderBy('createdAt'));
+    onSnapshot(q, snap => {
+      const rows = [];
+      let c = 0;
+      snap.forEach(d => {
+        if(c++ > 12) return;
+        const t = d.data();
+        rows.push(`<div><span class="text-xs font-semibold">${t.type}</span> • ${t.amount} ${t.currency||''} <span class="text-xs text-slate-400">(${t.userId||'system'})</span></div>`);
+      });
+      $('recentActivity').innerHTML = rows.join('');
+    });
+  }
+
+  // ---- Render helpers ----
+  function renderAdsPreview(){
+    const container = $('adsPreview');
+    container.innerHTML = '';
+    if(!adPool.length) { container.innerHTML = '<div class="text-sm text-slate-400">No active ads</div>'; return; }
+    adPool.slice(0,6).forEach(ad => {
+      const el = document.createElement('div');
+      el.className = 'p-3 bg-white rounded-lg';
+      el.innerHTML = `<div class="text-sm font-semibold truncate">${ad.link}</div>
+                      <div class="text-xs text-slate-400 mt-1">owner: ${ad.ownerId||'user'} • per:${ad.coinsPerUnit} • budget:${ad.budget}</div>`;
+      container.appendChild(el);
+    });
+    $('activeCount').innerText = adPool.length;
+  }
+
+  function updateActiveCount(){ $('activeCount').innerText = adPool.length; }
+
+  function renderDirectLinks(){
+    const list = $('directLinksList');
+    list.innerHTML = '';
+    const direct = adPool.filter(a=>a.category === 'direct');
+    if(!direct.length) { list.innerHTML = '<div class="text-sm text-slate-400">No direct links</div>'; return; }
+    direct.forEach(ad => {
+      const card = document.createElement('div');
+      card.className = 'p-3 bg-white rounded-lg shadow';
+      card.innerHTML = `<div class="text-sm font-semibold truncate">${ad.link}</div>
+                        <div class="text-xs text-slate-400 mt-1">owner: ${ad.ownerId || 'user'} • reward: ${ad.coinsPerUnit || 200} D</div>
+                        <div class="mt-3"><button class="btn bg-indigo-600 text-white" onclick="clickDirect('${ad.id}','${ad.link}')">Open & Earn</button></div>`;
+      list.appendChild(card);
+    });
+  }
+
+  // ---- Ensure system default ads (one-time insertion) ----
+  async function ensureSystemAds(){
+    // if any ad exists by owner 'system' skip
+    if(adPool.some(a=>a.ownerId==='system')) return;
+    if(!currentUser) return; // only try after someone signs in to avoid anonymous writes
     const defaults = [
       { link: 'http://cludymovie.com/', category: 'web', coinsPerUnit: 100, budget: 10000 },
       { link: 'https://newswithsk.com/', category: 'web', coinsPerUnit: 100, budget: 10000 },
@@ -426,592 +524,368 @@ async function ensureSystemAds(){
       { link: 'https://www.youtube.com/watch?v=Uw9bqrrV-yI', category: 'youtube_watch', coinsPerUnit: 100, budget: 20000 },
       { link: 'https://www.youtube.com/watch?v=Uw9bqrrV-yI', category: 'youtube_views', coinsPerUnit: 10, budget: 10000 }
     ];
-    for(const d of defaults){
-      await addDoc(collection(db,'ads'), {
-        link: d.link,
-        category: d.category,
-        coinsPerUnit: d.coinsPerUnit,
-        budget: d.budget,
-        impressionsServed: 0,
-        impressionsTarget: Math.floor(d.budget / d.coinsPerUnit),
-        ownerId: 'system',
-        status: 'active',
-        createdAt: serverTimestamp()
-      });
-    }
-  } catch(e){
-    console.warn('ensureSystemAds err', e);
-  }
-}
-
-/* ---------- Render active ads & direct link list ---------- */
-function renderActiveAds(){
-  const list = adsLocal.filter(a=>a.status === 'active');
-  $('activeAds').innerHTML = list.length ? list.map(a=>`<div class="small">${a.category} • ${a.link} <span class="muted">budget:${a.budget} per:${a.coinsPerUnit} served:${a.impressionsServed||0}/${a.impressionsTarget||'?'}</span></div>`).join('') : '<div class="small muted">No active ads</div>';
-  // direct list
-  const directAds = list.filter(a=>a.category==='direct');
-  $('directList').innerHTML = directAds.length ? directAds.map(a=>`<div style="margin-bottom:8px"><a class="link" href="#" onclick="clickDirect('${a.id}','${a.link}')">${a.link}</a> — <span class="muted">owner:${a.ownerId}</span></div>`).join('') : '<div class="small muted">No direct links</div>';
-}
-
-/* ---------- Multi-iframe daily allowance ---------- */
-function computeMultiLeft(){
-  if(!currentUserDoc) { $('multiLeft').innerText = '—'; return; }
-  if(currentUserDoc.premium){ $('multiLeft').innerText = 'unlimited (premium)'; return; }
-  // free user: allowed 2 minutes (120s) per day
-  const last = currentUserDoc.multiUsedDate ? new Date(currentUserDoc.multiUsedDate) : null;
-  const today = new Date(); today.setHours(0,0,0,0);
-  if(!last || last < today){
-    $('multiLeft').innerText = '2 minutes';
-  } else {
-    // used today, no left
-    $('multiLeft').innerText = '0 minutes — upgrade';
-  }
-}
-
-/* ---------- Multi-iframe prompt ---------- */
-function promptMulti(pageType){
-  if(!currentUser) return alert('Sign in first');
-  const n = parseInt(prompt('Enter how many ads you want to open in parallel (e.g. 3):','3'));
-  if(!n || n <= 0) return;
-  // check multi allowance
-  if(!currentUserDoc.premium){
-    const last = currentUserDoc.multiUsedDate ? new Date(currentUserDoc.multiUsedDate) : null;
-    const today = new Date(); today.setHours(0,0,0,0);
-    if(last && last >= today){
-      // already used
-      if(confirm('Free multi-iframe used for today. Upgrade to premium?')) {
-        window.open(`https://wa.me/923330737987?text=${encodeURIComponent('I want premium. Name:'+ (currentUserDoc.fullName || '') + ' Email:'+(currentUserDoc.email||''))}`,'_blank');
-      }
-      return;
-    }
-  }
-  // mark multiUsedDate to today and allow session
-  runTransaction(db, async (tx)=>{
-    const uRef = doc(db,'users', currentUser.uid);
-    tx.update(uRef, { multiUsedDate: serverTimestamp() });
-  }).then(()=> {
-    startMultiSession(pageType, n);
-  }).catch(e => {
-    console.warn('multi mark err', e);
-    startMultiSession(pageType, n); // still attempt
-  });
-}
-
-/* ---------- Multi-session: open N iframes/players for selected type ---------- */
-async function startMultiSession(pageType, count){
-  // create container
-  const areaId = pageType === 'traffic' ? 'trafficArea' : (pageType === 'youtube_watch' ? 'ytWatchArea' : (pageType === 'youtube_views' ? 'ytViewsArea' : 'trafficArea'));
-  const container = $(areaId);
-  container.innerHTML = ''; // clear
-  // pick different ads for each iframe
-  // filter ads by category
-  const possible = adsLocal.filter(a => {
-    if(pageType === 'traffic') return a.category === 'web';
-    if(pageType === 'youtube_watch') return a.category === 'youtube_watch';
-    if(pageType === 'youtube_views') return a.category === 'youtube_views';
-    return a.category === 'web';
-  });
-  if(possible.length === 0) return container.innerHTML = '<div class="small muted">No suitable ads available</div>';
-  // create N slots, picking ads cyclically
-  const toShow = [];
-  for(let i=0;i<count;i++){
-    toShow.push(possible[i % possible.length]);
-  }
-  // Create grid for iframes/players
-  const grid = document.createElement('div');
-  grid.className = 'iframe-grid';
-  grid.style.gridTemplateColumns = `repeat(${Math.min(count,3)}, 1fr)`;
-  container.appendChild(grid);
-
-  // For each ad, create an iframe or YT player
-  const sessionTimers = [];
-  toShow.forEach((ad, idx) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'card';
-    wrapper.style.padding = '8px';
-    wrapper.style.display = 'flex';
-    wrapper.style.flexDirection = 'column';
-    wrapper.style.gap = '8px';
-    const title = document.createElement('div');
-    title.innerHTML = `<div class="small muted">${ad.category}</div><div class="small">${ad.link}</div>`;
-    wrapper.appendChild(title);
-
-    if(ad.category === 'web'){
-      const iframe = document.createElement('iframe');
-      iframe.src = ad.link;
-      iframe.style.height = '220px';
-      iframe.sandbox = "allow-scripts allow-same-origin allow-forms allow-popups";
-      wrapper.appendChild(iframe);
-
-      // Timer for 30s completion -> award 100 W per ad watch
-      let seconds = 30;
-      const timerEl = document.createElement('div');
-      timerEl.className = 'small muted';
-      timerEl.innerText = `Completes in ${seconds}s`;
-      wrapper.appendChild(timerEl);
-      grid.appendChild(wrapper);
-
-      const t = setInterval(async ()=>{
-        seconds--;
-        timerEl.innerText = `Completes in ${seconds}s`;
-        // if tab hidden or user focused away, we should pause awarding. Use Visibility API below handled globally (simple: if hidden do not tick)
-        if(document.hidden) return;
-        if(seconds <= 0){
-          clearInterval(t);
-          timerEl.innerText = 'Completed — awarding 100 W';
-          // award via transaction
-          await awardAdCompletion(ad.id, 'web', 100);
-        }
-      },1000);
-      sessionTimers.push(t);
-    }
-
-    if(ad.category === 'youtube_watch' || ad.category === 'youtube_views'){
-      // Use youtube iframe embed and rely on user clicking play. For multiple players we create players via YT IFrame API
-      const vid = extractYouTubeID(ad.link);
-      const divId = `ytplayer_${ad.id}_${idx}_${Date.now()}`;
-      const holder = document.createElement('div');
-      holder.id = divId;
-      holder.style.height = '220px';
-      wrapper.appendChild(holder);
-      grid.appendChild(wrapper);
-      // create player after API ready
-      whenYTReady().then(() => {
-        const player = new YT.Player(divId, {
-          height: '220',
-          width: '100%',
-          videoId: vid,
-          playerVars: { 'playsinline': 1, 'rel': 0 },
-          events: {
-            onStateChange: async (e) => {
-              // PLAYING while tab visible -> start timers
-              if(e.data === YT.PlayerState.PLAYING){
-                // For watch: count seconds until 60 for awarding 100 W
-                if(ad.category === 'youtube_watch'){
-                  let played = 0;
-                  const interval = setInterval(async ()=>{
-                    if(document.hidden || player.getPlayerState() !== YT.PlayerState.PLAYING) return;
-                    played++;
-                    // every 60s award 100 W
-                    if(played >= 60){
-                      played = 0;
-                      await awardAdCompletion(ad.id, 'youtube_watch', 100);
-                    }
-                  },1000);
-                  sessionTimers.push(interval);
-                }
-                // For views: award 10 W every ~5 seconds of playback
-                if(ad.category === 'youtube_views'){
-                  let played = 0;
-                  const interval = setInterval(async ()=>{
-                    if(document.hidden || player.getPlayerState() !== YT.PlayerState.PLAYING) return;
-                    played++;
-                    if(played >= 5){
-                      played = 0;
-                      await awardAdCompletion(ad.id, 'youtube_views', 10);
-                    }
-                  },1000);
-                  sessionTimers.push(interval);
-                }
-              } else {
-                // paused or ended; nothing to do here (timers check player state)
-              }
-            }
-          }
-        });
-      }).catch(e=>{
-        console.warn('YT not ready',e);
-      });
-    }
-
-  });
-
-  // Start session timer: after 2 minutes stop multi if user is free
-  let duration = 120; // seconds
-  const multiInfo = document.createElement('div');
-  multiInfo.className = 'small muted';
-  multiInfo.style.marginTop = '8px';
-  multiInfo.innerHTML = `Multi session active for ${duration}s`;
-  container.prepend(multiInfo);
-  const multiInterval = setInterval(()=>{
-    duration--;
-    multiInfo.innerText = `Multi session active for ${duration}s`;
-    if(duration <= 0){
-      clearInterval(multiInterval);
-      // clear all session timers
-      sessionTimers.forEach(t=>clearInterval(t));
-      // hide multi area
-      container.innerHTML += `<div class="small muted">Multi-session ended. Upgrade to premium for unlimited multi-iframe.</div>`;
-      // If user is free, and session ended, show WhatsApp prompt to upgrade when they click
-    }
-  },1000);
-}
-
-/* ---------- Helper: extract YouTube ID ---------- */
-function extractYouTubeID(url){
-  try {
-    if(!url) return null;
-    // handle full watch url or embed
-    const u = new URL(url.includes('http') ? url : `https://${url}`);
-    if(u.hostname.includes('youtube.com')){
-      const v = u.searchParams.get('v');
-      if(v) return v;
-      // maybe embed path /embed/ID
-      const parts = u.pathname.split('/');
-      return parts[parts.length-1];
-    }
-    if(u.hostname === 'youtu.be'){
-      return u.pathname.slice(1);
-    }
-    return null;
-  } catch(e){ return null; }
-}
-
-/* ---------- Single rotating viewer (traffic) ---------- */
-let trafficInterval = null;
-function openSingleTraffic(){
-  show('traffic');
-  const container = $('trafficArea');
-  container.innerHTML = '';
-  if(adsLocal.filter(a=>a.category==='web').length === 0) return container.innerHTML = '<div class="small muted">No website ads</div>';
-  let idx = 0;
-  const adPool = adsLocal.filter(a=>a.category==='web'); // only website ads
-  const frame = document.createElement('iframe');
-  frame.style.width = '100%';
-  frame.style.height = '420px';
-  frame.sandbox = "allow-scripts allow-same-origin allow-forms allow-popups";
-  container.appendChild(frame);
-  const info = document.createElement('div'); info.className='small muted'; info.style.marginTop='8px';
-  container.appendChild(info);
-  if(trafficInterval) clearInterval(trafficInterval);
-  let seconds = 30;
-  trafficInterval = setInterval(async ()=>{
-    if(document.hidden) return; // pause timer if tab hidden
-    seconds--;
-    info.innerText = `Next change in ${seconds}s`;
-    if(seconds <= 0){
-      // award current ad as completed
-      const ad = adPool[idx % adPool.length];
-      await awardAdCompletion(ad.id, 'web', 100);
-      // move next
-      idx = (idx+1) % adPool.length;
-      frame.src = adPool[idx].link;
-      seconds = 30;
-    }
-  },1000);
-  // set initial src
-  frame.src = adPool[0].link;
-  info.innerText = `Next change in ${seconds}s`;
-}
-
-/* ---------- Single rotating YT watch/view players ---------- */
-function whenYTReady(){
-  return new Promise((resolve, reject) => {
-    if(window.YT && YT.Player) return resolve();
-    // inject script
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
-    // global callback
-    window.onYouTubeIframeAPIReady = () => {
-      resolve();
-    };
-    setTimeout(()=> reject('YT load timeout'), 15000);
-  });
-}
-function openSingleYTWatch(){
-  show('youtube_watch');
-  const container = $('ytWatchArea'); container.innerHTML = '';
-  const adPool = adsLocal.filter(a=>a.category==='youtube_watch');
-  if(adPool.length === 0) return container.innerHTML = '<div class="small muted">No youtube watch ads</div>';
-  // rotate every minute, award per minute when playing handled via player events
-  let idx = 0;
-  whenYTReady().then(()=>{
-    const div = document.createElement('div'); div.id = `player_single_${Date.now()}`; div.style.height='420px';
-    container.appendChild(div);
-    const player = new YT.Player(div.id, {
-      height: '420',
-      width: '100%',
-      videoId: extractYouTubeID(adPool[idx].link),
-      events: {
-        onStateChange: (e) => {
-          // handled in multi logic too above - for single we need similar approach: reward 100 W every 60s while playing
-          if(e.data === YT.PlayerState.PLAYING){
-            let playedSec = 0;
-            const intv = setInterval(async ()=>{
-              if(document.hidden || player.getPlayerState() !== YT.PlayerState.PLAYING) return;
-              playedSec++;
-              if(playedSec >= 60){
-                playedSec = 0;
-                await awardAdCompletion(adPool[idx].id, 'youtube_watch', 100);
-              }
-            },1000);
-            // clear when pause/stop/ended
-            const clearOnStop = (s) => {
-              if(s.data !== YT.PlayerState.PLAYING){ clearInterval(intv); }
-            };
-            player.addEventListener && player.addEventListener('onStateChange', clearOnStop);
-          }
-        }
-      }
-    });
-  }).catch(e => container.innerHTML = '<div class="small muted">YouTube API load failed</div>');
-}
-
-function openSingleYTViews(){
-  show('youtube_views');
-  const container = $('ytViewsArea'); container.innerHTML = '';
-  const adPool = adsLocal.filter(a=>a.category==='youtube_views');
-  if(adPool.length === 0) return container.innerHTML = '<div class="small muted">No youtube view ads</div>';
-  whenYTReady().then(()=>{
-    const div = document.createElement('div'); div.id = `player_view_${Date.now()}`; div.style.height='420px';
-    container.appendChild(div);
-    const player = new YT.Player(div.id, {
-      height: '420',
-      width: '100%',
-      videoId: extractYouTubeID(adPool[0].link),
-      events: {
-        onStateChange: (e) => {
-          if(e.data === YT.PlayerState.PLAYING){
-            let sec = 0;
-            const iv = setInterval(async ()=>{
-              if(document.hidden || player.getPlayerState() !== YT.PlayerState.PLAYING) return;
-              sec++;
-              if(sec >= 5){
-                sec = 0;
-                await awardAdCompletion(adPool[0].id, 'youtube_views', 10);
-              }
-            },1000);
-          }
-        }
-      }
-    });
-  }).catch(e => container.innerHTML = '<div class="small muted">YouTube API load failed</div>');
-}
-
-/* ---------- Awarding function (atomic) ---------- */
-async function awardAdCompletion(adId, adCategory, amount){
-  /* This function:
-     - checks ad is active and budget >= coinsPerUnit
-     - decrements ad.budget by coinsPerUnit
-     - increments ad.impressionsServed
-     - awards user coins (W or D as appropriate)
-     - records transaction
-     - gives referral commission 15% to referrer if exists
-     - marks ad 'completed' if budget depleted or impressionsTarget reached
-  */
-  if(!currentUser) return; // must be signed in to earn
-  const adRef = doc(db,'ads', adId);
-  const userRef = doc(db,'users', currentUser.uid);
-  try {
-    await runTransaction(db, async (tx)=>{
-      const adSnap = await tx.get(adRef);
-      if(!adSnap.exists()) throw 'ad-missing';
-      const ad = adSnap.data();
-      if(ad.status !== 'active') throw 'ad-not-active';
-      const cost = ad.coinsPerUnit || amount; // coins per unit set by ad owner
-      // check budget
-      if((ad.budget || 0) < cost) {
-        // mark as completed
-        tx.update(adRef, { status: 'completed' });
-        throw 'ad-no-budget';
-      }
-      // update ad budget & served
-      tx.update(adRef, {
-        budget: (ad.budget||0) - cost,
-        impressionsServed: (ad.impressionsServed||0) + 1
-      });
-      // award to current user: use W currency for web/yt categories; D for direct
-      const currency = adCategory === 'direct' ? 'D' : 'W';
-      tx.update(userRef, { [`coins.${currency}`]: increment(amount) });
-      const txRef = doc(collection(db,'transactions'));
-      tx.set(txRef, {
-        userId: currentUser.uid,
-        type: 'earn',
-        amount,
-        currency,
-        adId,
-        createdAt: serverTimestamp()
-      });
-      // referral commission to referrer
-      const uSnap = await tx.get(userRef);
-      if(uSnap.exists()){
-        const u = uSnap.data();
-        if(u.referredBy){
-          const commission = Math.floor(amount * 0.15);
-          const refRef = doc(db,'users', u.referredBy);
-          tx.update(refRef, { 'coins.W': increment(commission) });
-          const rtx = doc(collection(db,'transactions'));
-          tx.set(rtx, {
-            userId: u.referredBy,
-            type: 'referral_commission',
-            amount: commission,
-            currency: 'W',
-            fromUser: currentUser.uid,
-            createdAt: serverTimestamp()
-          });
-        }
-      }
-      // check if need to close ad
-      const newBudget = (ad.budget||0) - cost;
-      const newServed = (ad.impressionsServed||0) + 1;
-      const target = ad.impressionsTarget || Math.floor((ad.initialBudget||0) / (ad.coinsPerUnit||1));
-      if(newBudget <= 0 || (ad.impressionsTarget && newServed >= ad.impressionsTarget)){
-        tx.update(adRef, { status: 'completed', closedAt: serverTimestamp() });
-      }
-    });
-  } catch(e){
-    // ignore common errors; in production log them
-    console.warn('award error', e);
-  }
-}
-
-/* ---------- Direct link click handler ---------- */
-async function clickDirect(adId, link){
-  if(!currentUser) return alert('Please sign in');
-  // open link in new window
-  window.open(link, '_blank');
-  // wait 2 seconds to simulate click -> award
-  setTimeout(async ()=>{
-    // award 200 D coins (or the ad's coinsPerUnit)
     try {
-      await runTransaction(db, async (tx)=>{
-        const adRef = doc(db,'ads', adId);
-        const adSnap = await tx.get(adRef);
-        if(!adSnap.exists()) throw 'ad-missing';
-        const ad = adSnap.data();
-        if(ad.status !== 'active') throw 'not-active';
-        const cost = ad.coinsPerUnit || 200;
-        if((ad.budget||0) < cost){
-          tx.update(adRef, { status:'completed' });
-          throw 'no-budget';
-        }
-        tx.update(adRef, { budget: (ad.budget||0) - cost, impressionsServed: (ad.impressionsServed||0) + 1 });
-        tx.update(doc(db,'users', currentUser.uid), { 'coins.D': increment(cost) });
-        tx.set(doc(collection(db,'transactions')), {
-          userId: currentUser.uid, type:'earn', amount: cost, currency:'D', adId, createdAt: serverTimestamp()
-        });
-        // referral commission if applicable
-        const uSnap = await tx.get(doc(db,'users', currentUser.uid));
-        if(uSnap.exists() && uSnap.data().referredBy){
-          const commission = Math.floor(cost * 0.15);
-          tx.update(doc(db,'users', uSnap.data().referredBy), { 'coins.W': increment(commission) });
-          tx.set(doc(collection(db,'transactions')), {
-            userId: uSnap.data().referredBy, type:'referral_commission', amount: commission, currency:'W', fromUser: currentUser.uid, createdAt: serverTimestamp()
-          });
-        }
-        // close ad if needed
-        const newBudget = (ad.budget||0) - cost;
-        const newServed = (ad.impressionsServed||0) + 1;
-        if(newBudget <= 0 || (ad.impressionsTarget && newServed >= ad.impressionsTarget)){
-          tx.update(adRef, { status:'completed', closedAt: serverTimestamp() });
-        }
-      });
-    } catch(e){
-      console.warn('direct click award err', e);
-    }
-  }, 1500);
-}
-
-/* ---------- Launch Ad flow (user funds ad using W coins) ---------- */
-async function launchAd(){
-  if(!currentUser) return alert('Sign in first');
-  const link = $('launchLink').value.trim();
-  const budget = parseInt($('launchBudget').value || 0);
-  const cpi = parseInt($('launchCPI').value || 100);
-  if(!link || !budget || budget <= 0) return $('launchMsg').innerText = 'Provide a valid link and budget';
-  // Only accept website URLs
-  try { new URL(link); } catch(e){ return $('launchMsg').innerText = 'Provide a valid URL (https://...)'; }
-
-  // compute fee 15%
-  const fee = Math.ceil(budget * 0.15);
-  // total deduction = budget + fee
-  const totalDeduct = budget + fee;
-  // check user has enough W coins
-  const uRef = doc(db,'users', currentUser.uid);
-  const uSnap = await getDoc(uRef);
-  const u = uSnap.data();
-  const have = (u.coins && u.coins.W) || 0;
-  if(have < totalDeduct) return $('launchMsg').innerText = `Insufficient W coins. You have ${have}, need ${totalDeduct} (budget + 15% fee).`;
-
-  // transaction: deduct coins from user, credit system fee, create ad
-  try {
-    await runTransaction(db, async (tx)=>{
-      const uS = await tx.get(uRef);
-      if(!uS.exists()) throw 'user-missing';
-      const uDat = uS.data();
-      if((uDat.coins && uDat.coins.W) < totalDeduct) throw 'insufficient';
-      // deduct
-      tx.update(uRef, { 'coins.W': (uDat.coins.W || 0) - totalDeduct });
-      // credit system fee to system user (system may be a placeholder)
-      const sysRef = doc(db,'users','system');
-      const sysSnap = await tx.get(sysRef);
-      if(sysSnap.exists()){
-        tx.update(sysRef, { 'coins.W': increment(fee) });
-      } else {
-        // create system user doc
-        tx.set(sysRef, {
-          fullName: 'system', email: 'system@internal', coins: { W: fee, D: 0 }, createdAt: serverTimestamp(), premium: true
+      for(const d of defaults){
+        await addDoc(collection(db,'ads'), {
+          ownerId: 'system',
+          link: d.link,
+          category: d.category,
+          coinsPerUnit: d.coinsPerUnit,
+          budget: d.budget,
+          impressionsServed: 0,
+          impressionsTarget: Math.floor(d.budget / d.coinsPerUnit),
+          status: 'active',
+          createdAt: serverTimestamp()
         });
       }
-      // create ad doc: impressionsTarget = floor(budget / cpi)
-      const adDocRef = await addDoc(collection(db,'ads'), {
-        ownerId: currentUser.uid,
-        link,
-        category: 'web',
-        coinsPerUnit: cpi,
-        budget: budget,
-        initialBudget: budget,
-        impressionsServed: 0,
-        impressionsTarget: Math.floor(budget / cpi),
-        status: 'active',
-        createdAt: serverTimestamp()
+    } catch(e){ console.warn('sys ads err', e); }
+  }
+
+  // call ensureSystemAds when user signed in
+  onAuthStateChanged(auth, user => { if(user) ensureSystemAds(); });
+
+  // ---- Single rotating traffic viewer (safe simulation) ----
+  let trafficTimerRef = null;
+  function openTrafficSingle(){
+    nav('traffic');
+    const container = $('trafficInner');
+    container.innerHTML = '';
+    const webAds = adPool.filter(a => a.category === 'web');
+    if(!webAds.length){ container.innerHTML = '<div class="text-sm text-slate-400">No website ads available</div>'; return; }
+    let idx = 0;
+    const iframe = document.createElement('iframe');
+    iframe.className = 'w-full h-full';
+    iframe.style.border = '0';
+    iframe.src = webAds[0].link;
+    container.appendChild(iframe);
+    let seconds = 30;
+    $('trafficTimer').innerText = `Next in ${seconds}s`;
+    $('trafficAdInfo').innerText = `${webAds[0].link} • reward 100 W`;
+
+    if(trafficTimerRef) clearInterval(trafficTimerRef);
+    trafficTimerRef = setInterval(async ()=>{
+      if(document.hidden) return; // pause if tab hidden
+      seconds--;
+      $('trafficTimer').innerText = `Next in ${seconds}s`;
+      if(seconds <= 0){
+        // award simulated coins to signed-in user (client-side simulation)
+        const ad = webAds[idx % webAds.length];
+        // perform simulated awarding only if signed in
+        if(currentUser){
+          await awardSimulated(ad.id, 'web', (ad.coinsPerUnit || 100));
+        }
+        // rotate
+        idx = (idx + 1) % webAds.length;
+        iframe.src = webAds[idx].link;
+        $('trafficAdInfo').innerText = `${webAds[idx].link} • reward ${(webAds[idx].coinsPerUnit||100)} W`;
+        seconds = 30;
+      }
+    }, 1000);
+  }
+
+  // ---- Click direct link handler (simulated awarding) ----
+  async function clickDirect(adId, link){
+    // open link
+    window.open(link,'_blank');
+    // award after short delay
+    setTimeout(async ()=>{
+      const ad = adPool.find(a=>a.id === adId);
+      if(!ad) return;
+      if(!currentUser) { alert('Sign in to earn coins'); return; }
+      await awardSimulated(adId, 'direct', (ad.coinsPerUnit || 200));
+      // optionally hide or mark ad locally (simulation) - in real system you'd update DB
+      alert('You earned ' + (ad.coinsPerUnit || 200) + ' D coins (sim).');
+    }, 1500);
+  }
+
+  // ---- Simulated awarding function (client-side, updates Firestore user doc only) ----
+  // NOTE: This is intentionally a simulation. In production, server-side functions must verify.
+  async function awardSimulated(adId, category, amount){
+    if(!currentUser) return;
+    try {
+      await runTransaction(db, async (tx) => {
+        const uRef = doc(db,'users', currentUser.uid);
+        const uSnap = await tx.get(uRef);
+        if(!uSnap.exists()) throw 'user_missing';
+        const u = uSnap.data();
+        const currency = (category === 'direct') ? 'D' : 'W';
+        const newCoins = (u.coins && u.coins[currency] ? u.coins[currency] : 0) + amount;
+        tx.update(uRef, { ['coins.'+currency]: newCoins });
+        // record transaction
+        await addDoc(collection(db,'transactions'), {
+          userId: currentUser.uid,
+          type: 'earn',
+          amount,
+          currency,
+          adId,
+          createdAt: serverTimestamp()
+        });
       });
-      // record transaction for launch
-      tx.set(doc(collection(db,'transactions')), {
-        userId: currentUser.uid, type:'ad_launch', amount: budget, fee, currency:'W', adId: adDocRef.id, createdAt: serverTimestamp()
+    } catch(e){ console.warn('awardSim failed', e); }
+  }
+
+  // ---- Launch ad (user funds ad using W coins) ----
+  async function launchAd(){
+    if(!currentUser) return alert('Sign in first');
+    const url = $('inputAdUrl').value.trim();
+    const budget = parseInt($('inputAdBudget').value || 0);
+    const cpi = parseInt($('inputAdCPI').value || 100);
+    if(!url || !budget || budget<=0) return $('launchMsg').innerText = 'Provide URL and positive budget';
+    try { new URL(url); } catch(e){ return $('launchMsg').innerText = 'Provide a valid URL starting with https:// or http://'; }
+
+    // compute fee (15%)
+    const fee = Math.ceil(budget * 0.15);
+    const total = budget + fee;
+    // check user coins
+    const uRef = doc(db,'users', currentUser.uid);
+    const uSnap = await getDoc(uRef);
+    const u = uSnap.data();
+    const have = (u.coins && u.coins.W) || 0;
+    if(have < total) return $('launchMsg').innerText = `Insufficient W coins (you have ${have}, need ${total} including 15% fee).`;
+
+    // create ad and deduct balance (simulated atomic)
+    try {
+      await runTransaction(db, async tx => {
+        const uS = await tx.get(uRef);
+        if(!uS.exists()) throw 'user_missing';
+        const updated = (uS.data().coins.W || 0) - total;
+        tx.update(uRef, { 'coins.W': updated });
+        // credit system fee to system user
+        const sysRef = doc(db,'users','system');
+        const sysSnap = await tx.get(sysRef);
+        if(sysSnap.exists()){
+          tx.update(sysRef, { 'coins.W': increment(fee) });
+        } else {
+          tx.set(sysRef, { fullName:'system', email:'system@internal', coins:{ W: fee, D:0 }, premium:true, createdAt: serverTimestamp() });
+        }
+        // create ad doc
+        await addDoc(collection(db,'ads'), {
+          ownerId: currentUser.uid,
+          link: url,
+          category: 'web',
+          coinsPerUnit: cpi,
+          budget,
+          initialBudget: budget,
+          impressionsServed: 0,
+          impressionsTarget: Math.floor(budget / cpi),
+          status: 'active',
+          createdAt: serverTimestamp()
+        });
+        // record tx
+        await addDoc(collection(db,'transactions'), {
+          userId: currentUser.uid, type:'ad_launch', amount: budget, fee, currency:'W', createdAt: serverTimestamp()
+        });
       });
+      $('launchMsg').innerText = 'Ad launched — check viewers to see it rotate in.';
+      $('inputAdUrl').value = ''; $('inputAdBudget').value=''; $('inputAdCPI').value='';
+    } catch(e){ console.error(e); $('launchMsg').innerText = 'Error launching ad.'; }
+  }
+
+  // ---- Multi-iframe session (Free: 2 minutes/day) ----
+  function computeMultiLeft(){
+    if(!currentUserDoc){ $('multiLeft').innerText = '—'; return; }
+    if(currentUserDoc.premium) { $('multiLeft').innerText = 'unlimited (premium)'; return; }
+    const last = currentUserDoc.multiUsedDate ? new Date(currentUserDoc.multiUsedDate.toDate ? currentUserDoc.multiUsedDate.toDate() : currentUserDoc.multiUsedDate) : null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    if(!last || last < today) {
+      $('multiLeft').innerText = '2m';
+    } else {
+      $('multiLeft').innerText = '0m — upgrade';
+    }
+  }
+
+  async function promptMulti(type){
+    if(!currentUser) return alert('Sign in first');
+    const n = parseInt(prompt('How many iframes/players do you want to open at once? (e.g. 3)'));
+    if(!n || n < 1) return;
+    // check free user allowance
+    if(!currentUserDoc.premium){
+      const last = currentUserDoc.multiUsedDate ? new Date(currentUserDoc.multiUsedDate.toDate ? currentUserDoc.multiUsedDate.toDate() : currentUserDoc.multiUsedDate) : null;
+      const today = new Date(); today.setHours(0,0,0,0);
+      if(last && last >= today) {
+        if(confirm('Free multi-iframe already used today. Upgrade to premium?')) window.open('https://wa.me/923330737987?text=I%20want%20premium','_blank');
+        return;
+      }
+      // mark as used today (firestore)
+      await updateDoc(doc(db,'users', currentUser.uid), { multiUsedDate: serverTimestamp() });
+    }
+    startMultiSession(type, n);
+  }
+
+  // open N iframes / players in grid and run timers (simulated)
+  function startMultiSession(type, count){
+    const areaId = type === 'traffic' ? 'trafficContainer' : (type === 'youtube_watch' ? 'ytWatchContainer' : 'ytViewsContainer');
+    const container = $(areaId);
+    container.innerHTML = '';
+    const pool = adPool.filter(a => {
+      if(type === 'traffic') return a.category === 'web';
+      if(type === 'youtube_watch') return a.category === 'youtube_watch';
+      if(type === 'youtube_views') return a.category === 'youtube_views';
+      return a.category === 'web';
     });
-    $('launchMsg').innerText = 'Ad launched successfully and will appear in viewers shortly.';
-    $('launchLink').value = ''; $('launchBudget').value = ''; $('launchCPI').value = '';
-  } catch(e){
-    console.error('launch err', e);
-    $('launchMsg').innerText = 'Error launching ad: '+e;
+    if(!pool.length) return container.innerHTML = '<div class="text-sm text-slate-400">No suitable ads</div>';
+    // create grid
+    const grid = document.createElement('div');
+    grid.className = `grid gap-3`;
+    grid.style.gridTemplateColumns = `repeat(${Math.min(count,3)}, 1fr)`;
+    container.appendChild(grid);
+
+    const sessionTimers = [];
+    for(let i=0;i<count;i++){
+      const ad = pool[i % pool.length];
+      const card = document.createElement('div');
+      card.className = 'p-2 bg-white rounded-lg iframe-box';
+      card.style.minHeight = '200px';
+      // header
+      card.innerHTML = `<div class="p-2"><div class="text-xs text-slate-500">${ad.category}</div><div class="text-sm font-semibold truncate">${ad.link}</div></div>`;
+      // content container
+      const content = document.createElement('div');
+      content.style.height = '140px';
+      content.className = 'bg-black';
+      // if web -> iframe, if youtube -> embed
+      if(ad.category === 'web'){
+        const ifr = document.createElement('iframe');
+        ifr.src = ad.link;
+        ifr.style.width = '100%'; ifr.style.height = '100%'; ifr.style.border = '0';
+        ifr.sandbox = "allow-scripts allow-forms allow-popups";
+        content.appendChild(ifr);
+        card.appendChild(content);
+        // timer for 30s
+        let sec = 30;
+        const timerEl = document.createElement('div'); timerEl.className = 'p-2 text-sm text-slate-500'; timerEl.innerText = `Completes in ${sec}s`;
+        card.appendChild(timerEl);
+        grid.appendChild(card);
+        const t = setInterval(async ()=>{
+          if(document.hidden) return;
+          sec--;
+          timerEl.innerText = `Completes in ${sec}s`;
+          if(sec <= 0){
+            clearInterval(t);
+            timerEl.innerText = 'Completed — awarding';
+            await awardSimulated(ad.id, 'web', (ad.coinsPerUnit || 100));
+          }
+        }, 1000);
+        sessionTimers.push(t);
+      } else { // youtube types
+        const vid = extractYouTubeID(ad.link);
+        const iframeDiv = document.createElement('iframe');
+        iframeDiv.src = `https://www.youtube.com/embed/${vid}?rel=0&playsinline=1`;
+        iframeDiv.style.width = '100%'; iframeDiv.style.height = '100%'; iframeDiv.style.border = '0';
+        content.appendChild(iframeDiv);
+        card.appendChild(content);
+        // for watch: award 100 W every 60s; for views: award 10 W every 5s
+        grid.appendChild(card);
+        let sec = (ad.category === 'youtube_watch') ? 60 : 5;
+        const timerEl = document.createElement('div'); timerEl.className = 'p-2 text-sm text-slate-500'; timerEl.innerText = `Next award in ${sec}s`;
+        card.appendChild(timerEl);
+        const t = setInterval(async ()=>{
+          if(document.hidden) return;
+          sec--;
+          timerEl.innerText = `Next award in ${sec}s`;
+          if(sec <= 0){
+            clearInterval(t);
+            if(ad.category === 'youtube_watch') await awardSimulated(ad.id, 'youtube_watch', (ad.coinsPerUnit || 100));
+            else await awardSimulated(ad.id, 'youtube_views', (ad.coinsPerUnit || 10));
+            // do not restart to avoid repeated auto-award; for demo, we can restart countdown to continue awarding
+            // restart
+            sec = (ad.category === 'youtube_watch') ? 60 : 5;
+            // continue (re-init)
+            sessionTimers.push(setInterval(()=>{},1000));
+          }
+        }, 1000);
+        sessionTimers.push(t);
+      }
+    }
+
+    // multi session expiry for free users: 120s
+    let duration = currentUserDoc && currentUserDoc.premium ? Infinity : MULTI_FREE_SECONDS;
+    const info = document.createElement('div'); info.className = 'text-sm text-slate-500 p-2'; info.innerText = `Multi session active: ${duration===Infinity ? 'unlimited (premium)' : duration+'s'}`;
+    container.prepend(info);
+    const countdown = setInterval(()=>{
+      if(document.hidden) return;
+      if(duration !== Infinity){ duration--; info.innerText = `Multi session active: ${duration}s`; }
+      if(duration <= 0){
+        clearInterval(countdown);
+        sessionTimers.forEach(t => clearInterval(t));
+        info.innerText = 'Multi session ended. Upgrade for unlimited.';
+        // optionally prompt upgrade
+      }
+    }, 1000);
   }
-}
 
-/* ---------- Change password ---------- */
-async function changePassword(){
-  if(!currentUser) return alert('Sign in first');
-  const newp = $('newPass').value;
-  const conf = $('confirmPass').value;
-  if(!newp || newp !== conf) return $('passMsg').innerText = 'Passwords must match';
-  try {
-    await updatePassword(currentUser, newp);
-    $('passMsg').innerText = 'Password updated';
-  } catch(e){
-    $('passMsg').innerText = 'Error updating password: ' + e.message;
+  // ---- Helper: extract YouTube ID ----
+  function extractYouTubeID(url){
+    try {
+      if(!url) return null;
+      if(url.includes('youtube.com/watch')){
+        const u = new URL(url);
+        return u.searchParams.get('v');
+      }
+      if(url.includes('youtu.be/')) return url.split('youtu.be/')[1].split(/[?&#]/)[0];
+      if(url.includes('embed/')) return url.split('embed/')[1].split(/[?&#]/)[0];
+      return null;
+    } catch(e){ return null; }
   }
-}
 
-/* ---------- Visibility API: pause timers when user leaves tab ---------- */
-document.addEventListener('visibilitychange', ()=> {
-  if(document.hidden){
-    // nothing explicit to do, timers check document.hidden
+  // ---- Change password (demo, for email accounts only) ----
+  async function changePassword(){
+    if(!currentUser) return alert('Sign in first');
+    const np = $('acctPass').value;
+    const np2 = $('acctPass2').value;
+    if(!np || np !== np2) return alert('Passwords must match');
+    try {
+      await updatePassword(currentUser, np);
+      alert('Password updated (if using email/password). Google accounts manage via Google.');
+      $('acctPass').value=''; $('acctPass2').value='';
+    } catch(e){ alert('Error: ' + e.message); }
   }
-});
 
-/* ---------- Initial UI wiring ---------- */
-window.show = show;
-window.promptMulti = promptMulti;
-window.openSingleTraffic = openSingleTraffic;
-window.openSingleYTWatch = openSingleYTWatch;
-window.openSingleYTViews = openSingleYTViews;
-window.launchAd = launchAd;
-window.clickDirect = clickDirect;
+  // ---- Profile save ----
+  async function saveProfile(){
+    if(!currentUser) return alert('Sign in first');
+    const name = $('acctName').value.trim();
+    const email = $('acctEmail').value.trim();
+    if(!email.endsWith('@gmail.com')) return alert('Email must be a Gmail address');
+    try {
+      await updateDoc(doc(db,'users',currentUser.uid), { fullName: name, email });
+      alert('Profile saved');
+    } catch(e){ alert('Save failed: '+e.message); }
+  }
 
-/* ---------- Final notes printed to console ---------- */
-console.log('Ad-4-U prototype loaded. Reminder: move awarding to Cloud Functions for production and tighten Firestore rules.');
+  // ---- Open WhatsApp for premium ----
+  function openWhatsApp(){ window.open('https://wa.me/923330737987?text=I%20want%20premium','_blank'); }
+
+  // ---- computeMultiLeft initial ----
+  function computeMultiLeft(){ if(currentUserDoc) { /* handled during snapshot update */ } }
+
+  // ---- minimal transaction recording collection (demo) ----
+  // created inside awardSimulated and launchAd
+
+  // ---- ensure ads + tx listeners start on page load (guest can still see nothing until sign-in) ----
+  startAdsListener();
+  startTxListener();
+
+  // ---- small safety: make sure theme contrasts for dark mode -->
+  setDark(false);
+
+  // ---- expose some functions globally for inline buttons (simpler) ----
+  window.nav = nav;
+  window.openTrafficSingle = openTrafficSingle;
+  window.openYTSingle = () => {};
+  window.promptMulti = promptMulti;
+  window.openYTSingle = (mode) => {
+    if(mode === 'watch') nav('ytwatch');
+    if(mode === 'views') nav('ytviews');
+  };
+  window.launchAd = launchAd;
+  window.clickDirect = clickDirect;
+  window.saveProfile = saveProfile;
+  window.changePassword = changePassword;
+  window.openWhatsApp = openWhatsApp;
+
+  // ---- ensure system ads are present on initial load after some delay (first user who signs in will push defaults) ----
+  setTimeout(() => { if(currentUser) ensureSystemAds(); }, 3000);
+
 </script>
 
 </body>
