@@ -2,151 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Ad4U - Ultra Stylish Earn & Launch Ads</title>
+  <title>Ad4U - Earn & Launch Ads</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <!-- Google Fonts and Font Awesome for icons -->
   <link href="https://fonts.googleapis.com/css?family=Montserrat:900,700,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
-    :root {
-      --main-bg: linear-gradient(135deg, #232f3e 0%, #2563eb 100%);
-      --card-bg: rgba(255,255,255,0.85);
-      --accent: #2563eb;
-      --accent2: #facc15;
-      --radius: 18px;
-      --shadow: 0 12px 48px #232f3e40;
-      --glass: rgba(255,255,255,0.7);
-      --neon: 0 0 10px #facc15, 0 0 20px #2563eb;
+    :root { --main-bg: linear-gradient(135deg, #232f3e 0%, #2563eb 100%); --card-bg: rgba(255,255,255,0.92);
+      --accent: #2563eb; --accent2: #facc15; --radius: 18px; --shadow: 0 12px 48px #232f3e40;
+      --glass: rgba(255,255,255,0.7); --neon: 0 0 10px #facc15, 0 0 20px #2563eb;
     }
     html, body { height:100%; width:100%; margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: 'Montserrat',Arial,sans-serif;
-      background: var(--main-bg);
-      min-height:100vh;
-      color: #222;
-      letter-spacing: 0.01em;
-    }
-    header {
-      background: rgba(35,47,62,0.9);
-      color: #fff;
-      backdrop-filter: blur(5px);
-      padding: 1.3rem 2rem 1.1rem 2rem;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
-      border-radius: 0 0 var(--radius) var(--radius);
-      box-shadow: var(--shadow);
-      z-index: 3;
-      position:relative;
-    }
+    body { font-family: 'Montserrat',Arial,sans-serif; background: var(--main-bg); min-height:100vh; color: #222; letter-spacing: 0.01em; }
+    header { background: rgba(35,47,62,0.91); color: #fff; backdrop-filter: blur(5px); padding: 1.3rem 2rem 1.1rem 2rem;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-radius: 0 0 var(--radius) var(--radius); box-shadow: var(--shadow); z-index: 3; position:relative;}
     .logo { font-weight: 900; font-size: 2.1rem; letter-spacing: 0.1em; text-shadow: var(--neon);}
     nav { display: flex; gap: 1.3em; flex-wrap: wrap;}
-    nav a {
-      color: #fff; text-decoration: none; font-weight: 700; letter-spacing: 0.04em;
-      padding: 0.5em 1em; border-radius: 8px; transition:.14s;
-      background: none;
-      display: inline-block;
-      margin-bottom: 3px;
-    }
+    nav a { color: #fff; text-decoration: none; font-weight: 700; letter-spacing: 0.04em; padding: 0.5em 1em; border-radius: 8px; transition:.14s; background: none; display: inline-block; margin-bottom: 3px; }
     nav a.active, nav a:hover { background: var(--accent); box-shadow: 0 0 8px #2563eb60;}
     .coins { background: var(--accent2); color: #232f3e; padding: 0.33em 0.95em; border-radius: 6px; margin-left: 1em; font-weight:900; }
-    main {
-      max-width: 1180px; margin: 2.3em auto 1em auto; padding: 2.2em 1.2em;
-      background: var(--glass); border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      min-height: 72vh;
-      position:relative;
-      z-index:1;
-    }
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      box-shadow: 0 4px 22px #232f3e18;
-      padding: 2em 2em 1.5em 2em;
-      margin-bottom: 2em;
-      position: relative;
-      transition:.16s;
-    }
+    main { max-width: 1180px; margin: 2.3em auto 1em auto; padding: 2.2em 1.2em; background: var(--glass); border-radius: var(--radius); box-shadow: var(--shadow); min-height: 72vh; position:relative; z-index:1;}
+    .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 4px 22px #232f3e18; padding: 2em 2em 1.5em 2em; margin-bottom: 2em; position: relative; transition:.16s;}
     .card h2, .card h3 { margin-top: 0; margin-bottom: 0.7em; }
-    .btn {
-      background: var(--accent);
-      color: #fff; border: none; font-weight: 700; font-size: 1.07em;
-      padding: 0.7em 1.5em; border-radius: 1em; margin: 0.7em 0;
-      cursor: pointer; box-shadow: 0 2px 8px #2563eb23;
-      transition:.14s;
-      letter-spacing: 0.04em;
-    }
+    .btn { background: var(--accent); color: #fff; border: none; font-weight: 700; font-size: 1.07em; padding: 0.7em 1.5em; border-radius: 1em; margin: 0.7em 0; cursor: pointer; box-shadow: 0 2px 8px #2563eb23; transition:.14s; letter-spacing: 0.04em;}
     .btn[disabled], .btn.disabled { background: #b0b0b0; cursor: not-allowed; }
     .btn.gold { background: var(--accent2); color: #232f3e; font-weight:900; }
-    .btn.whatsapp {
-      background: #25d366; color:#fff; font-weight:900; font-size:1.1em;
-      display: flex; align-items: center; gap: 0.5em;
-    }
+    .btn.whatsapp { background: #25d366; color:#fff; font-weight:900; font-size:1.1em; display: flex; align-items: center; gap: 0.5em;}
     .hidden { display: none !important; }
     .iframe-ads-grid { display: flex; flex-wrap: wrap; gap: 1.2em; margin: 1em 0; justify-content:center;}
-    .iframe-ads-grid iframe {
-      border: 3px solid var(--accent);
-      border-radius: 12px; min-width: 290px; min-height: 190px;
-      box-shadow: 0 2px 18px #2563eb20;
-      flex: 1 1 340px;
-      background: #fff;
-      transition: 0.3s box-shadow;
-    }
-    .iframe-ads-grid iframe:focus, .iframe-ads-grid iframe:hover {
-      box-shadow:0 0 18px #facc1570, 0 0 6px #2563eb;
-    }
-    .coins-earned { color: #059669; font-weight: 700; font-size:1.19em; margin-left:0.7em;}
-    .status-premium { color: #059669; font-weight:700;}
-    .status-free { color: #f59e42; font-weight:700;}
+    .iframe-ads-grid iframe { border: 3px solid var(--accent); border-radius: 12px; min-width: 290px; min-height: 190px; box-shadow: 0 2px 18px #2563eb20; flex: 1 1 340px; background: #fff; transition: 0.3s box-shadow;}
+    .iframe-ads-grid iframe:focus, .iframe-ads-grid iframe:hover { box-shadow:0 0 18px #facc1570, 0 0 6px #2563eb;}
     .notif { background: #fef3c7; color: #b45309; border-left: 5px solid var(--accent2); padding: 1.1em 1.2em; border-radius: 7px; margin: 1.2em 0; font-weight:800; }
     .notif.error { background: #fee2e2; color: #b91c1c; border-left: 5px solid #b91c1c;}
-    .notif.success { background: #bbf7d0; color: #166534; border-left: 5px solid #059669;}
-    .card input, .card select { margin:0.4em 0 1em 0;}
-    .profile-flex { display: flex; flex-wrap: wrap; gap: 2em; align-items: flex-start;}
-    .profile-info { background: #f3f4f6; border-radius: 13px; padding: 1.3em 1.6em; min-width:220px;}
-    .profile-info label { font-weight: 700;}
-    .profile-status { font-size:1.1em; margin-top: 0.5em;}
-    .profile-change { margin-top: 1.2em;}
-    .profile-change input { margin-right: 0.8em;}
-    .premium-upsell { text-align: center; margin-top: 2em;}
-    .premium-upsell .btn { margin-top:0.3em;}
-    .premium-upsell .whatsapp-logo { width: 1.2em; display: inline-block; vertical-align: middle; }
-    .multi-ads-controls { margin: 1.1em 0; text-align: center;}
-    .multi-ads-controls input { width: 3em; text-align: center; }
-    small { color: #666; }
-    .ad-list li { margin-bottom: 0.8em;}
-    .ad-expired { color: #b91c1c; }
-    .ad-active { color: #059669; }
-    .ad-impressions-bar {
-      height: 1em;
-      border-radius: 6px;
-      background: #e0e7ef;
-      margin: 4px 0 6px 0;
-      position: relative;
-      width: 100%;
-      overflow: hidden;
-    }
-    .ad-impressions-bar span {
-      display: block;
-      height: 100%;
-      background: var(--accent);
-      border-radius: 6px;
-      transition: 0.5s width;
-    }
-    .card table { border-collapse: collapse; margin: 1em 0; width: 100%;}
-    .card table th, .card table td { border: 1px solid #e5e7eb; padding: 0.5em 0.8em; text-align: center; }
-    .card table th { background: #f1f5f9; }
-    #modal-register {box-shadow:0 0 24px #232f3e80;}
-    #modal-register label {font-weight:700;}
-    @media (max-width:900px){
-      main {padding: 1em;}
-      .profile-flex{flex-direction:column;}
-      .iframe-ads-grid { flex-direction:column;}
-    }
-    @media (max-width:600px){
-      header, main, .card {padding: 1em;}
-      .card {padding: 1em;}
-      nav {gap:0.3em;}
-      .iframe-ads-grid iframe{min-width:200px;}
-    }
+    @media (max-width:900px){ main {padding: 1em;} .iframe-ads-grid { flex-direction:column;} }
+    @media (max-width:600px){ header, main, .card {padding: 1em;} .card {padding: 1em;} nav {gap:0.3em;} .iframe-ads-grid iframe{min-width:200px;} }
   </style>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -170,27 +58,7 @@
   <span id="user-coins" class="coins"></span>
 </header>
 <main>
-  <!-- SPA PAGES -->
-  <section id="page-dashboard" class="card">
-    <h2>Welcome, <span id="dash-username"></span>!</h2>
-    <div>
-      <div>Account: <span id="dash-gmail"></span></div>
-      <div>Status: <span id="dash-status"></span></div>
-    </div>
-    <div style="margin:1em 0;">
-      <b>Your Balances:</b>
-      <span class="coins" id="dash-coins"></span>
-    </div>
-    <div>
-      <b>Quick Start:</b>
-      <ul>
-        <li>Watch other users' ads in <b>Website Traffic</b> or <b>YouTube</b> tabs and earn coins</li>
-        <li>Use coins to run your own ads (with 15% fee)</li>
-        <li>Invite friends for more coins!</li>
-      </ul>
-    </div>
-  </section>
-  <section id="page-webtraffic" class="card hidden">
+  <section id="page-webtraffic" class="card">
     <h2>Website Traffic</h2>
     <div class="multi-ads-controls">
       <label>
@@ -198,7 +66,6 @@
         <input id="web-multi-count" type="number" min="1" max="10" value="1">
         <button class="btn" id="web-multi-btn">Go</button>
       </label>
-      <small>(Max: 10. Multi-ads mode for Free users works for 2 min/day. After that, upgrade to Premium.)</small>
     </div>
     <div id="web-ads-grid" class="iframe-ads-grid"></div>
     <div id="web-notif"></div>
@@ -211,7 +78,6 @@
         <input id="ytwatch-multi-count" type="number" min="1" max="10" value="1">
         <button class="btn" id="ytwatch-multi-btn">Go</button>
       </label>
-      <small>(Max: 10. Multi-ads mode for Free users works for 2 min/day. After that, upgrade to Premium.)</small>
     </div>
     <div id="ytwatch-ads-grid" class="iframe-ads-grid"></div>
     <div id="ytwatch-notif"></div>
@@ -224,7 +90,6 @@
         <input id="ytviews-multi-count" type="number" min="1" max="10" value="1">
         <button class="btn" id="ytviews-multi-btn">Go</button>
       </label>
-      <small>(Max: 10. Multi-ads mode for Free users works for 2 min/day. After that, upgrade to Premium.)</small>
     </div>
     <div id="ytviews-ads-grid" class="iframe-ads-grid"></div>
     <div id="ytviews-notif"></div>
@@ -251,49 +116,10 @@
     <h3>Your Running Ads</h3>
     <ul id="your-ads-list"></ul>
   </section>
-  <section id="page-account" class="card hidden">
-    <h2>Account</h2>
-    <div class="profile-flex">
-      <div class="profile-info">
-        <div><label>Name:</label> <span id="profile-name"></span></div>
-        <div><label>Gmail:</label> <span id="profile-gmail"></span></div>
-        <div><label>Status:</label> <span id="profile-status"></span></div>
-        <div class="profile-status">
-          <span id="profile-status-badge"></span>
-        </div>
-      </div>
-      <div class="profile-change">
-        <div>
-          <label>Change Password:</label><br>
-          <input type="password" id="profile-password" placeholder="New password">
-          <input type="password" id="profile-password2" placeholder="Confirm password">
-          <button class="btn" id="profile-pass-btn">Change</button>
-        </div>
-      </div>
-    </div>
-    <div class="premium-upsell" id="premium-upsell-section"></div>
-  </section>
-  <!-- Registration modal (gate if not registered) -->
-  <div id="modal-register" class="card hidden" style="position:fixed; top: 50%; left:50%; transform:translate(-50%,-50%); max-width:450px; z-index:99; box-shadow:0 0 24px #232f3e80;">
-    <h2>Sign Up to Ad4U</h2>
-    <form id="register-form" autocomplete="off">
-      <input required type="text" id="reg-name" placeholder="Full Name" style="width:95%">
-      <input required type="email" id="reg-gmail" placeholder="Gmail Only" style="width:95%">
-      <input required type="password" id="reg-pass" placeholder="Password" style="width:95%">
-      <input required type="password" id="reg-pass2" placeholder="Confirm Password" style="width:95%">
-      <div style="margin:0.8em 0;">
-        <label>Account Type:</label>
-        <button type="button" id="reg-type-free" class="btn gold">Free</button>
-        <button type="button" id="reg-type-premium" class="btn whatsapp"><i class="fab fa-whatsapp"></i> Premium</button>
-      </div>
-      <input type="hidden" id="reg-type-value" value="free">
-      <button type="submit" class="btn" style="width:100%;">Register</button>
-      <div id="register-msg" class="notif" style="display:none;"></div>
-    </form>
-  </div>
+  <!-- (Add here the rest of your SPA subpages as needed) -->
 </main>
 <script>
-// ========== FIREBASE CONFIG ==========
+// =========== FIREBASE CONFIG ===========
 const firebaseConfig = {
   apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
   authDomain: "ad-4-u.firebaseapp.com",
@@ -304,261 +130,63 @@ const firebaseConfig = {
   measurementId: "G-3R9DDSM2XK"
 };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- SPA Routing ---
-const PAGES = [
-  "dashboard","webtraffic","ytwatch","ytviews","directlink","launch","account"
-];
-function showPage(id) {
-  for(const p of PAGES) document.getElementById("page-"+p).classList.add("hidden");
-  document.getElementById("page-"+id).classList.remove("hidden");
-  for(const p of PAGES) {
-    const nav = document.getElementById("nav-"+p);
-    if(nav) nav.classList.remove("active");
-  }
-  const nav = document.getElementById("nav-"+id);
-  if(nav) nav.classList.add("active");
-}
-window.addEventListener('hashchange',()=>{
-  let pg = location.hash.replace("#","");
-  if(!PAGES.includes(pg)) pg="dashboard";
-  showPage(pg);
-});
-showPage("dashboard");
-
-// --- Auth/Registration Modal Logic ---
-let currentUser=null, userData=null, userCoins=0, premium=false, modalOpen=false;
-const modal = document.getElementById("modal-register");
-const showModal = ()=>{ modal.classList.remove("hidden"); modalOpen=true;}
-const hideModal = ()=>{ modal.classList.add("hidden"); modalOpen=false;}
-function gmailOnly(email){ return (/@gmail\.com$/i).test(email); }
-function updateHeaderCoins(){document.getElementById("user-coins").textContent=userCoins+" coins";}
-function updateDashboard(){ if(!userData)return;
-  document.getElementById("dash-username").textContent=userData.name||"-";
-  document.getElementById("dash-gmail").textContent=currentUser.email;
-  document.getElementById("dash-status").innerHTML = premium
-    ? '<span class="status-premium">Premium</span>'
-    : '<span class="status-free">Free</span>';
-  document.getElementById("dash-coins").textContent = userCoins+" coins";
-}
-function updateProfilePage(){
-  if(!userData)return;
-  document.getElementById("profile-name").textContent=userData.name||"-";
-  document.getElementById("profile-gmail").textContent=currentUser.email;
-  document.getElementById("profile-status").innerHTML = premium
-    ? '<span class="status-premium">Premium</span>'
-    : '<span class="status-free">Free</span>';
-  document.getElementById("profile-status-badge").textContent = premium ? "🌟 Premium" : "🚀 Free";
-  const upsell = document.getElementById("premium-upsell-section");
-  if(premium){
-    upsell.innerHTML = "<div class='notif success'>You are a Premium member.</div>";
-  } else {
-    upsell.innerHTML = `
-      <div class="notif">Upgrade to unlock unlimited multi-iframe time!<br>
-      <a href="https://wa.me/923330737987?text=Upgrade%20me%20to%20premium%20on%20Ad4U%20(${currentUser.email})" target="_blank" class="btn whatsapp">
-        <i class="fab fa-whatsapp"></i> Contact on WhatsApp
-      </a></div>`;
-  }
-}
-function updateAccountAfterAuth(){
-  updateHeaderCoins();
-  updateDashboard();
-  updateProfilePage();
-}
-function updateAll(){updateHeaderCoins();updateDashboard();updateProfilePage();}
-
-// --- Auth/Reg UI ---
-const loginBtn = document.getElementById('login-btn');
-const logoutBtn = document.getElementById('logout-btn');
-loginBtn.onclick = ()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-logoutBtn.onclick = ()=>auth.signOut();
-window.onclick = e=>{ if(e.target===modal)hideModal(); }
-
-// --- Registration Modal Handler ---
-document.getElementById("reg-type-free").onclick = function(){
-  document.getElementById("reg-type-value").value="free";
-  this.classList.add("gold");
-  document.getElementById("reg-type-premium").classList.remove("gold");
-};
-document.getElementById("reg-type-premium").onclick = function(){
-  document.getElementById("reg-type-value").value="premium";
-  this.classList.add("gold");
-  document.getElementById("reg-type-free").classList.remove("gold");
-  // WhatsApp redirect with filled details
-  setTimeout(()=>{
-    const nm = encodeURIComponent(document.getElementById("reg-name").value||"");
-    const gm = encodeURIComponent(document.getElementById("reg-gmail").value||"");
-    window.open("https://wa.me/923330737987?text=I%20want%20premium%20on%20Ad4U%20("+nm+"%2C%20"+gm+")",'_blank');
-  },400);
-};
-document.getElementById("register-form").onsubmit = async function(e){
-  e.preventDefault();
-  const name = document.getElementById("reg-name").value.trim();
-  const email = document.getElementById("reg-gmail").value.trim();
-  const pass = document.getElementById("reg-pass").value;
-  const pass2 = document.getElementById("reg-pass2").value;
-  const type = document.getElementById("reg-type-value").value;
-  let msg = document.getElementById("register-msg");
-  msg.style.display="none";
-  if(!gmailOnly(email)){ msg.textContent="Gmail only!";msg.style.display="block";return;}
-  if(pass!==pass2){ msg.textContent="Passwords do not match!";msg.style.display="block";return;}
-  try{
-    const cred = await auth.createUserWithEmailAndPassword(email,pass);
-    const uid = cred.user.uid;
-    await db.collection('users').doc(uid).set({
-      name, premium:type==="premium", coins:1000, multiTime:0, referredBy:null, referrals:[], status:type
-    });
-    hideModal();
-  }catch(err){
-    msg.textContent=err.message;msg.style.display="block";
-  }
-};
-// --- Auth Listener and User Data Loader ---
-auth.onAuthStateChanged(async user=>{
-  currentUser = user;
-  if(user){
-    loginBtn.classList.add("hidden");logoutBtn.classList.remove("hidden");
-    // Check user doc
-    let doc = await db.collection('users').doc(user.uid).get();
-    if(!doc.exists){
-      // First login with Google: force registration modal
-      showModal();
-      return;
-    }
-    hideModal();
-    userData = doc.data();
-    premium = !!userData.premium;
-    userCoins = userData.coins||0;
-    updateAll();
-    updateReferral();
-    updateYourAds();
-    showPage(location.hash.replace("#","")||"dashboard");
-    // Setup multi-iframe timers
-    resetMultiTimers();
-  }else{
-    loginBtn.classList.remove("hidden");logoutBtn.classList.add("hidden");
-    showModal();
-    currentUser=null;userData=null;userCoins=0;premium=false;
-    updateAll();
-  }
-});
-
-// --- Account: Change Password ---
-document.getElementById("profile-pass-btn").onclick = async function(){
-  const p1 = document.getElementById("profile-password").value;
-  const p2 = document.getElementById("profile-password2").value;
-  if(p1!==p2||!p1){alert("Passwords do not match.");return;}
-  try{
-    await currentUser.updatePassword(p1);
-    alert("Password changed!");
-    document.getElementById("profile-password").value="";
-    document.getElementById("profile-password2").value="";
-  }catch(e){alert(e.message);}
+// ========== DEMO ADS ==========
+const DEMO_ADS = {
+  web: [
+    { url: "http://cludymovie.com/", id: "demo1", owner: "system", demo: true },
+    { url: "https://newswithsk.com", id: "demo2", owner: "system", demo: true }
+  ],
+  dlink: [
+    { url: "https://otieu.com/4/9677163", id: "demo3", owner: "system", demo: true },
+    { url: "https://otieu.com/4/9677163", id: "demo4", owner: "system", demo: true }
+  ],
+  yt: [
+    { url: "https://www.youtube.com/embed/Uw9bqrrV-yI", id: "demo5", owner: "system", demo: true }
+  ]
 };
 
-// ================= REFERRAL ===================
-function updateReferral(){
-  if(!currentUser || !userData)return;
-  // You can expand this with referral list if you like
+async function fetchUserAds(type) {
+  const snap = await db.collection('ads').where('type', '==', type).where('active','==',true).where('budget','>',0).get();
+  return snap.docs.map(doc => ({ ...doc.data(), id: doc.id, demo: false }));
 }
-function getReferralLink(){
-  return location.origin+location.pathname+"#ref="+currentUser.uid;
+function rotateDemo(arr, n) {
+  const now = Math.floor(Date.now() / 1000);
+  const group = Math.floor(now / 120);
+  let start = group % arr.length;
+  let out = [];
+  for (let i = 0; i < n; i++) out.push(arr[(start + i) % arr.length]);
+  return out;
 }
-
-// ================= LAUNCH AD ===================
-const adLaunchForm = document.getElementById('ad-launch-form');
-adLaunchForm.onsubmit = async e => {
-  e.preventDefault();
-  if(!currentUser)return;
-  const type = document.getElementById('launch-type').value;
-  const url = document.getElementById('launch-url').value.trim();
-  let budget = parseInt(document.getElementById('launch-budget').value,10);
-  if(!url || !budget || budget<=0){showLaunchMsg("Provide valid URL and budget.");return;}
-  if(userCoins<budget){showLaunchMsg("Not enough coins!");return;}
-  // 15% fee
-  let fee = Math.ceil(budget*0.15);
-  let realBudget = budget-fee;
-  if(realBudget<=0){showLaunchMsg("Budget too small after fee!");return;}
-  // Deduct coins
-  await db.collection('users').doc(currentUser.uid).update({
-    coins:firebase.firestore.FieldValue.increment(-budget)
-  });
-  // Add ad
-  await db.collection('ads').add({
-    type, url, budget:realBudget, active:true, owner:currentUser.uid, created:Date.now(), views:0
-  });
-  showLaunchMsg("Ad launched! 15% fee applied ("+fee+" coins).");
-  adLaunchForm.reset();
-  loadUserCoins();
-  updateYourAds();
-};
-function showLaunchMsg(msg){ document.getElementById("launch-msg").textContent=msg; setTimeout(()=>{document.getElementById("launch-msg").textContent=""},5000);}
-async function updateYourAds(){
-  if(!currentUser)return;
-  const ads = await db.collection('ads').where('owner','==',currentUser.uid).orderBy('created','desc').limit(10).get();
-  let ul = document.getElementById('your-ads-list');
-  ul.innerHTML="";
-  ads.forEach(doc=>{
-    const ad = doc.data();
-    let pct = ad.type==="web"||ad.type==="ytwatch"||ad.type==="ytviews"? Math.round(100*(ad.views||0)/ad.budget):0;
-    ul.innerHTML+=`<li>
-      <b>${ad.type.toUpperCase()}</b> | <a href="${ad.url}" target="_blank">${ad.url}</a> | 
-      Budget: ${ad.budget} | <span class="${ad.active?'ad-active':'ad-expired'}">${ad.active?'Active':'Expired'}</span>
-      ${(ad.type==="web"||ad.type==="ytwatch"||ad.type==="ytviews")?('<div class="ad-impressions-bar"><span style="width:'+(pct>100?100:pct)+'%"></span></div>Impressions: '+(ad.views||0)+'/'+ad.budget):""}
-    </li>`;
-  });
-}
-function loadUserCoins(){ db.collection('users').doc(currentUser.uid).get().then(doc=>{userCoins=doc.data().coins||0;updateHeaderCoins();}); }
-
-// ===================== ADS: WEBSITE TRAFFIC ====================
-let webMultiCount=1, webMultiStart=null, webMultiTimer=null, webMultiAllowed=true;
-function resetMultiTimers(){
-  webMultiStart = null; webMultiAllowed=true;
-}
-document.getElementById("web-multi-btn").onclick = function(){
-  let n = parseInt(document.getElementById("web-multi-count").value,10);
-  if(isNaN(n)||n<1)n=1;if(n>10)n=10;
-  webMultiCount=n;
-  if(!premium && !webMultiStart){
-    webMultiStart=Date.now();
-    webMultiTimer=setTimeout(()=>{
-      webMultiAllowed=false;
-      document.getElementById("web-ads-grid").innerHTML="";
-      document.getElementById("web-notif").innerHTML='<div class="notif">Multi-iframe mode limit reached. <a href="#account">Go Premium</a> for unlimited!</div>';
-    },2*60*1000);
+function pickAds(type, n, userAds) {
+  let demoList = rotateDemo(DEMO_ADS[type], n);
+  let others = userAds.filter(a=>!a.demo);
+  let all = [];
+  let used = {};
+  for (let i=0; i<n && (demoList.length||others.length); i++) {
+    let ad = others.length ? others.splice(Math.floor(Math.random()*others.length),1)[0] : demoList.shift();
+    if(ad&&!used[ad.id]) { all.push(ad); used[ad.id]=1; }
   }
-  if(!webMultiAllowed && !premium){
-    document.getElementById("web-notif").innerHTML='<div class="notif">Please upgrade to Premium for unlimited multi-iframe time!</div>';
-    return;
+  while(all.length<n) {
+    let d = demoList.shift();
+    if(d && !used[d.id]) { all.push(d); used[d.id]=1; }
   }
-  loadWebTrafficAds();
-};
-async function loadWebTrafficAds(){
-  document.getElementById("web-ads-grid").innerHTML="Loading ads...";
-  let adsSnap = await db.collection('ads').where('type','==',"web").where('active','==',true).where('owner','!=',currentUser.uid).where('budget','>',0).get();
-  let ads = adsSnap.docs;
-  if(ads.length===0){
-    document.getElementById("web-ads-grid").innerHTML="<div class='notif'>No available website ads.</div>";
-    return;
-  }
-  let show = Math.min(webMultiCount,ads.length);
-  // Choose random ads, no repeats
-  ads = shuffle(ads).slice(0,show);
-  let holder="";
-  ads.forEach((doc,idx)=>{
-    let ad=doc.data();
-    holder+=`<div style="display:inline-block;vertical-align:top;">
-      <iframe src="${ad.url}" id="web-iframe-${idx}" data-adid="${doc.id}"></iframe>
+  return all;
+}
+async function showWebTrafficAds(n) {
+  const userAds = await fetchUserAds("web");
+  const ads = pickAds("web", n, userAds);
+  let html = '';
+  ads.forEach((ad,idx) => {
+    html += `<div style="display:inline-block;vertical-align:top;">
+      <iframe src="${ad.url}" id="web-iframe-${idx}" data-adid="${ad.id}"></iframe>
       <div style="text-align:center;">
-        <button class="btn" id="web-earn-${idx}" data-adid="${doc.id}" disabled>Wait 30s</button>
-      </div>
-    </div>`;
+        <button class="btn" id="web-earn-${idx}" data-adid="${ad.id}" disabled>Wait 30s</button>
+      </div></div>`;
   });
-  document.getElementById("web-ads-grid").innerHTML=holder;
-  // Timers per iframe
-  ads.forEach((doc,idx)=>{
+  document.getElementById("web-ads-grid").innerHTML = html;
+  ads.forEach((ad,idx)=>{
     let btn = document.getElementById("web-earn-"+idx);
     btn.disabled=true;
     let t=30;
@@ -567,19 +195,106 @@ async function loadWebTrafficAds(){
       t--;
       btn.textContent = t>0?"Wait "+t+"s":"Earn 100";
       if(t<=0){
-        btn.disabled=false;
-        clearInterval(timer);
+        btn.disabled=false; clearInterval(timer);
       }
     },1000);
     btn.onclick = async function(){
       btn.disabled=true;
-      // Credit coins, decrement ad budget
-      await earnAd(doc.id,"web",100);
+      if(!ad.demo) await earnAd(ad.id,"web",100);
       btn.textContent="Earned!";
       setTimeout(()=>{btn.parentNode.parentNode.remove()},1200);
-      userCoins+=100;updateHeaderCoins();
     };
   });
+}
+async function showYTAds(n, mode="yt") {
+  const userAds = await fetchUserAds(mode == "yt" ? "ytwatch" : "ytviews");
+  const ads = pickAds("yt", n, userAds);
+  let html = '';
+  ads.forEach((ad,idx) => {
+    let url = ad.url.includes("embed") ? ad.url : "https://www.youtube.com/embed/" + getYTId(ad.url);
+    html += `<div style="display:inline-block;vertical-align:top;">
+      <iframe src="${url}" id="${mode}-iframe-${idx}" data-adid="${ad.id}" allow="autoplay" allowfullscreen></iframe>
+      <div style="text-align:center;">
+        <button class="btn" id="${mode}-earn-${idx}" data-adid="${ad.id}" disabled>${mode=="yt"?"Wait 60s":"Wait 10s"}</button>
+      </div></div>`;
+  });
+  document.getElementById(mode=="yt"?"ytwatch-ads-grid":"ytviews-ads-grid").innerHTML = html;
+  ads.forEach((ad,idx)=>{
+    let btn = document.getElementById(`${mode}-earn-${idx}`);
+    btn.disabled=true;
+    let t=mode=="yt"?60:10;
+    btn.textContent = mode=="yt"?"Wait 60s":"Wait 10s";
+    let played = false, timer, ytapi=false, lastState=2;
+    function startTimer(){
+      if(timer)clearInterval(timer);
+      timer=setInterval(()=>{
+        t--; btn.textContent = t>0?`Wait ${t}s`:"Earn "+(mode=="yt"?100:10);
+        if(t<=0){ btn.disabled=false; clearInterval(timer);}
+      },1000);
+    }
+    let frame = document.getElementById(`${mode}-iframe-${idx}`);
+    if (ad.url.includes("youtube") && !ad.demo) {
+      window.onYouTubeIframeAPIReady = function(){
+        var player = new YT.Player(frame, {
+          events: {
+            'onStateChange': function(event) {
+              if(event.data===1 && !played){ played=true; startTimer(); }
+              if(event.data!==1 && timer){ clearInterval(timer); }
+            }
+          }
+        });
+      };
+      if (!window.YT) {
+        let tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+      } else {
+        window.onYouTubeIframeAPIReady();
+      }
+    } else {
+      startTimer();
+    }
+    btn.onclick = async function(){
+      btn.disabled=true;
+      if(!ad.demo) await earnAd(ad.id,mode=="yt"?"ytwatch":"ytviews",mode=="yt"?100:10);
+      btn.textContent="Earned!";
+      setTimeout(()=>{btn.parentNode.parentNode.remove()},1200);
+    };
+  });
+}
+function getYTId(url) {
+  let id = url.split("v=")[1]?.split("&")[0];
+  if (!id && url.includes("youtu.be/")) id = url.split("youtu.be/")[1]?.split("?")[0];
+  return id || "";
+}
+function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]); }
+async function showDirectLinkAds(){
+  let userAds = await fetchUserAds("dlink");
+  let ads = DEMO_ADS.dlink.concat(shuffle(userAds));
+  let idx=0,list=document.getElementById("directlink-list");
+  function showNext(){
+    if(idx>=ads.length){list.innerHTML="<div class='notif'>All links done.</div>";return;}
+    let ad=ads[idx];
+    list.innerHTML=`<a href="${ad.url}" target="_blank" id="dlink-link">Open Link</a>
+      <button class="btn" id="dlink-earn" disabled>Wait 15s</button>`;
+    let btn = document.getElementById("dlink-earn");
+    btn.disabled=true; let t=15;
+    btn.textContent="Wait 15s";
+    let timer = setInterval(()=>{
+      t--;
+      btn.textContent = t>0?"Wait "+t+"s":"Earn 200";
+      if(t<=0){
+        btn.disabled=false; clearInterval(timer);
+      }
+    },1000);
+    btn.onclick = async function(){
+      btn.disabled=true;
+      if(!ad.demo) await earnAd(ad.id,"dlink",200);
+      btn.textContent="Earned!";
+      setTimeout(()=>{idx++;showNext();},1200);
+    };
+  }
+  showNext();
 }
 async function earnAd(adid,type,amount){
   let adRef = db.collection('ads').doc(adid);
@@ -593,13 +308,11 @@ async function earnAd(adid,type,amount){
       views:views+1,
       active:(budget-amount)>0
     });
-    // credit user
-    let userRef = db.collection('users').doc(currentUser.uid);
+    let userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
     let userSnap = await tx.get(userRef);
     tx.update(userRef,{
       coins:(userSnap.data().coins||0)+amount
     });
-    // referral commission
     let referredBy = userSnap.data().referredBy;
     if(referredBy){
       let refRef = db.collection('users').doc(referredBy);
@@ -610,201 +323,22 @@ async function earnAd(adid,type,amount){
     }
   });
 }
-// ===================== YOUTUBE WATCHTIME ====================
-let ytwatchMultiCount=1, ytwatchMultiStart=null, ytwatchMultiTimer=null, ytwatchMultiAllowed=true;
-document.getElementById("ytwatch-multi-btn").onclick = function(){
-  let n = parseInt(document.getElementById("ytwatch-multi-count").value,10);
-  if(isNaN(n)||n<1)n=1;if(n>10)n=10;
-  ytwatchMultiCount=n;
-  if(!premium && !ytwatchMultiStart){
-    ytwatchMultiStart=Date.now();
-    ytwatchMultiTimer=setTimeout(()=>{
-      ytwatchMultiAllowed=false;
-      document.getElementById("ytwatch-ads-grid").innerHTML="";
-      document.getElementById("ytwatch-notif").innerHTML='<div class="notif">Multi-iframe mode limit reached. <a href="#account">Go Premium</a> for unlimited!</div>';
-    },2*60*1000);
-  }
-  if(!ytwatchMultiAllowed && !premium){
-    document.getElementById("ytwatch-notif").innerHTML='<div class="notif">Please upgrade to Premium for unlimited multi-iframe time!</div>';
-    return;
-  }
-  loadYtWatchAds();
-};
-async function loadYtWatchAds(){
-  document.getElementById("ytwatch-ads-grid").innerHTML="Loading ads...";
-  let adsSnap = await db.collection('ads').where('type','==',"ytwatch").where('active','==',true).where('owner','!=',currentUser.uid).where('budget','>',0).get();
-  let ads = adsSnap.docs;
-  if(ads.length===0){
-    document.getElementById("ytwatch-ads-grid").innerHTML="<div class='notif'>No available YT Watch ads.</div>";
-    return;
-  }
-  let show = Math.min(ytwatchMultiCount,ads.length);
-  ads = shuffle(ads).slice(0,show);
-  let holder="";
-  ads.forEach((doc,idx)=>{
-    let ad=doc.data();
-    let url=toEmbedYT(ad.url);
-    holder+=`<div style="display:inline-block;vertical-align:top;">
-      <iframe src="${url}" id="ytwatch-iframe-${idx}" data-adid="${doc.id}" allow="autoplay"></iframe>
-      <div style="text-align:center;">
-        <button class="btn" id="ytwatch-earn-${idx}" data-adid="${doc.id}" disabled>Wait 60s</button>
-      </div>
-    </div>`;
-  });
-  document.getElementById("ytwatch-ads-grid").innerHTML=holder;
-  ads.forEach((doc,idx)=>{
-    let btn = document.getElementById("ytwatch-earn-"+idx);
-    btn.disabled=true;
-    let t=60;
-    btn.textContent="Wait 60s";
-    let timer = setInterval(()=>{
-      t--;
-      btn.textContent = t>0?"Wait "+t+"s":"Earn 100";
-      if(t<=0){
-        btn.disabled=false;
-        clearInterval(timer);
-      }
-    },1000);
-    btn.onclick = async function(){
-      btn.disabled=true;
-      await earnAd(doc.id,"ytwatch",100);
-      btn.textContent="Earned!";
-      setTimeout(()=>{btn.parentNode.parentNode.remove()},1200);
-      userCoins+=100;updateHeaderCoins();
-    };
-  });
-}
-function toEmbedYT(url){
-  if(url.includes("embed"))return url;
-  let id = url.split("v=")[1]?.split("&")[0];
-  return id?"https://www.youtube.com/embed/"+id:url;
-}
-// ===================== YOUTUBE VIEWS ====================
-let ytviewsMultiCount=1, ytviewsMultiStart=null, ytviewsMultiTimer=null, ytviewsMultiAllowed=true;
-document.getElementById("ytviews-multi-btn").onclick = function(){
-  let n = parseInt(document.getElementById("ytviews-multi-count").value,10);
-  if(isNaN(n)||n<1)n=1;if(n>10)n=10;
-  ytviewsMultiCount=n;
-  if(!premium && !ytviewsMultiStart){
-    ytviewsMultiStart=Date.now();
-    ytviewsMultiTimer=setTimeout(()=>{
-      ytviewsMultiAllowed=false;
-      document.getElementById("ytviews-ads-grid").innerHTML="";
-      document.getElementById("ytviews-notif").innerHTML='<div class="notif">Multi-iframe mode limit reached. <a href="#account">Go Premium</a> for unlimited!</div>';
-    },2*60*1000);
-  }
-  if(!ytviewsMultiAllowed && !premium){
-    document.getElementById("ytviews-notif").innerHTML='<div class="notif">Please upgrade to Premium for unlimited multi-iframe time!</div>';
-    return;
-  }
-  loadYtViewsAds();
-};
-async function loadYtViewsAds(){
-  document.getElementById("ytviews-ads-grid").innerHTML="Loading ads...";
-  let adsSnap = await db.collection('ads').where('type','==',"ytviews").where('active','==',true).where('owner','!=',currentUser.uid).where('budget','>',0).get();
-  let ads = adsSnap.docs;
-  if(ads.length===0){
-    document.getElementById("ytviews-ads-grid").innerHTML="<div class='notif'>No available YT Views ads.</div>";
-    return;
-  }
-  let show = Math.min(ytviewsMultiCount,ads.length);
-  ads = shuffle(ads).slice(0,show);
-  let holder="";
-  ads.forEach((doc,idx)=>{
-    let ad=doc.data();
-    let url=toEmbedYT(ad.url);
-    holder+=`<div style="display:inline-block;vertical-align:top;">
-      <iframe src="${url}" id="ytviews-iframe-${idx}" data-adid="${doc.id}" allow="autoplay"></iframe>
-      <div style="text-align:center;">
-        <button class="btn" id="ytviews-earn-${idx}" data-adid="${doc.id}" disabled>Wait 10s</button>
-      </div>
-    </div>`;
-  });
-  document.getElementById("ytviews-ads-grid").innerHTML=holder;
-  ads.forEach((doc,idx)=>{
-    let btn = document.getElementById("ytviews-earn-"+idx);
-    btn.disabled=true;
-    let t=10;
-    btn.textContent="Wait 10s";
-    let timer = setInterval(()=>{
-      t--;
-      btn.textContent = t>0?"Wait "+t+"s":"Earn 10";
-      if(t<=0){
-        btn.disabled=false;
-        clearInterval(timer);
-      }
-    },1000);
-    btn.onclick = async function(){
-      btn.disabled=true;
-      await earnAd(doc.id,"ytviews",10);
-      btn.textContent="Earned!";
-      setTimeout(()=>{btn.parentNode.parentNode.remove()},1200);
-      userCoins+=10;updateHeaderCoins();
-    };
-  });
-}
-// ===================== DIRECT LINK ====================
-async function loadDirectLinks(){
-  let list=document.getElementById("directlink-list");
-  list.innerHTML="Loading links...";
-  let adsSnap = await db.collection('ads').where('type','==',"dlink").where('active','==',true).where('owner','!=',currentUser.uid).where('budget','>',0).get();
-  let ads = adsSnap.docs;
-  if(ads.length===0){
-    list.innerHTML="<div class='notif'>No available Direct Link ads.</div>";
-    return;
-  }
-  let idx=0;
-  function showNext(){
-    if(idx>=ads.length){list.innerHTML="<div class='notif'>All links done.</div>";return;}
-    let ad=ads[idx].data(), adid=ads[idx].id;
-    list.innerHTML=`<a href="${ad.url}" target="_blank" id="dlink-link">Open Link</a>
-      <button class="btn" id="dlink-earn" disabled>Wait 15s</button>`;
-    let btn = document.getElementById("dlink-earn");
-    btn.disabled=true;
-    let t=15;
-    btn.textContent="Wait 15s";
-    let timer = setInterval(()=>{
-      t--;
-      btn.textContent = t>0?"Wait "+t+"s":"Earn 200";
-      if(t<=0){
-        btn.disabled=false;
-        clearInterval(timer);
-      }
-    },1000);
-    btn.onclick = async function(){
-      btn.disabled=true;
-      await earnAd(adid,"dlink",200);
-      btn.textContent="Earned!";
-      setTimeout(()=>{idx++;showNext();},1200);
-      userCoins+=200;updateHeaderCoins();
-    };
-  }
-  showNext();
-}
+document.getElementById("web-multi-btn").onclick = ()=>showWebTrafficAds(Number(document.getElementById("web-multi-count").value)||1);
+document.getElementById("ytwatch-multi-btn").onclick = ()=>showYTAds(Number(document.getElementById("ytwatch-multi-count").value)||1,"yt");
+document.getElementById("ytviews-multi-btn").onclick = ()=>showYTAds(Number(document.getElementById("ytviews-multi-count").value)||1,"ytviews");
 
-// ========== UTILS ==========
-function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]); }
-
-// ========== PAGE LOAD ==========
 window.addEventListener("hashchange",()=>{
   let pg = location.hash.replace("#","");
-  if(!PAGES.includes(pg)) pg="dashboard";
-  showPage(pg);
-  // Page-specific logic
-  if(pg==="webtraffic")loadWebTrafficAds();
-  if(pg==="ytwatch")loadYtWatchAds();
-  if(pg==="ytviews")loadYtViewsAds();
-  if(pg==="directlink")loadDirectLinks();
-  if(pg==="account")updateProfilePage();
+  if(pg==="webtraffic") showWebTrafficAds(Number(document.getElementById("web-multi-count").value)||1);
+  if(pg==="ytwatch") showYTAds(Number(document.getElementById("ytwatch-multi-count").value)||1,"yt");
+  if(pg==="ytviews") showYTAds(Number(document.getElementById("ytviews-multi-count").value)||1,"ytviews");
+  if(pg==="directlink") showDirectLinkAds();
 });
 window.addEventListener("DOMContentLoaded",()=>{
-  showPage("dashboard");
-  // Initial data load if already logged in
-  if(currentUser){
-    updateAll();
-    updateReferral();
-    updateYourAds();
-  }
+  showWebTrafficAds(1);
+  showYTAds(1,"yt");
+  showYTAds(1,"ytviews");
+  showDirectLinkAds();
 });
 </script>
 </body>
