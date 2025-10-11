@@ -1,345 +1,854 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Ad4U - Earn & Launch Ads</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:900,700,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ad-4-U — Ad Platform Demo</title>
   <style>
-    :root { --main-bg: linear-gradient(135deg, #232f3e 0%, #2563eb 100%); --card-bg: rgba(255,255,255,0.92);
-      --accent: #2563eb; --accent2: #facc15; --radius: 18px; --shadow: 0 12px 48px #232f3e40;
-      --glass: rgba(255,255,255,0.7); --neon: 0 0 10px #facc15, 0 0 20px #2563eb;
-    }
-    html, body { height:100%; width:100%; margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Montserrat',Arial,sans-serif; background: var(--main-bg); min-height:100vh; color: #222; letter-spacing: 0.01em; }
-    header { background: rgba(35,47,62,0.91); color: #fff; backdrop-filter: blur(5px); padding: 1.3rem 2rem 1.1rem 2rem;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-radius: 0 0 var(--radius) var(--radius); box-shadow: var(--shadow); z-index: 3; position:relative;}
-    .logo { font-weight: 900; font-size: 2.1rem; letter-spacing: 0.1em; text-shadow: var(--neon);}
-    nav { display: flex; gap: 1.3em; flex-wrap: wrap;}
-    nav a { color: #fff; text-decoration: none; font-weight: 700; letter-spacing: 0.04em; padding: 0.5em 1em; border-radius: 8px; transition:.14s; background: none; display: inline-block; margin-bottom: 3px; }
-    nav a.active, nav a:hover { background: var(--accent); box-shadow: 0 0 8px #2563eb60;}
-    .coins { background: var(--accent2); color: #232f3e; padding: 0.33em 0.95em; border-radius: 6px; margin-left: 1em; font-weight:900; }
-    main { max-width: 1180px; margin: 2.3em auto 1em auto; padding: 2.2em 1.2em; background: var(--glass); border-radius: var(--radius); box-shadow: var(--shadow); min-height: 72vh; position:relative; z-index:1;}
-    .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: 0 4px 22px #232f3e18; padding: 2em 2em 1.5em 2em; margin-bottom: 2em; position: relative; transition:.16s;}
-    .card h2, .card h3 { margin-top: 0; margin-bottom: 0.7em; }
-    .btn { background: var(--accent); color: #fff; border: none; font-weight: 700; font-size: 1.07em; padding: 0.7em 1.5em; border-radius: 1em; margin: 0.7em 0; cursor: pointer; box-shadow: 0 2px 8px #2563eb23; transition:.14s; letter-spacing: 0.04em;}
-    .btn[disabled], .btn.disabled { background: #b0b0b0; cursor: not-allowed; }
-    .btn.gold { background: var(--accent2); color: #232f3e; font-weight:900; }
-    .btn.whatsapp { background: #25d366; color:#fff; font-weight:900; font-size:1.1em; display: flex; align-items: center; gap: 0.5em;}
-    .hidden { display: none !important; }
-    .iframe-ads-grid { display: flex; flex-wrap: wrap; gap: 1.2em; margin: 1em 0; justify-content:center;}
-    .iframe-ads-grid iframe { border: 3px solid var(--accent); border-radius: 12px; min-width: 290px; min-height: 190px; box-shadow: 0 2px 18px #2563eb20; flex: 1 1 340px; background: #fff; transition: 0.3s box-shadow;}
-    .iframe-ads-grid iframe:focus, .iframe-ads-grid iframe:hover { box-shadow:0 0 18px #facc1570, 0 0 6px #2563eb;}
-    .notif { background: #fef3c7; color: #b45309; border-left: 5px solid var(--accent2); padding: 1.1em 1.2em; border-radius: 7px; margin: 1.2em 0; font-weight:800; }
-    .notif.error { background: #fee2e2; color: #b91c1c; border-left: 5px solid #b91c1c;}
-    @media (max-width:900px){ main {padding: 1em;} .iframe-ads-grid { flex-direction:column;} }
-    @media (max-width:600px){ header, main, .card {padding: 1em;} .card {padding: 1em;} nav {gap:0.3em;} .iframe-ads-grid iframe{min-width:200px;} }
+    /* Simple responsive layout */
+    :root { --brand: #2563eb; --muted:#6b7280; --card:#fff; --bg:#f3f4f6; }
+    body { margin:0; font-family: Inter, system-ui, Arial; background:var(--bg); color:#0f172a; }
+    header{background:var(--brand); color:white; padding:12px 18px; display:flex; justify-content:space-between; align-items:center;}
+    header .left {display:flex; align-items:center; gap:12px;}
+    header h1{font-size:18px;margin:0;}
+    header .actions{display:flex; gap:10px; align-items:center;}
+    button { background:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; color:var(--brand); font-weight:600; }
+    nav { display:flex; gap:6px; padding:10px 18px; background:transparent; flex-wrap:wrap;}
+    nav button { background:white; color:var(--brand);}
+    main { padding:18px; display:grid; grid-template-columns: 1fr 360px; gap:18px; }
+    .card{ background:var(--card); padding:14px; border-radius:10px; box-shadow:0 6px 18px rgba(12,12,20,0.06);}
+    .wide { grid-column:1 / span 2;}
+    .iframe-wrap { width:100%; height:420px; border-radius:8px; overflow:hidden; background:#000; }
+    iframe { width:100%; height:100%; border:0; display:block; }
+    .small { font-size:13px; color:var(--muted); }
+    label{display:block; margin-top:8px; font-weight:600; font-size:13px;}
+    input, select { width:100%; padding:8px; margin-top:6px; border-radius:8px; border:1px solid #e6edf3; }
+    .row { display:flex; gap:8px; }
+    .row > * { flex:1; }
+    .stat { font-weight:800; font-size:20px; }
+    .muted { color:var(--muted); }
+    .danger { color:#ef4444; font-weight:700; }
+    footer { padding:12px 18px; font-size:13px; color:var(--muted);}
+    a { color:var(--brand); text-decoration:none; }
+    .badge { background:#eef2ff; color:var(--brand); padding:6px 8px; border-radius:999px; font-weight:700;}
   </style>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
+
 <header>
-  <span class="logo">Ad4U</span>
-  <nav>
-    <a href="#dashboard" id="nav-dashboard">Dashboard</a>
-    <a href="#webtraffic" id="nav-webtraffic">Website Traffic</a>
-    <a href="#ytwatch" id="nav-ytwatch">YT Watchtime</a>
-    <a href="#ytviews" id="nav-ytviews">YT Views</a>
-    <a href="#directlink" id="nav-directlink">Direct Link</a>
-    <a href="#launch" id="nav-launch">Launch Ad</a>
-    <a href="#account" id="nav-account">Account</a>
-    <a href="#" id="logout-btn" class="hidden">Logout</a>
-    <a href="#" id="login-btn">Login with Google</a>
-  </nav>
-  <span id="user-coins" class="coins"></span>
+  <div class="left">
+    <h1>Ad-4-U</h1>
+    <div class="small">Free & Paid Ad Program</div>
+  </div>
+
+  <div class="actions">
+    <div id="coinsDisplay" class="small">W: 0 | D: 0</div>
+    <div id="userDisplay" class="small muted">Not signed in</div>
+    <button id="btnSignIn">Sign in with Google</button>
+    <button id="btnSignOut" style="display:none;">Sign out</button>
+  </div>
 </header>
+
+<nav class="card">
+  <button onclick="show('dashboard')">Dashboard</button>
+  <button onclick="show('traffic')">Website Traffic</button>
+  <button onclick="show('direct')">Direct Link</button>
+  <button onclick="show('ytwatch')">YouTube Watch Time</button>
+  <button onclick="show('ytviews')">YouTube Views</button>
+  <button onclick="show('referral')">Referral</button>
+  <button onclick="show('adlaunch')">Ad Launch</button>
+</nav>
+
 <main>
-  <section id="page-webtraffic" class="card">
-    <h2>Website Traffic</h2>
-    <div class="multi-ads-controls">
-      <label>
-        <b>How many ads you want to watch at once?</b>
-        <input id="web-multi-count" type="number" min="1" max="10" value="1">
-        <button class="btn" id="web-multi-btn">Go</button>
-      </label>
+  <!-- Left column (content) -->
+  <section id="dashboard" class="card">
+    <h2>Dashboard</h2>
+    <p class="small">Welcome! Your account summary and quick actions appear here. <strong style="color:#111">Want special country traffic? Use a PC and follow the instructions provided in your dashboard after login.</strong></p>
+    <div style="display:flex; gap:12px; margin-top:12px;">
+      <div style="flex:1" class="card">
+        <div class="muted">Available W coins</div>
+        <div id="statW" class="stat">0</div>
+      </div>
+      <div style="flex:1" class="card">
+        <div class="muted">Available D coins</div>
+        <div id="statD" class="stat">0</div>
+      </div>
     </div>
-    <div id="web-ads-grid" class="iframe-ads-grid"></div>
-    <div id="web-notif"></div>
-  </section>
-  <section id="page-ytwatch" class="card hidden">
-    <h2>YouTube Watchtime</h2>
-    <div class="multi-ads-controls">
-      <label>
-        <b>How many videos you want to watch at once?</b>
-        <input id="ytwatch-multi-count" type="number" min="1" max="10" value="1">
-        <button class="btn" id="ytwatch-multi-btn">Go</button>
-      </label>
+
+    <div style="margin-top:12px;">
+      <h3>Active Ads (live)</h3>
+      <div id="activeAdsList" class="small muted">Loading...</div>
     </div>
-    <div id="ytwatch-ads-grid" class="iframe-ads-grid"></div>
-    <div id="ytwatch-notif"></div>
-  </section>
-  <section id="page-ytviews" class="card hidden">
-    <h2>YouTube Views</h2>
-    <div class="multi-ads-controls">
-      <label>
-        <b>How many videos you want to view at once?</b>
-        <input id="ytviews-multi-count" type="number" min="1" max="10" value="1">
-        <button class="btn" id="ytviews-multi-btn">Go</button>
-      </label>
+
+    <div style="margin-top:12px;">
+      <h3>Recent Transactions</h3>
+      <div id="txList" class="small muted">No transactions yet.</div>
     </div>
-    <div id="ytviews-ads-grid" class="iframe-ads-grid"></div>
-    <div id="ytviews-notif"></div>
   </section>
-  <section id="page-directlink" class="card hidden">
-    <h2>Direct Link Ads</h2>
-    <div id="directlink-list"></div>
-    <div id="directlink-notif"></div>
-  </section>
-  <section id="page-launch" class="card hidden">
-    <h2>Launch Your Ad</h2>
-    <form id="ad-launch-form" autocomplete="off" style="margin-bottom:1.2em;">
-      <select id="launch-type">
-        <option value="web">Website Traffic</option>
-        <option value="ytwatch">YouTube Watchtime</option>
-        <option value="ytviews">YouTube Views</option>
-        <option value="dlink">Direct Link</option>
+
+  <!-- Right column (sidebar) -->
+  <aside>
+    <div class="card">
+      <div class="muted">Referral</div>
+      <div id="refInfo" style="margin-top:8px;">
+        <div class="small">Not signed in</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="muted">Quick actions</div>
+      <div style="margin-top:8px;">
+        <button onclick="show('adlaunch')">Launch Ad</button>
+        <button onclick="show('traffic')">Open Traffic Viewer</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="muted">Notes</div>
+      <div class="small" style="margin-top:8px;">
+        - Some sites block embedding (X-Frame-Options). If a site doesn't show, it may refuse to be framed.<br>
+        - Browsers block HTTP content inside HTTPS pages (mixed content). Use HTTPS links or proxy.
+      </div>
+    </div>
+  </aside>
+
+  <!-- Wide bottom area: traffic viewer & other pages (single page; toggled) -->
+  <section id="pages" class="wide">
+    <!-- Website Traffic (rotating iframe) -->
+    <div id="traffic" class="card page" style="display:none;">
+      <h3>Website Traffic — Rotating Ads</h3>
+      <div class="small">Each ad visible for <strong>15 seconds</strong>. Watch full 15s to earn <span class="badge">500 W</span> (for website ads).</div>
+      <div style="margin-top:10px;" class="iframe-wrap">
+        <iframe id="trafficIframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      </div>
+      <div style="margin-top:8px;">
+        <span id="trafficTimer" class="muted">Next change in 15s</span> — <span id="trafficAdInfo"></span>
+      </div>
+    </div>
+
+    <!-- Direct link page -->
+    <div id="direct" class="card page" style="display:none;">
+      <h3>Direct Links</h3>
+      <p class="small">Click any direct link to earn <span class="badge">1000 D</span>.</p>
+      <ul id="directList"></ul>
+    </div>
+
+    <!-- YT watch time -->
+    <div id="ytwatch" class="card page" style="display:none;">
+      <h3>YouTube Watch Time</h3>
+      <p class="small">Press play. You earn coins while video is playing. Pause stops earning.</p>
+      <div class="iframe-wrap" style="height:360px;">
+        <iframe id="ytWatchIframe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="small">Earned watch time: <span id="ytWatchCounter">00:00:00</span></div>
+      </div>
+    </div>
+
+    <!-- YT views -->
+    <div id="ytviews" class="card page" style="display:none;">
+      <h3>YouTube Views</h3>
+      <p class="small">You can play a video and move next/back. Every 5 seconds of playback yields one view credit (client-side)</p>
+      <div class="iframe-wrap" style="height:360px;">
+        <iframe id="ytViewsIframe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="small">Earned views: <span id="ytViewCounter">0</span></div>
+      </div>
+    </div>
+
+    <!-- Referrals -->
+    <div id="referral" class="card page" style="display:none;">
+      <h3>Referral Program</h3>
+      <p class="small">Invite friends, get <strong>10,000 coins</strong> on each successful signup using your referral link. You also earn <strong>15%</strong> of their future earnings.</p>
+      <div id="referralBox" style="margin-top:8px;"></div>
+      <div style="margin-top:10px;">
+        <h4 class="small">Your referrals</h4>
+        <ul id="myReferrals"></ul>
+      </div>
+    </div>
+
+    <!-- Ad Launch -->
+    <div id="adlaunch" class="card page" style="display:none;">
+      <h3>Launch an Ad</h3>
+      <div class="small">You must have coins to launch. Choose category, link, and budget. Budget is in coins; impressionsTarget = floor(budget / coinsPerImpression).</div>
+
+      <label>Category</label>
+      <select id="adCategory">
+        <option value="web">Website Traffic (500 W per impression)</option>
+        <option value="direct">Direct Link (1000 D per click)</option>
+        <option value="youtube_watch">YouTube Watch (per-second credits)</option>
+        <option value="youtube_view">YouTube Views</option>
       </select>
-      <input type="url" id="launch-url" placeholder="Ad URL" required>
-      <input type="number" id="launch-budget" placeholder="Budget (coins)" required>
-      <button type="submit" class="btn gold">Launch (15% fee)</button>
-    </form>
-    <div id="launch-msg"></div>
-    <h3>Your Running Ads</h3>
-    <ul id="your-ads-list"></ul>
+
+      <label>Link (exact URL)</label>
+      <input id="adLink" placeholder="https://example.com/">
+
+      <label>Budget (coins)</label>
+      <input id="adBudget" type="number" min="0" placeholder="e.g. 5000">
+
+      <label>Coins per impression/click (optional override)</label>
+      <input id="adCPI" type="number" placeholder="Leave empty to use defaults">
+
+      <div style="margin-top:10px;" class="row">
+        <button onclick="createAd()">Launch Ad</button>
+        <button onclick="show('traffic')">Go to Traffic Viewer</button>
+      </div>
+      <div id="adLaunchMsg" style="margin-top:10px;"></div>
+    </div>
+
   </section>
-  <!-- (Add here the rest of your SPA subpages as needed) -->
+
 </main>
-<script>
-// =========== FIREBASE CONFIG ===========
-const firebaseConfig = {
-  apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
-  authDomain: "ad-4-u.firebaseapp.com",
-  projectId: "ad-4-u",
-  storageBucket: "ad-4-u.appspot.com",
-  messagingSenderId: "775864010731",
-  appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
-  measurementId: "G-3R9DDSM2XK"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
-// ========== DEMO ADS ==========
-const DEMO_ADS = {
-  web: [
-    { url: "http://cludymovie.com/", id: "demo1", owner: "system", demo: true },
-    { url: "https://newswithsk.com", id: "demo2", owner: "system", demo: true }
-  ],
-  dlink: [
-    { url: "https://otieu.com/4/9677163", id: "demo3", owner: "system", demo: true },
-    { url: "https://otieu.com/4/9677163", id: "demo4", owner: "system", demo: true }
-  ],
-  yt: [
-    { url: "https://www.youtube.com/embed/Uw9bqrrV-yI", id: "demo5", owner: "system", demo: true }
-  ]
-};
+<footer>
+  Built with Firebase. Be careful: embedding external sites may be blocked by those sites or by browser security (mixed content). For production use server-side verification and Cloud Functions for stronger anti-fraud protection.
+</footer>
 
-async function fetchUserAds(type) {
-  const snap = await db.collection('ads').where('type', '==', type).where('active','==',true).where('budget','>',0).get();
-  return snap.docs.map(doc => ({ ...doc.data(), id: doc.id, demo: false }));
-}
-function rotateDemo(arr, n) {
-  const now = Math.floor(Date.now() / 1000);
-  const group = Math.floor(now / 120);
-  let start = group % arr.length;
-  let out = [];
-  for (let i = 0; i < n; i++) out.push(arr[(start + i) % arr.length]);
-  return out;
-}
-function pickAds(type, n, userAds) {
-  let demoList = rotateDemo(DEMO_ADS[type], n);
-  let others = userAds.filter(a=>!a.demo);
-  let all = [];
-  let used = {};
-  for (let i=0; i<n && (demoList.length||others.length); i++) {
-    let ad = others.length ? others.splice(Math.floor(Math.random()*others.length),1)[0] : demoList.shift();
-    if(ad&&!used[ad.id]) { all.push(ad); used[ad.id]=1; }
+<!-- Firebase SDK (v10 modular) -->
+<script type="module">
+  // ---- CONFIGURATION: your Firebase config (you provided) ----
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, setDoc, getDoc, addDoc,
+    onSnapshot, query, where, orderBy, serverTimestamp,
+    updateDoc, increment, runTransaction
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
+    authDomain: "ad-4-u.firebaseapp.com",
+    projectId: "ad-4-u",
+    storageBucket: "ad-4-u.firebasestorage.app",
+    messagingSenderId: "775864010731",
+    appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
+    measurementId: "G-3R9DDSM2XK"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ---- App state ----
+  let currentUser = null;
+  let currentUserDoc = null;
+  let activeAds = []; // list of ad docs
+  let trafficRotateInterval = null;
+  let trafficSecondsLeft = 15;
+  let trafficCurrentIndex = 0;
+  let trafficHeartbeatTimer = null; // counts visibility to award
+  let ytWatchSeconds = 0;
+  let ytViewCount = 0;
+  let listeningAdsUnsub = null;
+
+  // ---- Utility helpers ----
+  function $(id){ return document.getElementById(id); }
+  function show(page){
+    document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+    const el = $(page);
+    if(el) el.style.display = 'block';
   }
-  while(all.length<n) {
-    let d = demoList.shift();
-    if(d && !used[d.id]) { all.push(d); used[d.id]=1; }
+  show('dashboard'); // initial
+
+  function formatTime(seconds){
+    const h = Math.floor(seconds/3600).toString().padStart(2,'0');
+    const m = Math.floor(seconds%3600/60).toString().padStart(2,'0');
+    const s = Math.floor(seconds%60).toString().padStart(2,'0');
+    return `${h}:${m}:${s}`;
   }
-  return all;
-}
-async function showWebTrafficAds(n) {
-  const userAds = await fetchUserAds("web");
-  const ads = pickAds("web", n, userAds);
-  let html = '';
-  ads.forEach((ad,idx) => {
-    html += `<div style="display:inline-block;vertical-align:top;">
-      <iframe src="${ad.url}" id="web-iframe-${idx}" data-adid="${ad.id}"></iframe>
-      <div style="text-align:center;">
-        <button class="btn" id="web-earn-${idx}" data-adid="${ad.id}" disabled>Wait 30s</button>
-      </div></div>`;
-  });
-  document.getElementById("web-ads-grid").innerHTML = html;
-  ads.forEach((ad,idx)=>{
-    let btn = document.getElementById("web-earn-"+idx);
-    btn.disabled=true;
-    let t=30;
-    btn.textContent="Wait 30s";
-    let timer = setInterval(()=>{
-      t--;
-      btn.textContent = t>0?"Wait "+t+"s":"Earn 100";
-      if(t<=0){
-        btn.disabled=false; clearInterval(timer);
-      }
-    },1000);
-    btn.onclick = async function(){
-      btn.disabled=true;
-      if(!ad.demo) await earnAd(ad.id,"web",100);
-      btn.textContent="Earned!";
-      setTimeout(()=>{btn.parentNode.parentNode.remove()},1200);
-    };
-  });
-}
-async function showYTAds(n, mode="yt") {
-  const userAds = await fetchUserAds(mode == "yt" ? "ytwatch" : "ytviews");
-  const ads = pickAds("yt", n, userAds);
-  let html = '';
-  ads.forEach((ad,idx) => {
-    let url = ad.url.includes("embed") ? ad.url : "https://www.youtube.com/embed/" + getYTId(ad.url);
-    html += `<div style="display:inline-block;vertical-align:top;">
-      <iframe src="${url}" id="${mode}-iframe-${idx}" data-adid="${ad.id}" allow="autoplay" allowfullscreen></iframe>
-      <div style="text-align:center;">
-        <button class="btn" id="${mode}-earn-${idx}" data-adid="${ad.id}" disabled>${mode=="yt"?"Wait 60s":"Wait 10s"}</button>
-      </div></div>`;
-  });
-  document.getElementById(mode=="yt"?"ytwatch-ads-grid":"ytviews-ads-grid").innerHTML = html;
-  ads.forEach((ad,idx)=>{
-    let btn = document.getElementById(`${mode}-earn-${idx}`);
-    btn.disabled=true;
-    let t=mode=="yt"?60:10;
-    btn.textContent = mode=="yt"?"Wait 60s":"Wait 10s";
-    let played = false, timer, ytapi=false, lastState=2;
-    function startTimer(){
-      if(timer)clearInterval(timer);
-      timer=setInterval(()=>{
-        t--; btn.textContent = t>0?`Wait ${t}s`:"Earn "+(mode=="yt"?100:10);
-        if(t<=0){ btn.disabled=false; clearInterval(timer);}
-      },1000);
+
+  // ---- Authentication ----
+  const btnSignIn = $('btnSignIn');
+  const btnSignOut = $('btnSignOut');
+  btnSignIn.addEventListener('click', async ()=>{
+    const provider = new GoogleAuthProvider();
+    try {
+      const res = await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle post-login work
+    } catch(e){
+      alert('Sign-in error: '+e.message);
     }
-    let frame = document.getElementById(`${mode}-iframe-${idx}`);
-    if (ad.url.includes("youtube") && !ad.demo) {
-      window.onYouTubeIframeAPIReady = function(){
-        var player = new YT.Player(frame, {
-          events: {
-            'onStateChange': function(event) {
-              if(event.data===1 && !played){ played=true; startTimer(); }
-              if(event.data!==1 && timer){ clearInterval(timer); }
-            }
-          }
+  });
+  btnSignOut.addEventListener('click', async ()=>{
+    await signOut(auth);
+  });
+
+  onAuthStateChanged(auth, async user=>{
+    currentUser = user;
+    if(user){
+      // restrict non-gmail accounts
+      if(!user.email || !user.email.endsWith('@gmail.com')){
+        alert('Only Gmail accounts are allowed. Signing out.');
+        await signOut(auth);
+        return;
+      }
+      $('userDisplay').innerText = user.displayName || user.email;
+      btnSignIn.style.display = 'none';
+      btnSignOut.style.display = 'inline-block';
+
+      // Create or update user doc
+      const udocRef = doc(db, 'users', user.uid);
+      const udocSnap = await getDoc(udocRef);
+      // check referral in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+
+      if(!udocSnap.exists()){
+        // new user - create doc
+        await setDoc(udocRef, {
+          email: user.email,
+          name: user.displayName || '',
+          coins: { W: 0, D: 0 },
+          createdAt: serverTimestamp(),
+          referredBy: ref || null,
+          referrals: []
         });
-      };
-      if (!window.YT) {
-        let tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.body.appendChild(tag);
+        // Award referral bonus if ref provided and exists & not self
+        if(ref && ref !== user.uid){
+          const refDoc = doc(db, 'users', ref);
+          const rSnap = await getDoc(refDoc);
+          if(rSnap.exists()){
+            // Give 10000 coins to referrer (W coins) and record tx
+            await runTransaction(db, async (t)=>{
+              t.update(refDoc, { 'coins.W': increment(10000), referrals: (rSnap.data().referrals || []).concat(user.uid) });
+              const txRef = doc(collection(db, 'transactions'));
+              t.set(txRef, {
+                userId: ref,
+                type: 'referral_reward',
+                amount: 10000,
+                currency: 'W',
+                fromUser: user.uid,
+                createdAt: serverTimestamp()
+              });
+            });
+          }
+        }
       } else {
-        window.onYouTubeIframeAPIReady();
+        // existing user doc - if referredBy exists but not listed in referrer referrals, we keep
+        // nothing extra here
       }
+      // Load fresh user doc to local var
+      currentUserDoc = (await getDoc(udocRef)).data();
+      refreshUserUI();
+
+      // start listening to live ads
+      startAdsListener();
+
     } else {
-      startTimer();
+      // signed out
+      $('userDisplay').innerText = 'Not signed in';
+      btnSignIn.style.display = 'inline-block';
+      btnSignOut.style.display = 'none';
+      currentUserDoc = null;
+      stopAdsListener();
+      // reset UI values
+      $('statW').innerText = '0';
+      $('statD').innerText = '0';
+      $('coinsDisplay').innerText = 'W: 0 | D: 0';
     }
-    btn.onclick = async function(){
-      btn.disabled=true;
-      if(!ad.demo) await earnAd(ad.id,mode=="yt"?"ytwatch":"ytviews",mode=="yt"?100:10);
-      btn.textContent="Earned!";
-      setTimeout(()=>{btn.parentNode.parentNode.remove()},1200);
-    };
   });
-}
-function getYTId(url) {
-  let id = url.split("v=")[1]?.split("&")[0];
-  if (!id && url.includes("youtu.be/")) id = url.split("youtu.be/")[1]?.split("?")[0];
-  return id || "";
-}
-function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]); }
-async function showDirectLinkAds(){
-  let userAds = await fetchUserAds("dlink");
-  let ads = DEMO_ADS.dlink.concat(shuffle(userAds));
-  let idx=0,list=document.getElementById("directlink-list");
-  function showNext(){
-    if(idx>=ads.length){list.innerHTML="<div class='notif'>All links done.</div>";return;}
-    let ad=ads[idx];
-    list.innerHTML=`<a href="${ad.url}" target="_blank" id="dlink-link">Open Link</a>
-      <button class="btn" id="dlink-earn" disabled>Wait 15s</button>`;
-    let btn = document.getElementById("dlink-earn");
-    btn.disabled=true; let t=15;
-    btn.textContent="Wait 15s";
-    let timer = setInterval(()=>{
-      t--;
-      btn.textContent = t>0?"Wait "+t+"s":"Earn 200";
-      if(t<=0){
-        btn.disabled=false; clearInterval(timer);
-      }
-    },1000);
-    btn.onclick = async function(){
-      btn.disabled=true;
-      if(!ad.demo) await earnAd(ad.id,"dlink",200);
-      btn.textContent="Earned!";
-      setTimeout(()=>{idx++;showNext();},1200);
-    };
+
+  // ---- Firestore: listen active ads ----
+  function startAdsListener(){
+    // Unsubscribe previous if any
+    if(listeningAdsUnsub) listeningAdsUnsub();
+
+    const adsCol = collection(db, 'ads');
+    const q = query(adsCol, where('status', '==', 'active'), orderBy('createdAt'));
+    listeningAdsUnsub = onSnapshot(q, snap=>{
+      activeAds = [];
+      snap.forEach(d=>{
+        const data = d.data();
+        data.id = d.id;
+        activeAds.push(data);
+      });
+      renderActiveAds();
+      ensureDefaultSystemAds(); // ensure your supplied ads exist
+      // If traffic viewer open, refresh iframe source to include new ads
+      setupTrafficRotation();
+    });
   }
-  showNext();
-}
-async function earnAd(adid,type,amount){
-  let adRef = db.collection('ads').doc(adid);
-  await db.runTransaction(async tx=>{
-    let adSnap = await tx.get(adRef);
-    if(!adSnap.exists)return;
-    let budget=adSnap.data().budget,views=adSnap.data().views||0;
-    if(budget<amount)return;
-    tx.update(adRef,{
-      budget:budget-amount,
-      views:views+1,
-      active:(budget-amount)>0
+
+  function stopAdsListener(){
+    if(listeningAdsUnsub) listeningAdsUnsub();
+    listeningAdsUnsub = null;
+    activeAds = [];
+  }
+
+  // ---- Render helpers ----
+  function refreshUserUI(){
+    if(!currentUser) return;
+    const uref = doc(db, 'users', currentUser.uid);
+    // real-time read user doc
+    onSnapshot(uref, snap=>{
+      if(!snap.exists()) return;
+      currentUserDoc = snap.data();
+      $('statW').innerText = currentUserDoc.coins?.W || 0;
+      $('statD').innerText = currentUserDoc.coins?.D || 0;
+      $('coinsDisplay').innerText = `W: ${currentUserDoc.coins?.W||0} | D: ${currentUserDoc.coins?.D||0}`;
+      // referral info
+      if(currentUserDoc.referredBy){
+        $('refInfo').innerHTML = `<div class="small">You were referred by <strong>${currentUserDoc.referredBy}</strong></div>`;
+      } else {
+        const myRefLink = `${location.origin}${location.pathname}?ref=${currentUser.uid}`;
+        $('refInfo').innerHTML = `<div class="small">Your referral link: <br><a href="${myRefLink}" target="_blank">${myRefLink}</a></div>`;
+      }
+      // my referrals list
+      const myRefs = currentUserDoc.referrals || [];
+      $('myReferrals').innerHTML = myRefs.length ? myRefs.map(r=>`<li class="small">${r}</li>`).join('') : '<div class="small muted">No referrals yet</div>';
     });
-    let userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
-    let userSnap = await tx.get(userRef);
-    tx.update(userRef,{
-      coins:(userSnap.data().coins||0)+amount
-    });
-    let referredBy = userSnap.data().referredBy;
-    if(referredBy){
-      let refRef = db.collection('users').doc(referredBy);
-      let refSnap = await tx.get(refRef);
-      tx.update(refRef,{
-        coins:(refSnap.data().coins||0)+Math.floor(amount*0.15)
+  }
+
+  function renderActiveAds(){
+    const list = activeAds;
+    const container = $('activeAdsList');
+    if(!list.length) container.innerHTML = '<div class="small muted">No active ads</div>';
+    else {
+      container.innerHTML = list.map(ad=>{
+        return `<div style="margin-bottom:8px;">
+          <strong>${ad.category}</strong> — ${ad.link} <br>
+          <span class="muted">Budget: ${ad.budget} | per: ${ad.coinsPerImpression} | served: ${ad.impressionsServed || 0}/${ad.impressionsTarget || '?'} | owner: ${ad.ownerId}</span>
+        </div>`;
+      }).join('');
+    }
+
+    // populate direct links for direct page with active direct ads and system defaults
+    const directList = $('directList');
+    const directAds = list.filter(a=>a.category === 'direct');
+    if(!directAds.length) directList.innerHTML = '<li class="small muted">No direct links available</li>';
+    else directList.innerHTML = directAds.map(ad=>{
+      // click handler uses awardDirectClick
+      return `<li><a href="#" onclick="awardDirectClick('${ad.id}','${ad.link}')">${ad.link}</a> — <span class="muted">owner:${ad.ownerId}</span></li>`;
+    }).join('');
+  }
+
+  // ---- Default system ads insertion (one-time) ----
+  async function ensureDefaultSystemAds(){
+    // If any ad exists from ownerId 'system' then skip
+    const anySystem = activeAds.some(a=>a.ownerId === 'system');
+    if(anySystem) return;
+    // Insert system ads (the exact URLs you gave). Only insert once.
+    // This requires the current user to be signed in; if not signed in, skip.
+    if(!currentUser) return;
+
+    const defaults = [
+      { link: 'http://cludymovie.com/', category:'web', coinsPerImpression:500 },
+      { link: 'https://newswithsk.com/', category:'web', coinsPerImpression:500 },
+      { link: 'https://otieu.com/4/9677163', category:'direct', coinsPerImpression:1000 },
+      { link: 'https://www.youtube.com/embed/Uw9bqrrV-yI', category:'youtube_watch', coinsPerImpression:50 }
+    ];
+    // Create docs for each default ad with ownerId 'system'
+    for(const d of defaults){
+      const adsCol = collection(db,'ads');
+      await addDoc(adsCol, {
+        ownerId: 'system',
+        category: d.category,
+        link: d.link,
+        budget: d.coinsPerImpression * 20, // small initial budget so they rotate
+        coinsPerImpression: d.coinsPerImpression,
+        impressionsServed: 0,
+        impressionsTarget: 20,
+        status: 'active',
+        createdAt: serverTimestamp()
       });
     }
-  });
-}
-document.getElementById("web-multi-btn").onclick = ()=>showWebTrafficAds(Number(document.getElementById("web-multi-count").value)||1);
-document.getElementById("ytwatch-multi-btn").onclick = ()=>showYTAds(Number(document.getElementById("ytwatch-multi-count").value)||1,"yt");
-document.getElementById("ytviews-multi-btn").onclick = ()=>showYTAds(Number(document.getElementById("ytviews-multi-count").value)||1,"ytviews");
+  }
 
-window.addEventListener("hashchange",()=>{
-  let pg = location.hash.replace("#","");
-  if(pg==="webtraffic") showWebTrafficAds(Number(document.getElementById("web-multi-count").value)||1);
-  if(pg==="ytwatch") showYTAds(Number(document.getElementById("ytwatch-multi-count").value)||1,"yt");
-  if(pg==="ytviews") showYTAds(Number(document.getElementById("ytviews-multi-count").value)||1,"ytviews");
-  if(pg==="directlink") showDirectLinkAds();
-});
-window.addEventListener("DOMContentLoaded",()=>{
-  showWebTrafficAds(1);
-  showYTAds(1,"yt");
-  showYTAds(1,"ytviews");
-  showDirectLinkAds();
-});
+  // ---- Traffic iframe rotation & awarding logic ----
+  function setupTrafficRotation(){
+    // Clear previous
+    if(trafficRotateInterval) { clearInterval(trafficRotateInterval); trafficRotateInterval = null; }
+    const iframeEl = $('trafficIframe');
+    const timerEl = $('trafficTimer');
+    const infoEl = $('trafficAdInfo');
+
+    if(!activeAds.length){
+      iframeEl.src = 'about:blank';
+      timerEl.innerText = 'No active ads';
+      infoEl.innerText = '';
+      return;
+    }
+
+    // rotate across ads filtered by categories that should appear in iframe (web, youtube_watch)
+    const rotatable = activeAds.filter(a=>['web','youtube_watch','youtube_view'].includes(a.category) || a.category==='direct'); // show all types
+    if(!rotatable.length){ iframeEl.src='about:blank'; timerEl.innerText='No active ads'; return; }
+
+    // initial load
+    trafficCurrentIndex = trafficCurrentIndex % rotatable.length;
+    loadTrafficAd(rotatable[trafficCurrentIndex]);
+
+    trafficSecondsLeft = 15;
+    timerEl.innerText = `Next change in ${trafficSecondsLeft}s`;
+
+    trafficRotateInterval = setInterval(async ()=>{
+      trafficSecondsLeft--;
+      if(trafficSecondsLeft <= 0){
+        // award if viewer stayed for 15s -> run awarding sequence
+        const ad = rotatable[trafficCurrentIndex];
+        if(currentUser && ad){
+          // perform Firestore transaction to award viewer and deduct ad budget
+          try {
+            await runTransaction(db, async (tx)=>{
+              const adRef = doc(db,'ads', ad.id);
+              const adSnap = await tx.get(adRef);
+              if(!adSnap.exists()) throw 'ad-gone';
+              const adData = adSnap.data();
+              if(adData.status !== 'active') throw 'not-active';
+              // double-check budget
+              if((adData.budget || 0) < (adData.coinsPerImpression || 0)) {
+                // mark completed
+                tx.update(adRef, { status: 'completed' });
+                return;
+              }
+              // decrement ad budget and increment served
+              tx.update(adRef, {
+                budget: (adData.budget || 0) - (adData.coinsPerImpression || 0),
+                impressionsServed: increment(1)
+              });
+              // award coins to viewer user doc
+              const uRef = doc(db, 'users', currentUser.uid);
+              const uSnap = await tx.get(uRef);
+              if(!uSnap.exists()) throw 'user-missing';
+              // For website ads use W coins; for direct ads use D; youtube_watch we'll treat as W
+              let currency = 'W';
+              if(adData.category === 'direct') currency = 'D';
+              const awardAmount = adData.coinsPerImpression || 500;
+              const coinField = `coins.${currency}`;
+              tx.update(uRef, { [coinField]: increment(awardAmount) });
+              // record transaction
+              const txRef = doc(collection(db,'transactions'));
+              tx.set(txRef, {
+                userId: currentUser.uid,
+                type: 'earn',
+                amount: awardAmount,
+                currency,
+                adId: ad.id,
+                createdAt: serverTimestamp()
+              });
+              // referral commission: if currentUser was referred, give 15% to referrer immediately as pending + transaction
+              const uData = uSnap.data();
+              if(uData && uData.referredBy){
+                const refId = uData.referredBy;
+                const refRef = doc(db,'users',refId);
+                const commission = Math.floor(awardAmount * 0.15);
+                // credit commission to referrer W (we'll credit in same currency W for simplicity)
+                tx.update(refRef, { 'coins.W': increment(commission) });
+                const rtxRef = doc(collection(db,'transactions'));
+                tx.set(rtxRef, {
+                  userId: refId,
+                  type: 'referral_commission',
+                  amount: commission,
+                  currency: 'W',
+                  fromUser: currentUser.uid,
+                  createdAt: serverTimestamp()
+                });
+              }
+              // check if ad should be closed
+              const newBudget = (adData.budget || 0) - (adData.coinsPerImpression || 0);
+              const servedNow = (adData.impressionsServed || 0) + 1;
+              const target = adData.impressionsTarget || Math.floor((adData.initialBudget||0) / (adData.coinsPerImpression||1));
+              if(newBudget <= 0 || (adData.impressionsTarget && servedNow >= adData.impressionsTarget)){
+                tx.update(adRef, { status: 'completed', closedAt: serverTimestamp() });
+              }
+            });
+          } catch(e){
+            // ignore errors (ad may be removed)
+            console.warn('award transaction error', e);
+          }
+        }
+
+        // move to next ad
+        trafficCurrentIndex = (trafficCurrentIndex + 1) % rotatable.length;
+        loadTrafficAd(rotatable[trafficCurrentIndex]);
+        trafficSecondsLeft = 15;
+      } else {
+        timerEl.innerText = `Next change in ${trafficSecondsLeft}s`;
+      }
+    }, 1000);
+  }
+
+  function loadTrafficAd(ad){
+    const iframeEl = $('trafficIframe');
+    const infoEl = $('trafficAdInfo');
+    // If ad.link is a YouTube watch URL in embed form, open as-is, else set src directly
+    iframeEl.src = ad.link;
+    infoEl.innerHTML = `<span class="small muted">${ad.category} • per: ${ad.coinsPerImpression} • owner: ${ad.ownerId}</span>`;
+  }
+
+  // ---- Direct link click awarding ----
+  window.awardDirectClick = async function(adId, link){
+    if(!currentUser) { alert('Please sign in'); return; }
+    // open link in new tab
+    window.open(link, '_blank');
+    // attempt to award via transaction
+    try {
+      await runTransaction(db, async (tx)=>{
+        const adRef = doc(db,'ads',adId);
+        const adSnap = await tx.get(adRef);
+        if(!adSnap.exists()) throw 'ad-gone';
+        const adData = adSnap.data();
+        if(adData.status !== 'active') throw 'not-active';
+        // cost
+        const cost = adData.coinsPerImpression || 1000;
+        if((adData.budget || 0) < cost) {
+          tx.update(adRef, { status:'completed' });
+          return;
+        }
+        tx.update(adRef, { budget: (adData.budget||0) - cost, impressionsServed: increment(1) });
+        // award D coins to user
+        const userRef = doc(db,'users', currentUser.uid);
+        tx.update(userRef, { 'coins.D': increment(cost) });
+        const txRef = doc(collection(db,'transactions'));
+        tx.set(txRef, {
+          userId: currentUser.uid, type:'earn', amount: cost, currency:'D', adId, createdAt: serverTimestamp()
+        });
+        // referral commission
+        const uSnap = await tx.get(userRef);
+        if(uSnap.exists()){
+          const uData = uSnap.data();
+          if(uData.referredBy){
+            const commission = Math.floor(cost * 0.15);
+            const refRef = doc(db,'users', uData.referredBy);
+            tx.update(refRef, { 'coins.W': increment(commission) });
+            const rtxRef = doc(collection(db,'transactions'));
+            tx.set(rtxRef, {
+              userId: uData.referredBy,
+              type:'referral_commission',
+              amount: commission,
+              currency:'W',
+              fromUser: currentUser.uid,
+              createdAt: serverTimestamp()
+            });
+          }
+        }
+        // close ad if needed
+        const newBudget = (adData.budget || 0) - cost;
+        const servedNow = (adData.impressionsServed || 0) + 1;
+        if(newBudget <= 0 || (adData.impressionsTarget && servedNow >= adData.impressionsTarget)){
+          tx.update(adRef, { status:'completed', closedAt: serverTimestamp() });
+        }
+      });
+    } catch(e){
+      console.warn('direct click award error', e);
+    }
+  };
+
+  // ---- Create Ad (launch) ----
+  async function createAd(){
+    if(!currentUser) { alert('Please sign in to launch an ad'); return; }
+    const category = $('adCategory').value;
+    const link = $('adLink').value.trim();
+    const budget = parseInt($('adBudget').value || 0);
+    const overrideCPI = parseInt($('adCPI').value || 0);
+
+    if(!link || !budget || budget <= 0){ $('adLaunchMsg').innerHTML = '<span class="danger">Enter a valid link and budget.</span>'; return; }
+    // determine coinsPerImpression by category default
+    let defaultCPI = 500;
+    if(category === 'direct') defaultCPI = 1000;
+    if(category === 'youtube_watch') defaultCPI = 50;
+    if(category === 'youtube_view') defaultCPI = 100;
+    const coinsPerImpression = overrideCPI > 0 ? overrideCPI : defaultCPI;
+    const impressionsTarget = Math.floor(budget / coinsPerImpression);
+
+    // make sure user has enough coins (use W or D depending)
+    const userRef = doc(db,'users', currentUser.uid);
+    const uSnap = await getDoc(userRef);
+    const uData = uSnap.data();
+    const currency = (category === 'direct') ? 'D' : 'W';
+    const userCoins = (uData.coins && uData.coins[currency]) || 0;
+    if(userCoins < budget){
+      $('adLaunchMsg').innerHTML = `<span class="danger">Insufficient ${currency} coins. You have ${userCoins}, need ${budget}.</span>`;
+      return;
+    }
+
+    // Create ad and deduct budget from user's coins in a transaction
+    try {
+      await runTransaction(db, async (tx)=>{
+        const uRef = doc(db,'users', currentUser.uid);
+        const uSnapshot = await tx.get(uRef);
+        if(!uSnapshot.exists()) throw 'user-missing';
+        const uDat = uSnapshot.data();
+        if((uDat.coins && uDat.coins[currency] || 0) < budget) throw 'insufficient';
+        // create ad
+        const adsCol = collection(db,'ads');
+        const newAdRef = await addDoc(adsCol, {
+          ownerId: currentUser.uid,
+          category,
+          link,
+          budget,
+          initialBudget: budget,
+          coinsPerImpression,
+          impressionsServed: 0,
+          impressionsTarget,
+          status: 'active',
+          createdAt: serverTimestamp()
+        });
+        // deduct user's coins
+        tx.update(uRef, { [`coins.${currency}`]: increment(-budget) });
+        // record transaction
+        const txRef = doc(collection(db,'transactions'));
+        tx.set(txRef, {
+          userId: currentUser.uid,
+          type: 'ad_launch',
+          adId: newAdRef.id,
+          amount: budget,
+          currency,
+          createdAt: serverTimestamp()
+        });
+      });
+      $('adLaunchMsg').innerHTML = `<div class="small">Ad launched successfully. It will appear in traffic viewer shortly.</div>`;
+      // clear form
+      $('adLink').value = '';
+      $('adBudget').value = '';
+      $('adCPI').value = '';
+    } catch(e){
+      console.error('error creating ad', e);
+      $('adLaunchMsg').innerHTML = `<span class="danger">Error launching ad. ${e}</span>`;
+    }
+  }
+
+  // ---- YouTube watch & views (simple client-side) ----
+  // For simplicity we will embed the video in iframe embed URL and count seconds while playing using postMessage with YT player API is not available from embed cross-origin
+  // We'll embed the official youtube embed with enablejsapi=1 and postMessage is possible if same origin? Many browsers restrict; implement a naive approach: simple play/pause instruction not fully reliable
+  // Instead we provide a simple manual play button that opens the embed in same iframe and we count a local timer while the page tab is active.
+
+  function loadYouTubeEmbeds(){
+    const id = 'Uw9bqrrV-yI';
+    $('ytWatchIframe').src = `https://www.youtube.com/embed/${id}?rel=0&autoplay=0&enablejsapi=1`;
+    $('ytViewsIframe').src = `https://www.youtube.com/embed/${id}?rel=0&autoplay=0&enablejsapi=1`;
+  }
+  loadYouTubeEmbeds();
+
+  // Simple watch timer: user clicks play on YouTube inside iframe manually; we still cannot detect play state reliably cross-origin,
+  // so provide a manual "Start/Stop watch timer" UX if needed; for now we'll implement a simple resume/pause controls (user honesty).
+  // For a production system use YouTube IFrame API and server-side verification.
+  // We'll keep a simple manual control here:
+  let ytWatchRunning = false;
+  const ytWatchCounter = $('ytWatchCounter');
+  setInterval(()=>{
+    if(ytWatchRunning && currentUser){
+      ytWatchSeconds++;
+      ytWatchCounter.innerText = formatTime(ytWatchSeconds);
+      // award 10 W coins every 30 seconds as demo
+      if(ytWatchSeconds % 30 === 0){
+        awardSimpleCoins(currentUser.uid, 10, 'W', { reason:'yt_watch' });
+      }
+    }
+  }, 1000);
+
+  // Provide toggle via clicking the iframe area (simple)
+  $('ytWatchIframe').addEventListener('click', ()=>{
+    ytWatchRunning = !ytWatchRunning;
+    $('ytWatchCounter').innerText = formatTime(ytWatchSeconds) + (ytWatchRunning ? ' (running)' : ' (paused)');
+  });
+
+  // Views: naive: when user interacts with iframe, award 1 view per 5s
+  let ytViewRunning = false;
+  setInterval(()=>{
+    if(ytViewRunning && currentUser){
+      ytViewCount++;
+      $('ytViewCounter').innerText = ytViewCount;
+      if(ytViewCount % 5 === 0){
+        // award 1 view credit -> give some coins
+        awardSimpleCoins(currentUser.uid, 5, 'W', { reason:'yt_view' });
+      }
+    }
+  }, 1000);
+  $('ytViewsIframe').addEventListener('click', ()=>{ ytViewRunning = !ytViewRunning; });
+
+  // ---- Award helper (simple version used by YT timers) ----
+  async function awardSimpleCoins(userId, amount, currency, meta={}){
+    try {
+      await runTransaction(db, async (tx)=>{
+        const uRef = doc(db,'users', userId);
+        const us = await tx.get(uRef);
+        if(!us.exists()) return;
+        tx.update(uRef, { [`coins.${currency}`]: increment(amount) });
+        const txRef = doc(collection(db,'transactions'));
+        tx.set(txRef, { userId, type:'earn', amount, currency, meta, createdAt: serverTimestamp() });
+        // referral commission credit
+        const uDat = us.data();
+        if(uDat && uDat.referredBy){
+          const commission = Math.floor(amount * 0.15);
+          const rRef = doc(db,'users', uDat.referredBy);
+          tx.update(rRef, { 'coins.W': increment(commission) });
+          const rtxRef = doc(collection(db,'transactions'));
+          tx.set(rtxRef, {
+            userId: uDat.referredBy,
+            type:'referral_commission',
+            amount: commission,
+            currency:'W',
+            fromUser: userId,
+            createdAt: serverTimestamp()
+          });
+        }
+      });
+    } catch(e){
+      console.warn('awardSimpleCoins err', e);
+    }
+  }
+
+  // ---- Initialize UI state and attach listeners ----
+  (function init(){
+    // Hook up nav and page visibility to show proper content
+    // Add click listeners to show pages
+    document.querySelectorAll('nav button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ /* handled inline */});
+    });
+
+    // Periodically update transactions list (recent)
+    const txQ = query(collection(db,'transactions'), orderBy('createdAt', 'desc'));
+    onSnapshot(txQ, snap=>{
+      const list = [];
+      let count = 0;
+      snap.forEach(d=>{
+        if(count++ > 20) return;
+        const dt = d.data();
+        list.push(`<div style="margin-bottom:6px;" class="small">${dt.type} • ${dt.amount} ${dt.currency || ''} <span class="muted">(${dt.userId})</span></div>`);
+      });
+      $('txList').innerHTML = list.length ? list.join('') : '<div class="small muted">No recent transactions</div>';
+    });
+
+    // start traffic rotation UI if traffic page active
+    // attach page show toggles to nav buttons above (already wired)
+    // default show dashboard
+    show('dashboard');
+    // open traffic page rotation when traffic is visible
+    // Use a short interval to re-evaluate activeAds and rotate if visible
+    setInterval(()=>{
+      // if traffic visible
+      const trafficVisible = $('traffic').style.display !== 'none';
+      if(trafficVisible) setupTrafficRotation();
+    }, 5000);
+  })();
+
+  // ---- Sign out UI cleanup ----
+  btnSignOut.addEventListener('click', async ()=>{
+    await signOut(auth);
+    // clear UI
+    $('userDisplay').innerText = 'Not signed in';
+    $('statW').innerText = '0';
+    $('statD').innerText = '0';
+    $('coinsDisplay').innerText = 'W: 0 | D: 0';
+  });
+
+  // Expose some functions globally for button onclicks inside HTML
+  window.show = function(page){
+    // hide all pages
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    const el = document.getElementById(page);
+    if(el) el.style.display = 'block';
+    // if traffic shown, start rotation
+    if(page === 'traffic') setupTrafficRotation();
+  };
+  window.createAd = createAd;
+  window.awardDirectClick = awardDirectClick;
+
+  // initial attempt to start ads listener even when not signed in (so guests see system ads if any)
+  startAdsListener();
+
 </script>
+
 </body>
 </html>
