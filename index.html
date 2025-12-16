@@ -124,13 +124,11 @@
       font-size: 13px;
       transition: transform .15s ease, background .15s ease, border-color .15s ease;
       user-select:none;
-    }
-    .btn:hover{ transform: translateY(-1px); }
-    .btn-ghost{
       background: rgba(255,255,255,.06);
       border:1px solid rgba(255,255,255,.10);
       color:#fff;
     }
+    .btn:hover{ transform: translateY(-1px); }
 
     .hero{
       position:relative;
@@ -446,8 +444,8 @@
           <input id="q" placeholder="Search titles, categories…" autocomplete="off"/>
         </div>
 
-        <!-- Change this to your Blogger Admin page URL -->
-        <a class="btn btn-ghost" id="adminLink" href="#" rel="nofollow">Admin</a>
+        <!-- Optional: replace with your Blogger Admin page URL -->
+        <a class="btn" id="adminLink" href="#" rel="nofollow">Admin</a>
       </div>
     </div>
   </header>
@@ -500,19 +498,19 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
   <script>
-    // Your web app's Firebase configuration
+    // ===== Firebase config (movie-46071) =====
     const firebaseConfig = {
-      apiKey: "AIzaSyAR6L25EtCEltF84-6e25oampAvYj-xWmw",
-      authDomain: "ad-4-you.firebaseapp.com",
-      projectId: "ad-4-you",
-      storageBucket: "ad-4-you.firebasestorage.app",
-      messagingSenderId: "1072867261286",
-      appId: "1:1072867261286:web:26b5f98850ef3b4c1626a7",
-      measurementId: "G-FELTLMLHB5"
+      apiKey: "AIzaSyCYJHAqpECnD4q6syp_kC3g3LaS0aB1Mck",
+      authDomain: "movie-46071.firebaseapp.com",
+      databaseURL: "https://movie-46071-default-rtdb.firebaseio.com",
+      projectId: "movie-46071",
+      storageBucket: "movie-46071.firebasestorage.app",
+      messagingSenderId: "651730685618",
+      appId: "1:651730685618:web:904222ca24a3c5d4f203ab",
+      measurementId: "G-YVVFT0R4DF"
     };
 
-    // Put your real Blogger Admin page URL here:
-    // Example: const ADMIN_PAGE_URL = "https://yourblog.blogspot.com/p/admin.html";
+    // Optional: set your Blogger admin page link
     const ADMIN_PAGE_URL = "#";
     document.getElementById("adminLink").href = ADMIN_PAGE_URL;
 
@@ -643,32 +641,20 @@
     async function loadVideos(){
       els.loading.style.display = "";
       els.loading.textContent = "Loading…";
+
       const snap = await db.collection("videos").orderBy("createdAt", "desc").get();
       all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       applySearch();
-      autoOpenFromHash();
-    }
-
-    function autoOpenFromHash(){
-      if (!location.hash.startsWith("#watch=")) return;
-      const id = decodeURIComponent(location.hash.slice("#watch=".length));
-      const found = all.find(v => v.id === id);
-      if (found) openWatch(found);
     }
 
     els.q.addEventListener("input", applySearch);
     els.btnPlayTop.addEventListener("click", ()=>{ if (all[0]) openWatch(all[0]); });
     els.btnMoreTop.addEventListener("click", ()=>{ if (all[0]) openWatch(all[0]); });
 
-    window.addEventListener("hashchange", ()=>{
-      if (!location.hash.startsWith("#watch=")) closeWatch();
-      else autoOpenFromHash();
-    });
-
     loadVideos().catch(err=>{
       console.error(err);
       els.loading.style.display = "";
-      els.loading.textContent = "Failed to load. Check Firestore database + rules.";
+      els.loading.textContent = "Failed to load. Check: Firestore created + rules published.";
     });
   </script>
 </body>
