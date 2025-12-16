@@ -14,6 +14,7 @@
       --accent:#e50914; --accent2:#b20710;
       --shadow: 0 18px 60px rgba(0,0,0,.75);
       --max: 1180px;
+      --r16:16px;
     }
     *{ box-sizing:border-box; }
     body{
@@ -82,12 +83,12 @@
     .wrap{ max-width: var(--max); margin: 0 auto; padding: 18px 16px 60px; }
     .grid{
       display:grid;
-      grid-template-columns: 430px 1fr;
+      grid-template-columns: 460px 1fr;
       gap: 14px;
       margin-top: 14px;
     }
     .card{
-      border-radius: 16px;
+      border-radius: var(--r16);
       background: rgba(255,255,255,.04);
       border: 1px solid rgba(255,255,255,.10);
       box-shadow: var(--shadow);
@@ -118,6 +119,31 @@
     .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .help{ margin: 10px 0 0; font-size: 12px; color: rgba(255,255,255,.68); line-height:1.45; }
     .danger{ color: #ffb3b7; }
+
+    .thumbPreview{
+      margin-top: 10px;
+      border-radius: 14px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.35);
+      aspect-ratio: 16/9;
+      position:relative;
+    }
+    .thumbPreview img{
+      width:100%; height:100%;
+      object-fit: cover;
+      display:block;
+      filter: saturate(1.05) contrast(1.05);
+    }
+    .thumbPreview .ph{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(255,255,255,.65);
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
 
     .list{ display:flex; flex-direction:column; gap:10px; }
     .item{
@@ -167,7 +193,6 @@
     <div class="top-inner">
       <div class="brand"><span class="mark" aria-hidden="true"></span> StreamFlix Admin</div>
       <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-        <!-- Optional: set your user page URL -->
         <a class="btn btn-ghost" id="siteLink" href="#" target="_self">View Site</a>
         <button class="btn btn-ghost" id="logoutBtn" style="display:none;">Logout</button>
       </div>
@@ -195,10 +220,7 @@
         </div>
 
         <p class="help danger" id="loginMsg"></p>
-        <p class="help">
-          First time: enter email/password and click <b>Create Admin User</b>.
-          Next time: use <b>Login</b>.
-        </p>
+        <p class="help">First time: Create Admin User. Next time: Login.</p>
       </div>
     </section>
 
@@ -226,6 +248,12 @@
             </div>
           </div>
 
+          <!-- NEW: live thumbnail preview -->
+          <div class="thumbPreview" id="thumbBox">
+            <div class="ph" id="thumbPh">Thumbnail Preview</div>
+            <img id="thumbImg" alt="" style="display:none;">
+          </div>
+
           <label>Video iframe embed code</label>
           <textarea id="iframe" placeholder='<iframe src="https://example.com/embed/123" allowfullscreen></iframe>'></textarea>
 
@@ -236,7 +264,9 @@
           </div>
 
           <p class="help danger" id="formMsg"></p>
-          <p class="help">Only iframe embeds, no uploads. Thumbnails must be direct image URLs.</p>
+          <p class="help">
+            Paste thumbnail URL → preview updates automatically. User homepage will show it like YouTube thumbnails.
+          </p>
         </div>
       </div>
 
@@ -245,7 +275,6 @@
         <div class="body">
           <label>Search</label>
           <input id="search" placeholder="Search by title/category…">
-
           <div style="height:10px;"></div>
           <div class="list" id="list"></div>
           <p class="help" id="stats"></p>
@@ -270,7 +299,6 @@
       measurementId: "G-YVVFT0R4DF"
     };
 
-    // Optional: set your user page URL here
     const USER_PAGE_URL = "#";
     document.getElementById("siteLink").href = USER_PAGE_URL;
 
@@ -278,11 +306,10 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // IMPORTANT for Blogger: keep login session
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
       .catch(err => console.error("Auth persistence error:", err));
 
-    const $ = (id) => document.getElementById(id);
+    const $ = (id)=>document.getElementById(id);
 
     $("proj").textContent = firebase.app().options.projectId || "unknown";
 
@@ -302,6 +329,9 @@
     const thumbnail = $("thumbnail");
     const iframe = $("iframe");
 
+    const thumbImg = $("thumbImg");
+    const thumbPh = $("thumbPh");
+
     const search = $("search");
     const list = $("list");
     const stats = $("stats");
@@ -318,6 +348,29 @@
 
     function setMsg(node, msg){ node.textContent = msg || ""; }
 
+    function setThumbPreview(url){
+      const u = (url || "").trim();
+      if (!u){
+        thumbImg.style.display = "none";
+        thumbPh.style.display = "";
+        thumbImg.src = "";
+        return;
+      }
+      thumbImg.style.display = "";
+      thumbPh.style.display = "none";
+      thumbImg.src = u;
+      thumbImg.onerror = () => {
+        thumbImg.style.display = "none";
+        thumbPh.style.display = "";
+        thumbPh.textContent = "Thumbnail not loading";
+      };
+      thumbImg.onload = () => {
+        thumbPh.textContent = "Thumbnail Preview";
+      };
+    }
+
+    thumbnail.addEventListener("input", ()=>setThumbPreview(thumbnail.value));
+
     function resetForm(){
       editId.value = "";
       formTitle.textContent = "Add New Video";
@@ -326,6 +379,7 @@
       category.value = "";
       thumbnail.value = "";
       iframe.value = "";
+      setThumbPreview("");
       setMsg(formMsg, "");
     }
 
@@ -427,6 +481,8 @@
           category.value = v.category || "";
           thumbnail.value = v.thumbnail || "";
           iframe.value = v.iframe || "";
+          setThumbPreview(thumbnail.value);
+
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
       });
