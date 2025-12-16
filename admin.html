@@ -143,6 +143,18 @@
 
     .login{ max-width: 560px; margin: 36px auto; }
 
+    .banner{
+      margin: 12px 0 0;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.80);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    code{ color:#ffd7da; }
+
     @media (max-width: 980px){
       .grid{ grid-template-columns: 1fr; }
       .row{ grid-template-columns: 1fr; }
@@ -155,7 +167,7 @@
     <div class="top-inner">
       <div class="brand"><span class="mark" aria-hidden="true"></span> StreamFlix Admin</div>
       <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-        <!-- Change this to your Blogger User page URL -->
+        <!-- Optional: set your user page URL -->
         <a class="btn btn-ghost" id="siteLink" href="#" target="_self">View Site</a>
         <button class="btn btn-ghost" id="logoutBtn" style="display:none;">Logout</button>
       </div>
@@ -163,6 +175,11 @@
   </header>
 
   <main class="wrap">
+    <div class="banner">
+      <div><b>Debug:</b> Connected project: <code id="proj">?</code></div>
+      <div>Auth status: <code id="authState">Not logged in</code></div>
+    </div>
+
     <section class="card login" id="loginCard">
       <h2>Admin Login</h2>
       <div class="body">
@@ -179,7 +196,8 @@
 
         <p class="help danger" id="loginMsg"></p>
         <p class="help">
-          Create Admin User only one time (first time). After that, you should remove this button from code.
+          First time: enter email/password and click <b>Create Admin User</b>.
+          Next time: use <b>Login</b>.
         </p>
       </div>
     </section>
@@ -214,6 +232,7 @@
           <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
             <button class="btn btn-primary" id="saveBtn">Save</button>
             <button class="btn btn-ghost" id="resetBtn">Reset</button>
+            <button class="btn btn-ghost" id="testWriteBtn">Test Write</button>
           </div>
 
           <p class="help danger" id="formMsg"></p>
@@ -240,19 +259,18 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
   <script>
-    // Your web app's Firebase configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyAR6L25EtCEltF84-6e25oampAvYj-xWmw",
-      authDomain: "ad-4-you.firebaseapp.com",
-      projectId: "ad-4-you",
-      storageBucket: "ad-4-you.firebasestorage.app",
-      messagingSenderId: "1072867261286",
-      appId: "1:1072867261286:web:26b5f98850ef3b4c1626a7",
-      measurementId: "G-FELTLMLHB5"
+      apiKey: "AIzaSyCYJHAqpECnD4q6syp_kC3g3LaS0aB1Mck",
+      authDomain: "movie-46071.firebaseapp.com",
+      databaseURL: "https://movie-46071-default-rtdb.firebaseio.com",
+      projectId: "movie-46071",
+      storageBucket: "movie-46071.firebasestorage.app",
+      messagingSenderId: "651730685618",
+      appId: "1:651730685618:web:904222ca24a3c5d4f203ab",
+      measurementId: "G-YVVFT0R4DF"
     };
 
-    // Put your real Blogger user page URL here:
-    // Example: const USER_PAGE_URL = "https://yourblog.blogspot.com/p/home.html";
+    // Optional: set your user page URL here
     const USER_PAGE_URL = "#";
     document.getElementById("siteLink").href = USER_PAGE_URL;
 
@@ -260,7 +278,13 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // IMPORTANT for Blogger: keep login session
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+      .catch(err => console.error("Auth persistence error:", err));
+
     const $ = (id) => document.getElementById(id);
+
+    $("proj").textContent = firebase.app().options.projectId || "unknown";
 
     const loginCard = $("loginCard");
     const dash = $("dash");
@@ -268,6 +292,7 @@
 
     const loginMsg = $("loginMsg");
     const formMsg = $("formMsg");
+    const authStateEl = $("authState");
 
     const formTitle = $("formTitle");
     const editId = $("editId");
@@ -311,6 +336,7 @@
 
     async function saveVideo(){
       setMsg(formMsg, "");
+
       const data = {
         title: title.value.trim(),
         description: description.value.trim(),
@@ -339,7 +365,26 @@
         resetForm();
       } catch (e){
         console.error(e);
-        setMsg(formMsg, e.message || "Save failed.");
+        setMsg(formMsg, (e && (e.code + " — " + e.message)) || "Save failed.");
+      }
+    }
+
+    async function testWrite(){
+      setMsg(formMsg, "");
+      try{
+        await db.collection("videos").add({
+          title: "TEST",
+          description: "Test write document",
+          category: "Test",
+          thumbnail: "https://via.placeholder.com/640x360.png?text=TEST",
+          iframe: "<iframe src='about:blank'></iframe>",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        setMsg(formMsg, "Test write SUCCESS. You can delete TEST item now.");
+      } catch (e){
+        console.error(e);
+        setMsg(formMsg, "Test write FAILED: " + ((e && (e.code + " — " + e.message)) || ""));
       }
     }
 
@@ -397,7 +442,7 @@
             await db.collection("videos").doc(id).delete();
           } catch (e){
             console.error(e);
-            alert(e.message || "Delete failed.");
+            alert((e && (e.code + " — " + e.message)) || "Delete failed.");
           }
         });
       });
@@ -410,12 +455,13 @@
           render();
         }, (err)=>{
           console.error(err);
-          setMsg(formMsg, "Failed to load. Check Firestore rules.");
+          setMsg(formMsg, "Load failed: " + ((err && (err.code + " — " + err.message)) || ""));
         });
     }
 
     $("saveBtn").addEventListener("click", saveVideo);
     $("resetBtn").addEventListener("click", resetForm);
+    $("testWriteBtn").addEventListener("click", testWrite);
     search.addEventListener("input", render);
 
     $("loginBtn").addEventListener("click", async ()=>{
@@ -423,7 +469,8 @@
       try{
         await auth.signInWithEmailAndPassword($("email").value.trim(), $("password").value);
       } catch (e){
-        setMsg(loginMsg, e.message || "Login failed.");
+        console.error(e);
+        setMsg(loginMsg, (e && (e.code + " — " + e.message)) || "Login failed.");
       }
     });
 
@@ -433,7 +480,8 @@
         await auth.createUserWithEmailAndPassword($("email").value.trim(), $("password").value);
         setMsg(loginMsg, "Admin created & logged in. Now add videos.");
       } catch (e){
-        setMsg(loginMsg, e.message || "Create admin failed.");
+        console.error(e);
+        setMsg(loginMsg, (e && (e.code + " — " + e.message)) || "Create admin failed.");
       }
     });
 
@@ -441,12 +489,14 @@
 
     auth.onAuthStateChanged((user)=>{
       if (user){
+        authStateEl.textContent = "Logged in as: " + (user.email || user.uid);
         loginCard.style.display = "none";
         dash.style.display = "";
         logoutBtn.style.display = "";
         resetForm();
         if (!unsubscribe) unsubscribe = startRealtime();
       } else {
+        authStateEl.textContent = "Not logged in";
         dash.style.display = "none";
         logoutBtn.style.display = "none";
         loginCard.style.display = "";
