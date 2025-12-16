@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>StreamFlix Admin</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#000; --text:#fff; --muted:#b3b3b3;
+      --accent:#e50914; --accent2:#b20710;
+      --shadow: 0 18px 60px rgba(0,0,0,.75);
+      --max: 1180px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(900px 480px at 20% -10%, rgba(229,9,20,.20), transparent 60%), var(--bg);
+      color: var(--text);
+    }
+    a{ color:inherit; text-decoration:none; }
+    .top{
+      position: sticky; top:0; z-index: 10;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .top-inner{
+      max-width: var(--max);
+      margin:0 auto;
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight: 900; text-transform: uppercase; letter-spacing:.5px;
+      font-size: 14px;
+    }
+    .mark{
+      width:32px;height:32px;border-radius:10px;
+      background: linear-gradient(145deg, var(--accent), var(--accent2));
+      box-shadow: 0 18px 50px rgba(229,9,20,.20);
+      position:relative;
+    }
+    .mark:after{
+      content:"";
+      position:absolute;
+      inset: 7px 11px;
+      border-left: 5px solid rgba(255,255,255,.85);
+      border-right: 5px solid rgba(255,255,255,.32);
+      transform: skewX(-10deg);
+    }
+    .btn{
+      border:0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 900;
+      cursor:pointer;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+      font-size: 13px;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn-ghost{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color:#fff;
+    }
+    .btn-primary{
+      background: linear-gradient(145deg, var(--accent), var(--accent2));
+      color:#fff;
+      box-shadow: 0 18px 50px rgba(229,9,20,.20);
+    }
+
+    .wrap{ max-width: var(--max); margin: 0 auto; padding: 18px 16px 60px; }
+    .grid{
+      display:grid;
+      grid-template-columns: 430px 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .card{
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 900;
+      background: rgba(0,0,0,.35);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .body{ padding: 14px; }
+
+    label{ display:block; font-size: 12px; color: rgba(255,255,255,.70); margin: 10px 0 6px; }
+    input, textarea{
+      width:100%;
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.40);
+      color:#fff;
+      outline:none;
+      font-size: 14px;
+    }
+    textarea{ min-height: 92px; resize: vertical; }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .help{ margin: 10px 0 0; font-size: 12px; color: rgba(255,255,255,.68); line-height:1.45; }
+    .danger{ color: #ffb3b7; }
+
+    .list{ display:flex; flex-direction:column; gap:10px; }
+    .item{
+      display:grid;
+      grid-template-columns: 92px 1fr auto;
+      gap: 10px;
+      align-items:center;
+      padding: 10px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .item img{
+      width: 92px; height: 52px;
+      border-radius: 12px;
+      object-fit: cover;
+      background:#111;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .meta b{ display:block; font-size: 13px; font-weight: 900; }
+    .meta span{ display:block; font-size: 12px; color: rgba(255,255,255,.68); margin-top: 2px; }
+    .tiny{ padding: 8px 10px; font-size: 12px; }
+
+    .login{ max-width: 560px; margin: 36px auto; }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+      .row{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand"><span class="mark" aria-hidden="true"></span> StreamFlix Admin</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+        <!-- Change this to your Blogger User page URL -->
+        <a class="btn btn-ghost" id="siteLink" href="#" target="_self">View Site</a>
+        <button class="btn btn-ghost" id="logoutBtn" style="display:none;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card login" id="loginCard">
+      <h2>Admin Login</h2>
+      <div class="body">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="youradmin@email.com" autocomplete="username">
+
+        <label>Password</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+
+        <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+          <button class="btn btn-primary" id="loginBtn">Login</button>
+          <button class="btn btn-ghost" id="registerBtn">Create Admin User</button>
+        </div>
+
+        <p class="help danger" id="loginMsg"></p>
+        <p class="help">
+          Create Admin User only one time (first time). After that, you should remove this button from code.
+        </p>
+      </div>
+    </section>
+
+    <section class="grid" id="dash" style="display:none;">
+      <div class="card">
+        <h2 id="formTitle">Add New Video</h2>
+        <div class="body">
+          <input type="hidden" id="editId">
+
+          <label>Video Title</label>
+          <input id="title" placeholder="Example: The Dark Heist">
+
+          <label>Video Description</label>
+          <textarea id="description" placeholder="Plot, season info, etc."></textarea>
+
+          <div class="row">
+            <div>
+              <label>Video Category</label>
+              <input id="category" placeholder="Action / Drama / Series / Movies" list="catList">
+              <datalist id="catList"></datalist>
+            </div>
+            <div>
+              <label>Thumbnail Image URL</label>
+              <input id="thumbnail" placeholder="https://...jpg">
+            </div>
+          </div>
+
+          <label>Video iframe embed code</label>
+          <textarea id="iframe" placeholder='<iframe src="https://example.com/embed/123" allowfullscreen></iframe>'></textarea>
+
+          <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="saveBtn">Save</button>
+            <button class="btn btn-ghost" id="resetBtn">Reset</button>
+          </div>
+
+          <p class="help danger" id="formMsg"></p>
+          <p class="help">Only iframe embeds, no uploads. Thumbnails must be direct image URLs.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Manage Videos</h2>
+        <div class="body">
+          <label>Search</label>
+          <input id="search" placeholder="Search by title/category…">
+
+          <div style="height:10px;"></div>
+          <div class="list" id="list"></div>
+          <p class="help" id="stats"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR6L25EtCEltF84-6e25oampAvYj-xWmw",
+      authDomain: "ad-4-you.firebaseapp.com",
+      projectId: "ad-4-you",
+      storageBucket: "ad-4-you.firebasestorage.app",
+      messagingSenderId: "1072867261286",
+      appId: "1:1072867261286:web:26b5f98850ef3b4c1626a7",
+      measurementId: "G-FELTLMLHB5"
+    };
+
+    // Put your real Blogger user page URL here:
+    // Example: const USER_PAGE_URL = "https://yourblog.blogspot.com/p/home.html";
+    const USER_PAGE_URL = "#";
+    document.getElementById("siteLink").href = USER_PAGE_URL;
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const $ = (id) => document.getElementById(id);
+
+    const loginCard = $("loginCard");
+    const dash = $("dash");
+    const logoutBtn = $("logoutBtn");
+
+    const loginMsg = $("loginMsg");
+    const formMsg = $("formMsg");
+
+    const formTitle = $("formTitle");
+    const editId = $("editId");
+    const title = $("title");
+    const description = $("description");
+    const category = $("category");
+    const thumbnail = $("thumbnail");
+    const iframe = $("iframe");
+
+    const search = $("search");
+    const list = $("list");
+    const stats = $("stats");
+    const catList = $("catList");
+
+    let all = [];
+    let unsubscribe = null;
+
+    function esc(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    }
+
+    function setMsg(node, msg){ node.textContent = msg || ""; }
+
+    function resetForm(){
+      editId.value = "";
+      formTitle.textContent = "Add New Video";
+      title.value = "";
+      description.value = "";
+      category.value = "";
+      thumbnail.value = "";
+      iframe.value = "";
+      setMsg(formMsg, "");
+    }
+
+    function looksLikeIframe(html){
+      const s = (html || "").toLowerCase();
+      return s.includes("<iframe") && s.includes("src=");
+    }
+
+    async function saveVideo(){
+      setMsg(formMsg, "");
+      const data = {
+        title: title.value.trim(),
+        description: description.value.trim(),
+        category: (category.value.trim() || "Uncategorized"),
+        thumbnail: thumbnail.value.trim(),
+        iframe: iframe.value.trim(),
+      };
+
+      if (!data.title) return setMsg(formMsg, "Title is required.");
+      if (!data.thumbnail) return setMsg(formMsg, "Thumbnail URL is required.");
+      if (!looksLikeIframe(data.iframe)) return setMsg(formMsg, "Paste a valid iframe embed code.");
+
+      try{
+        if (editId.value){
+          await db.collection("videos").doc(editId.value).update({
+            ...data,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } else {
+          await db.collection("videos").add({
+            ...data,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+        resetForm();
+      } catch (e){
+        console.error(e);
+        setMsg(formMsg, e.message || "Save failed.");
+      }
+    }
+
+    function render(){
+      const q = (search.value || "").trim().toLowerCase();
+      const filtered = !q ? all : all.filter(v =>
+        (v.title || "").toLowerCase().includes(q) ||
+        (v.category || "").toLowerCase().includes(q)
+      );
+
+      const cats = Array.from(new Set(all.map(v => (v.category || "Uncategorized").trim() || "Uncategorized"))).sort();
+      catList.innerHTML = cats.map(c => `<option value="${esc(c)}"></option>`).join("");
+
+      stats.textContent = `${filtered.length} shown / ${all.length} total — ${cats.length} categories`;
+
+      list.innerHTML = filtered.map(v => `
+        <div class="item">
+          <img src="${esc(v.thumbnail || "")}" alt="">
+          <div class="meta">
+            <b>${esc(v.title || "Untitled")}</b>
+            <span>${esc(v.category || "Uncategorized")}</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost tiny" data-edit="${esc(v.id)}">Edit</button>
+            <button class="btn btn-ghost tiny" data-del="${esc(v.id)}" style="border-color:rgba(229,9,20,.35)">Delete</button>
+          </div>
+        </div>
+      `).join("");
+
+      list.querySelectorAll("[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-edit");
+          const v = all.find(x => x.id === id);
+          if (!v) return;
+
+          editId.value = v.id;
+          formTitle.textContent = "Edit Video";
+          title.value = v.title || "";
+          description.value = v.description || "";
+          category.value = v.category || "";
+          thumbnail.value = v.thumbnail || "";
+          iframe.value = v.iframe || "";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+
+      list.querySelectorAll("[data-del]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-del");
+          const v = all.find(x => x.id === id);
+          if (!v) return;
+
+          if (!confirm(`Delete "${v.title}"?`)) return;
+          try{
+            await db.collection("videos").doc(id).delete();
+          } catch (e){
+            console.error(e);
+            alert(e.message || "Delete failed.");
+          }
+        });
+      });
+    }
+
+    function startRealtime(){
+      return db.collection("videos").orderBy("createdAt","desc")
+        .onSnapshot((snap)=>{
+          all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          render();
+        }, (err)=>{
+          console.error(err);
+          setMsg(formMsg, "Failed to load. Check Firestore rules.");
+        });
+    }
+
+    $("saveBtn").addEventListener("click", saveVideo);
+    $("resetBtn").addEventListener("click", resetForm);
+    search.addEventListener("input", render);
+
+    $("loginBtn").addEventListener("click", async ()=>{
+      setMsg(loginMsg, "");
+      try{
+        await auth.signInWithEmailAndPassword($("email").value.trim(), $("password").value);
+      } catch (e){
+        setMsg(loginMsg, e.message || "Login failed.");
+      }
+    });
+
+    $("registerBtn").addEventListener("click", async ()=>{
+      setMsg(loginMsg, "");
+      try{
+        await auth.createUserWithEmailAndPassword($("email").value.trim(), $("password").value);
+        setMsg(loginMsg, "Admin created & logged in. Now add videos.");
+      } catch (e){
+        setMsg(loginMsg, e.message || "Create admin failed.");
+      }
+    });
+
+    logoutBtn.addEventListener("click", async ()=>{ await auth.signOut(); });
+
+    auth.onAuthStateChanged((user)=>{
+      if (user){
+        loginCard.style.display = "none";
+        dash.style.display = "";
+        logoutBtn.style.display = "";
+        resetForm();
+        if (!unsubscribe) unsubscribe = startRealtime();
+      } else {
+        dash.style.display = "none";
+        logoutBtn.style.display = "none";
+        loginCard.style.display = "";
+        if (unsubscribe){ unsubscribe(); unsubscribe = null; }
+      }
+    });
+  </script>
+</body>
+</html>

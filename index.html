@@ -1,620 +1,675 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earn & Advertise - Free Ad Network</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-        }
-        nav {
-            margin-top: 10px;
-        }
-        nav a {
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 15px;
-            margin: 0 5px;
-            border-radius: 5px;
-            background-color: #555;
-        }
-        nav a.active {
-            background-color: #4CAF50;
-        }
-        main {
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        section {
-            background: #fff;
-            margin-bottom: 20px;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: none;
-        }
-        section.active {
-            display: block;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            max-width: 300px;
-        }
-        input, select, button {
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .switch-option {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .switch-option label {
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .switch-option input[type="radio"] {
-            display: none;
-        }
-        .switch-option input[type="radio"]:checked + label {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .free-label { background-color: #e7f3ff; color: #007bff; }
-        .premium-label { background-color: #fff3cd; color: #ffc107; }
-        iframe {
-            width: 100%;
-            height: 300px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-        .multiple-iframes {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 10px;
-        }
-        .notification {
-            background: #ffeb3b;
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-            margin: 10px 0;
-        }
-        .whatsapp-icon {
-            font-size: 24px;
-            color: #25D366;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        #dashboard {
-            text-align: center;
-            font-size: 18px;
-        }
-        .hidden { display: none; }
-        .ad-form {
-            max-width: 400px;
-        }
-        .estimation {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-    </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>StreamFlix</title>
+  <meta name="description" content="Watch movies and series via embedded iframe players. Dark Netflix-like UI with categories."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#000000;
+      --text:#ffffff;
+      --muted:#b3b3b3;
+      --accent:#e50914;
+      --accent2:#b20710;
+      --shadow: 0 18px 60px rgba(0,0,0,.75);
+      --max: 1280px;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x:hidden;
+    }
+    a{ color:inherit; text-decoration:none; }
+    button{ font-family:inherit; }
+
+    .nav{
+      position: sticky; top:0; z-index: 30;
+      background: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,.55) 55%, rgba(0,0,0,0));
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      backdrop-filter: blur(8px);
+    }
+    .nav-inner{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      gap: 14px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 160px;
+    }
+    .brand .mark{
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(145deg, var(--accent), var(--accent2));
+      box-shadow: 0 18px 50px rgba(229,9,20,.22);
+      position:relative;
+    }
+    .brand .mark:after{
+      content:"";
+      position:absolute;
+      inset: 7px 11px;
+      border-left: 5px solid rgba(255,255,255,.85);
+      border-right: 5px solid rgba(255,255,255,.32);
+      transform: skewX(-10deg);
+    }
+    .brand b{
+      letter-spacing:.4px;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+    .nav-links{
+      display:flex;
+      gap: 14px;
+      align-items:center;
+      color: rgba(255,255,255,.88);
+      font-weight: 650;
+      font-size: 13px;
+      overflow:auto;
+      scrollbar-width:none;
+    }
+    .nav-links::-webkit-scrollbar{ display:none; }
+    .nav-links a{ opacity:.88; transition: opacity .15s ease, color .15s ease; white-space: nowrap; }
+    .nav-links a:hover{ opacity:1; color:#fff; }
+
+    .nav-right{
+      margin-left:auto;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .search{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      min-width: 280px;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .search:focus-within{
+      border-color: rgba(229,9,20,.45);
+      background: rgba(255,255,255,.07);
+    }
+    .search input{
+      width:100%;
+      background:transparent;
+      border:0;
+      outline:none;
+      color: #fff;
+      font-size: 13px;
+    }
+    .btn{
+      border:0;
+      cursor:pointer;
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 850;
+      font-size: 13px;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn-ghost{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color:#fff;
+    }
+
+    .hero{
+      position:relative;
+      min-height: 62vh;
+      display:flex;
+      align-items:flex-end;
+      overflow:hidden;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .hero-bg{
+      position:absolute; inset:0;
+      background:
+        linear-gradient(to top, rgba(0,0,0,.92) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.15) 70%, rgba(0,0,0,.75) 100%),
+        radial-gradient(900px 520px at 25% 18%, rgba(229,9,20,.18), transparent 60%),
+        url("https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=2000&q=60");
+      background-size: cover;
+      background-position: center;
+      filter: saturate(1.05) contrast(1.05);
+      transform: scale(1.02);
+    }
+    .hero-inner{
+      position:relative;
+      width:100%;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 110px 16px 18px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      align-items:end;
+    }
+    .hero h1{
+      margin:0;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      font-size: clamp(26px, 3.2vw, 48px);
+    }
+    .hero p{
+      margin: 10px 0 0;
+      max-width: 65ch;
+      color: rgba(255,255,255,.82);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    .hero-actions{
+      margin-top: 14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .play{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border:0;
+      cursor:pointer;
+      font-weight: 900;
+      background: #fff;
+      color:#111;
+      transition: transform .15s ease;
+    }
+    .play:hover{ transform: translateY(-1px); }
+    .more{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight: 900;
+      background: rgba(109,109,110,.45);
+      border: 1px solid rgba(255,255,255,.18);
+      color:#fff;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .more:hover{ transform: translateY(-1px); background: rgba(109,109,110,.55); }
+
+    .hero-side{
+      border-radius: 16px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .stat{
+      display:flex; align-items:baseline; justify-content:space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .stat b{ font-size: 14px; }
+    .stat span{ font-size: 12px; color: rgba(255,255,255,.72); }
+
+    .main{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 16px 60px;
+    }
+    .row{ margin-top: 18px; }
+    .row-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 10px;
+    }
+    .row-head h2{
+      margin:0;
+      font-size: 16px;
+      letter-spacing:.2px;
+      font-weight: 850;
+    }
+    .row-head .sub{ color: rgba(255,255,255,.65); font-size: 12px; }
+    .cards{
+      display:flex;
+      gap: 10px;
+      overflow:auto;
+      padding: 6px 2px 12px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.20) transparent;
+    }
+    .cards::-webkit-scrollbar{ height: 10px; }
+    .cards::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.14); border-radius: 999px; }
+    .cards::-webkit-scrollbar-track{ background: transparent; }
+
+    .card{
+      width: 220px;
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      border-radius: 10px;
+      overflow:hidden;
+      background: #111;
+      border: 1px solid rgba(255,255,255,.08);
+      cursor:pointer;
+      position:relative;
+      transform-origin: center;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .card:hover{
+      transform: scale(1.10);
+      z-index: 5;
+      border-color: rgba(229,9,20,.35);
+      box-shadow: 0 28px 90px rgba(0,0,0,.75);
+    }
+    .thumb{
+      width:100%;
+      aspect-ratio: 16/9;
+      background:#090909;
+      position:relative;
+      overflow:hidden;
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+      transform: scale(1.02);
+      transition: transform .25s ease, filter .25s ease;
+      filter: saturate(1.05) contrast(1.05);
+    }
+    .card:hover .thumb img{
+      transform: scale(1.10);
+      filter: saturate(1.2) contrast(1.1);
+    }
+    .pill{
+      position:absolute;
+      top:10px; left:10px;
+      background: rgba(229,9,20,.92);
+      color:#fff;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 6px 10px;
+      border-radius: 999px;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+      box-shadow: 0 18px 50px rgba(229,9,20,.18);
+    }
+    .meta{
+      padding: 10px 10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      min-height: 70px;
+      background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0));
+    }
+    .title{
+      margin:0;
+      font-size: 13px;
+      font-weight: 850;
+      line-height:1.2;
+      display:-webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow:hidden;
+    }
+    .desc{
+      margin:0;
+      font-size: 12px;
+      color: rgba(255,255,255,.70);
+      display:-webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow:hidden;
+    }
+    .empty{
+      margin: 18px 0;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px dashed rgba(255,255,255,.15);
+      color: rgba(255,255,255,.72);
+    }
+
+    .modal{
+      position: fixed; inset:0;
+      background: rgba(0,0,0,.75);
+      display:none;
+      align-items:flex-start;
+      justify-content:center;
+      padding: 14px;
+      z-index: 60;
+    }
+    .modal.open{ display:flex; }
+    .watch{
+      width: min(1100px, 100%);
+      border-radius: 14px;
+      overflow:hidden;
+      background: #0b0b0b;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+    }
+    .watch-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px 14px;
+      background: rgba(0,0,0,.55);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .watch-top h3{ margin:0; font-size: 15px; font-weight: 900; }
+    .xbtn{
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      color:#fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor:pointer;
+      font-weight: 900;
+    }
+    .player{ width:100%; aspect-ratio: 16/9; background:#000; }
+    .player iframe{ width:100%; height:100%; border:0; display:block; }
+    .watch-body{ padding: 12px 14px 16px; display:flex; flex-direction:column; gap: 10px; }
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; }
+    .chip{
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.88);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .watch-desc{
+      margin:0;
+      color: rgba(255,255,255,.72);
+      line-height: 1.55;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 980px){
+      .hero-inner{ grid-template-columns: 1fr; padding-top: 90px; }
+      .search{ min-width: 200px; }
+      .card{ width: 200px; }
+    }
+    @media (max-width: 560px){
+      .search{ display:none; }
+      .brand{ min-width: auto; }
+      .nav-links{ display:none; }
+      .card{ width: 170px; }
+      .hero{ min-height: 58vh; }
+    }
+  </style>
 </head>
+
 <body>
-    <header>
-        <h1>Earn & Advertise Platform</h1>
-        <nav>
-            <a href="#" onclick="showSection('register')">Register/Login</a>
-            <a href="#" onclick="showSection('dashboard')" id="dashboard-link" class="hidden">Dashboard</a>
-            <a href="#" onclick="showSection('account')" id="account-link" class="hidden">Account</a>
-            <a href="#" onclick="showSection('traffic')" id="traffic-link" class="hidden">Website Traffic</a>
-            <a href="#" onclick="showSection('youtube-watch')" id="watch-link" class="hidden">YouTube Watchtime</a>
-            <a href="#" onclick="showSection('youtube-views')" id="views-link" class="hidden">YouTube Views</a>
-            <a href="#" onclick="showSection('direct-links')" id="direct-link" class="hidden">Direct Links</a>
-            <a href="#" onclick="showSection('launch-ad')" id="launch-link" class="hidden">Launch Ad</a>
-            <a href="#" onclick="logout()" id="logout-link" class="hidden">Logout</a>
-        </nav>
-    </header>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <b>StreamFlix</b>
+      </div>
 
-    <main>
-        <!-- Registration Section -->
-        <section id="register" class="active">
-            <h2>Create Account</h2>
-            <form id="register-form">
-                <input type="text" id="full-name" placeholder="Full Name" required>
-                <input type="email" id="email" placeholder="Gmail Address" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <input type="password" id="confirm-password" placeholder="Confirm Password" required>
-                <button type="submit">Register</button>
-            </form>
-            <div class="switch-option">
-                <input type="radio" id="free" name="plan" value="free" checked>
-                <label for="free" class="free-label">Free Plan (Limited Features)</label>
-                <input type="radio" id="premium" name="plan" value="premium">
-                <label for="premium" class="premium-label">Premium Plan (Unlimited)</label>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#home">Home</a>
+        <a href="#tv">TV Shows</a>
+        <a href="#movies">Movies</a>
+        <a href="#new">New & Popular</a>
+        <a href="#mylist">My List</a>
+      </nav>
+
+      <div class="nav-right">
+        <div class="search" role="search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M10.5 18.5a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="rgba(255,255,255,.8)" stroke-width="2"/>
+            <path d="M16.5 16.5 21 21" stroke="rgba(255,255,255,.8)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input id="q" placeholder="Search titles, categories…" autocomplete="off"/>
+        </div>
+
+        <!-- Change this to your Blogger Admin page URL -->
+        <a class="btn btn-ghost" id="adminLink" href="#" rel="nofollow">Admin</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="home">
+    <div class="hero-bg" aria-hidden="true"></div>
+
+    <div class="hero-inner">
+      <div>
+        <h1>Unlimited entertainment, iframe‑only</h1>
+        <p>
+          Videos are hosted externally. This site stores only thumbnail URL + iframe embed code.
+          Click any card to watch.
+        </p>
+        <div class="hero-actions">
+          <button class="play" id="btnPlayTop"><span aria-hidden="true">▶</span> Play</button>
+          <button class="more" id="btnMoreTop"><span aria-hidden="true">i</span> More Info</button>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <div class="stat"><b id="statCount">0</b><span>Titles</span></div>
+        <div class="stat"><b id="statCats">0</b><span>Categories</span></div>
+        <div class="stat"><b>Dark UI</b><span>Netflix-like</span></div>
+        <div class="stat"><b>Iframe</b><span>External hosting</span></div>
+      </div>
+    </div>
+  </section>
+
+  <main class="main">
+    <div class="empty" id="loading">Loading…</div>
+    <div id="rows"></div>
+  </main>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="watch" role="dialog" aria-modal="true">
+      <div class="watch-top">
+        <h3 id="watchTitle">Title</h3>
+        <button class="xbtn" id="closeBtn">Close</button>
+      </div>
+      <div class="player" id="player"></div>
+      <div class="watch-body">
+        <div class="chips"><span class="chip" id="watchCategory">Category</span></div>
+        <p class="watch-desc" id="watchDesc"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR6L25EtCEltF84-6e25oampAvYj-xWmw",
+      authDomain: "ad-4-you.firebaseapp.com",
+      projectId: "ad-4-you",
+      storageBucket: "ad-4-you.firebasestorage.app",
+      messagingSenderId: "1072867261286",
+      appId: "1:1072867261286:web:26b5f98850ef3b4c1626a7",
+      measurementId: "G-FELTLMLHB5"
+    };
+
+    // Put your real Blogger Admin page URL here:
+    // Example: const ADMIN_PAGE_URL = "https://yourblog.blogspot.com/p/admin.html";
+    const ADMIN_PAGE_URL = "#";
+    document.getElementById("adminLink").href = ADMIN_PAGE_URL;
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      q: $("q"),
+      rows: $("rows"),
+      loading: $("loading"),
+      statCount: $("statCount"),
+      statCats: $("statCats"),
+      modal: $("modal"),
+      closeBtn: $("closeBtn"),
+      watchTitle: $("watchTitle"),
+      watchDesc: $("watchDesc"),
+      watchCategory: $("watchCategory"),
+      player: $("player"),
+      btnPlayTop: $("btnPlayTop"),
+      btnMoreTop: $("btnMoreTop"),
+    };
+
+    function esc(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    }
+
+    function openWatch(item){
+      els.watchTitle.textContent = item.title || "Untitled";
+      els.watchDesc.textContent = item.description || "";
+      els.watchCategory.textContent = item.category || "Uncategorized";
+      els.player.innerHTML = item.iframe || "<div style='padding:18px;color:#bbb'>No iframe embed found.</div>";
+
+      els.modal.classList.add("open");
+      els.modal.setAttribute("aria-hidden","false");
+      document.body.style.overflow = "hidden";
+      history.replaceState(null, "", "#watch=" + encodeURIComponent(item.id));
+    }
+
+    function closeWatch(){
+      els.modal.classList.remove("open");
+      els.modal.setAttribute("aria-hidden","true");
+      els.player.innerHTML = "";
+      document.body.style.overflow = "";
+      if (location.hash.startsWith("#watch=")) history.replaceState(null, "", "#");
+    }
+
+    els.closeBtn.addEventListener("click", closeWatch);
+    els.modal.addEventListener("click", (e)=>{ if (e.target === els.modal) closeWatch(); });
+    window.addEventListener("keydown", (e)=>{ if (e.key === "Escape") closeWatch(); });
+
+    function buildCard(item){
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <div class="thumb">
+          <span class="pill">${esc(item.category || "Video")}</span>
+          <img loading="lazy" alt="${esc(item.title || "Video")}"
+               src="${esc(item.thumbnail || "")}"
+               onerror="this.style.opacity=.25;this.alt='Thumbnail not found';"/>
+        </div>
+        <div class="meta">
+          <p class="title">${esc(item.title || "Untitled")}</p>
+          <p class="desc">${esc(item.description || "")}</p>
+        </div>
+      `;
+      div.addEventListener("click", ()=>openWatch(item));
+      return div;
+    }
+
+    function renderRows(items){
+      els.rows.innerHTML = "";
+      els.loading.style.display = "none";
+
+      if (!items.length){
+        els.rows.innerHTML = `<div class="empty">No titles yet. Open Admin and add videos.</div>`;
+        els.statCount.textContent = "0";
+        els.statCats.textContent = "0";
+        return;
+      }
+
+      const map = new Map();
+      for (const v of items){
+        const c = (v.category || "Uncategorized").trim() || "Uncategorized";
+        if (!map.has(c)) map.set(c, []);
+        map.get(c).push(v);
+      }
+
+      const cats = Array.from(map.keys()).sort((a,b)=>a.localeCompare(b));
+      els.statCount.textContent = String(items.length);
+      els.statCats.textContent = String(cats.length);
+
+      for (const cat of cats){
+        const section = document.createElement("section");
+        section.className = "row";
+        section.innerHTML = `
+          <div class="row-head">
+            <div>
+              <h2>${esc(cat)}</h2>
+              <div class="sub">${map.get(cat).length} titles</div>
             </div>
-        </section>
-
-        <!-- Dashboard -->
-        <section id="dashboard" class="hidden">
-            <h2>Welcome, <span id="user-name"></span>!</h2>
-            <div id="dashboard">
-                <p>Coins: <span id="coins">0</span></p>
-                <p>Status: <span id="status">Free</span></p>
-                <p>Daily Multiple Watch Time Used: <span id="daily-time">0</span>/120 seconds</p>
-            </div>
-        </section>
-
-        <!-- Account Section -->
-        <section id="account">
-            <h2>Account Details</h2>
-            <p>Name: <span id="acc-name"></span></p>
-            <p>Email: <span id="acc-email"></span></p>
-            <p>Current Password: <span id="acc-password"></span> (Hidden for security)</p>
-            <form id="change-password-form">
-                <input type="password" id="new-password" placeholder="New Password" required>
-                <button type="submit">Change Password</button>
-            </form>
-            <p>Status: <span id="acc-status"></span></p>
-        </section>
-
-        <!-- Launch Ad Section -->
-        <section id="launch-ad">
-            <h2>Launch Ad (15% Fee)</h2>
-            <form class="ad-form" id="launch-ad-form">
-                <select id="ad-type">
-                    <option value="traffic">Website Traffic (100 coins/impression, 30s view)</option>
-                    <option value="watchtime">YouTube Watchtime (100 coins/min)</option>
-                    <option value="views">YouTube Views (10 coins/view)</option>
-                </select>
-                <input type="url" id="ad-url" placeholder="Your Website/YouTube URL (Websites only for traffic)" required>
-                <input type="number" id="ad-budget" placeholder="Budget in Coins" required>
-                <div class="estimation" id="estimation"></div>
-                <button type="submit">Launch Ad (Deducts 15% Fee)</button>
-            </form>
-        </section>
-
-        <!-- Website Traffic Section -->
-        <section id="traffic">
-            <h2>Website Traffic - Earn 100 Coins per 30s View</h2>
-            <button onclick="startMultipleWatch('traffic')">Multiple Watch</button>
-            <div id="traffic-container"></div>
-            <div id="traffic-notification" class="notification hidden">Time up! Need Premium for more. <a href="#" class="whatsapp-icon" onclick="redirectWhatsApp()">📱 WhatsApp</a></div>
-        </section>
-
-        <!-- YouTube Watchtime Section -->
-        <section id="youtube-watch">
-            <h2>YouTube Watchtime - Earn 100 Coins per Minute</h2>
-            <button onclick="startMultipleWatch('watchtime')">Multiple Watch</button>
-            <div id="watchtime-container"></div>
-            <div id="watch-notification" class="notification hidden">Time up! Need Premium for more. <a href="#" class="whatsapp-icon" onclick="redirectWhatsApp()">📱 WhatsApp</a></div>
-        </section>
-
-        <!-- YouTube Views Section -->
-        <section id="youtube-views">
-            <h2>YouTube Views - Earn 10 Coins per View</h2>
-            <button onclick="startMultipleWatch('views')">Multiple Watch</button>
-            <div id="views-container"></div>
-            <div id="views-notification" class="notification hidden">Time up! Need Premium for more. <a href="#" class="whatsapp-icon" onclick="redirectWhatsApp()">📱 WhatsApp</a></div>
-        </section>
-
-        <!-- Direct Links Section -->
-        <section id="direct-links">
-            <h2>Direct Links - Earn 200 Coins per Click</h2>
-            <div id="links-container">
-                <!-- Links will be populated here -->
-            </div>
-        </section>
-    </main>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updatePassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, getDocs, increment, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAnu49G3ZZaMhRAYwoBPKfcRoj7sfcu5E8",
-            authDomain: "ad-4-u.firebaseapp.com",
-            projectId: "ad-4-u",
-            storageBucket: "ad-4-u.firebasestorage.app",
-            messagingSenderId: "775864010731",
-            appId: "1:775864010731:web:ea8a2ff4f772ca80ac3bae",
-            measurementId: "G-3R9DDSM2XK"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-        let dailyTimeUsed = 0;
-        let watchTimers = [];
-        let fixedAdsInterval;
-        let adsData = []; // Store ads from Firestore
-
-        // Auth State Listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                loadUserData();
-                showSection('dashboard');
-                document.querySelectorAll('nav a:not(#register)').forEach(link => link.classList.remove('hidden'));
-                document.getElementById('logout-link').classList.remove('hidden');
-                document.getElementById('register').classList.add('hidden');
-                startFixedAds();
-            } else {
-                currentUser = null;
-                showSection('register');
-                document.querySelectorAll('nav a:not(#register)').forEach(link => link.classList.add('hidden'));
-            }
-        });
-
-        // Registration
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fullName = document.getElementById('full-name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-            const plan = document.querySelector('input[name="plan"]:checked').value;
-
-            if (password !== confirmPassword) {
-                alert('Passwords do not match!');
-                return;
-            }
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await setDoc(doc(db, 'users', userCredential.user.uid), {
-                    fullName: fullName,
-                    email: email,
-                    coins: 0,
-                    status: plan,
-                    dailyTimeUsed: 0,
-                    password: password // Note: In production, never store passwords plainly!
-                });
-                if (plan === 'premium') {
-                    redirectWhatsApp(fullName, email, password);
-                } else {
-                    alert('Account created! Free plan activated.');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        });
-
-        // Login (Simple, assumes email/password; add separate login form if needed)
-        // For simplicity, registration handles login too via onAuthStateChanged
-
-        // Load User Data
-        async function loadUserData() {
-            if (!currentUser) return;
-            const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                document.getElementById('user-name').textContent = data.fullName;
-                document.getElementById('coins').textContent = data.coins || 0;
-                document.getElementById('status').textContent = data.status;
-                document.getElementById('daily-time').textContent = data.dailyTimeUsed || 0;
-                document.getElementById('acc-name').textContent = data.fullName;
-                document.getElementById('acc-email').textContent = data.email;
-                document.getElementById('acc-status').textContent = data.status;
-                dailyTimeUsed = data.dailyTimeUsed || 0;
-            }
-            loadAds();
+          </div>
+        `;
+        const cards = document.createElement("div");
+        cards.className = "cards";
+        for (const it of map.get(cat)){
+          cards.appendChild(buildCard(it));
         }
+        section.appendChild(cards);
+        els.rows.appendChild(section);
+      }
+    }
 
-        // Change Password
-        document.getElementById('change-password-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newPassword = document.getElementById('new-password').value;
-            try {
-                await updatePassword(currentUser, newPassword);
-                const userDoc = doc(db, 'users', currentUser.uid);
-                await updateDoc(userDoc, { password: newPassword });
-                alert('Password changed!');
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        });
+    let all = [];
 
-        // Launch Ad
-        document.getElementById('launch-ad-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentUser) return;
-            const adType = document.getElementById('ad-type').value;
-            const adUrl = document.getElementById('ad-url').value;
-            let budget = parseInt(document.getElementById('ad-budget').value);
-            const fee = Math.floor(budget * 0.15);
-            budget -= fee; // Deduct 15% fee
+    function applySearch(){
+      const q = (els.q.value || "").trim().toLowerCase();
+      const filtered = !q ? all : all.filter(v =>
+        (v.title || "").toLowerCase().includes(q) ||
+        (v.category || "").toLowerCase().includes(q) ||
+        (v.description || "").toLowerCase().includes(q)
+      );
+      renderRows(filtered);
+    }
 
-            const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-            const userData = userDoc.data();
-            if (userData.coins < budget + fee) {
-                alert('Insufficient coins!');
-                return;
-            }
+    async function loadVideos(){
+      els.loading.style.display = "";
+      els.loading.textContent = "Loading…";
+      const snap = await db.collection("videos").orderBy("createdAt", "desc").get();
+      all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      applySearch();
+      autoOpenFromHash();
+    }
 
-            // Calculate estimations
-            let impressions = 0;
-            if (adType === 'traffic') {
-                impressions = Math.floor(budget / 100); // 100 coins per impression
-            } else if (adType === 'watchtime') {
-                impressions = Math.floor(budget / 100); // 100 coins per min
-            } else if (adType === 'views') {
-                impressions = Math.floor(budget / 10); // 10 coins per view
-            }
-            alert(`Estimated: ${impressions} ${adType === 'traffic' ? 'impressions' : adType === 'watchtime' ? 'minutes' : 'views'}. Launching...`);
+    function autoOpenFromHash(){
+      if (!location.hash.startsWith("#watch=")) return;
+      const id = decodeURIComponent(location.hash.slice("#watch=".length));
+      const found = all.find(v => v.id === id);
+      if (found) openWatch(found);
+    }
 
-            // Deduct coins
-            await updateDoc(doc(db, 'users', currentUser.uid), { coins: increment(-(budget + fee)) });
+    els.q.addEventListener("input", applySearch);
+    els.btnPlayTop.addEventListener("click", ()=>{ if (all[0]) openWatch(all[0]); });
+    els.btnMoreTop.addEventListener("click", ()=>{ if (all[0]) openWatch(all[0]); });
 
-            // Store ad
-            await addDoc(collection(db, 'ads'), {
-                type: adType,
-                url: adUrl,
-                budget: budget,
-                remaining: budget,
-                owner: currentUser.uid,
-                impressions: 0
-            });
+    window.addEventListener("hashchange", ()=>{
+      if (!location.hash.startsWith("#watch=")) closeWatch();
+      else autoOpenFromHash();
+    });
 
-            loadUserData();
-            alert('Ad launched!');
-        });
-
-        // Load Ads from Firestore
-        async function loadAds() {
-            const q = query(collection(db, 'ads'), where('remaining', '>', 0));
-            const querySnapshot = await getDocs(q);
-            adsData = [];
-            querySnapshot.forEach((doc) => {
-                adsData.push({ id: doc.id, ...doc.data() });
-            });
-        }
-
-        // Show Section
-        function showSection(sectionId) {
-            document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
-            document.querySelector(`#${sectionId}`).classList.add('active');
-            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-            event?.target?.classList.add('active');
-        }
-
-        // Multiple Watch Logic (2 min daily limit for free)
-        async function startMultipleWatch(type) {
-            if (!currentUser) return;
-            const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-            const userData = userDoc.data();
-            if (userData.status !== 'free' && dailyTimeUsed >= 120) {
-                alert('Daily limit reached! Upgrade to premium.');
-                showNotification(type);
-                return;
-            }
-
-            const numAds = prompt('How many ads do you want to watch? (Max 10)');
-            const num = parseInt(numAds) || 1;
-            if (num > 10) num = 10;
-
-            const container = document.getElementById(`${type}-container`);
-            container.innerHTML = '';
-            let startTime = Date.now();
-            let elapsed = 0;
-
-            for (let i = 0; i < num; i++) {
-                const iframe = document.createElement('iframe');
-                const ad = adsData[Math.floor(Math.random() * adsData.length)] || getFixedAd(type); // Random ad or fixed
-                iframe.src = ad.url;
-                iframe.classList.add('multiple-iframes');
-                container.appendChild(iframe);
-
-                // Timer for earning (30s for traffic, 60s for watchtime, auto for views)
-                let viewTimer;
-                if (type === 'traffic') {
-                    viewTimer = setTimeout(async () => {
-                        await addCoins(100);
-                        if (ad.id) await updateAdImpressions(ad.id, 1, 100); // Deduct from ad budget
-                    }, 30000);
-                } else if (type === 'watchtime') {
-                    let watchSeconds = 0;
-                    viewTimer = setInterval(async () => {
-                        watchSeconds += 1;
-                        if (watchSeconds % 60 === 0) {
-                            await addCoins(100);
-                            if (ad.id) await updateAdImpressions(ad.id, 1, 100);
-                        }
-                    }, 1000);
-                } else if (type === 'views') {
-                    // Simulate view (auto change after 30s)
-                    setTimeout(async () => {
-                        await addCoins(10);
-                        if (ad.id) await updateAdImpressions(ad.id, 1, 10);
-                        iframe.src = getFixedAd(type).url; // Change to next
-                    }, 30000);
-                }
-                watchTimers.push(viewTimer);
-
-                // Pause on visibility change
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden) {
-                        clearTimeout(viewTimer);
-                    } else {
-                        // Resume
-                    }
-                });
-            }
-
-            // 2 min timer
-            const limitTimer = setTimeout(() => {
-                watchTimers.forEach(timer => clearTimeout(timer));
-                container.innerHTML = '';
-                dailyTimeUsed += 120;
-                updateDoc(doc(db, 'users', currentUser.uid), { dailyTimeUsed: increment(120) });
-                if (userData.status === 'free') {
-                    showNotification(type);
-                }
-                loadUserData();
-            }, 120000); // 2 minutes
-
-            watchTimers.push(limitTimer);
-        }
-
-        // Show Notification for Premium
-        function showNotification(type) {
-            document.getElementById(`${type}-notification`).classList.remove('hidden');
-        }
-
-        // WhatsApp Redirect
-        function redirectWhatsApp(name = '', email = '', password = '') {
-            const message = `Hi, I want Premium! Name: ${name}, Email: ${email}, Password: ${password}`;
-            window.open(`https://wa.me/923330737987?text=${encodeURIComponent(message)}`, '_blank');
-        }
-
-        // Add Coins
-        async function addCoins(amount) {
-            if (!currentUser) return;
-            await updateDoc(doc(db, 'users', currentUser.uid), { coins: increment(amount) });
-            loadUserData();
-        }
-
-        // Update Ad Impressions
-        async function updateAdImpressions(adId, count, cost) {
-            const adRef = doc(db, 'ads', adId);
-            const adSnap = await getDoc(adRef);
-            if (adSnap.exists()) {
-                const adData = adSnap.data();
-                const newRemaining = adData.remaining - (cost * count);
-                if (newRemaining <= 0) {
-                    // Auto close ad
-                    await updateDoc(adRef, { remaining: 0 });
-                } else {
-                    await updateDoc(adRef, { remaining: newRemaining, impressions: increment(count) });
-                }
-            }
-            loadAds();
-        }
-
-        // Get Fixed Ad (Every 2 min)
-        function getFixedAd(type) {
-            const fixedAds = {
-                traffic: ['http://cludymovie.com/', 'https://newswithsk.com'],
-                watchtime: ['https://www.youtube.com/watch?v=Uw9bqrrV-yI'],
-                views: ['https://www.youtube.com/watch?v=Uw9bqrrV-yI'],
-                direct: ['https://otieu.com/4/9677163', 'https://otieu.com/4/9677163']
-            };
-            return { url: fixedAds[type][Math.floor(Math.random() * fixedAds[type].length)] };
-        }
-
-        // Start Fixed Ads Interval (Every 2 min, show in relevant sections)
-        function startFixedAds() {
-            fixedAdsInterval = setInterval(() => {
-                // For each section, inject fixed iframe if active
-                if (document.getElementById('traffic').classList.contains('active')) {
-                    const container = document.getElementById('traffic-container');
-                    const iframe = document.createElement('iframe');
-                    iframe.src = getFixedAd('traffic').url;
-                    container.appendChild(iframe);
-                    setTimeout(() => iframe.remove(), 120000); // Remove after 2 min
-                }
-                // Similar for other sections...
-                if (document.getElementById('youtube-watch').classList.contains('active')) {
-                    const container = document.getElementById('watchtime-container');
-                    const iframe = document.createElement('iframe');
-                    iframe.src = getFixedAd('watchtime').url + '?autoplay=1';
-                    container.appendChild(iframe);
-                    setTimeout(() => iframe.remove(), 120000);
-                }
-                if (document.getElementById('youtube-views').classList.contains('active')) {
-                    const container = document.getElementById('views-container');
-                    const iframe = document.createElement('iframe');
-                    iframe.src = getFixedAd('views').url + '?autoplay=1';
-                    container.appendChild(iframe);
-                    setTimeout(() => iframe.remove(), 120000);
-                }
-                if (document.getElementById('direct-links').classList.contains('active')) {
-                    loadDirectLinks();
-                }
-            }, 120000); // Every 2 minutes
-        }
-
-        // Direct Links Logic
-        async function loadDirectLinks() {
-            const container = document.getElementById('links-container');
-            container.innerHTML = '';
-            const directAds = adsData.filter(ad => ad.type === 'direct') || [{ url: 'https://otieu.com/4/9677163' }];
-            directAds.forEach((ad, index) => {
-                const link = document.createElement('a');
-                link.href = ad.url;
-                link.textContent = `Click for 200 Coins (${index + 1})`;
-                link.style.display = index === 0 ? 'block' : 'none';
-                link.onclick = async () => {
-                    await addCoins(200);
-                    link.style.display = 'none';
-                    setTimeout(() => {
-                        const nextLink = container.children[index + 1];
-                        if (nextLink) nextLink.style.display = 'block';
-                    }, 15000); // 15 sec delay
-                    if (ad.id) await updateAdImpressions(ad.id, 1, 200);
-                };
-                container.appendChild(link);
-                container.appendChild(document.createElement('br'));
-            });
-        }
-
-        // Estimation for Launch Ad
-        document.getElementById('ad-budget').addEventListener('input', (e) => {
-            const budget = parseInt(e.target.value) || 0;
-            const type = document.getElementById('ad-type').value;
-            let est = '';
-            if (type === 'traffic') {
-                est = `Estimated Impressions: ${Math.floor(budget / 100)} (Budget after 15% fee: ${budget * 0.85})`;
-            } else if (type === 'watchtime') {
-                est = `Estimated Minutes: ${Math.floor(budget / 100)}`;
-            } else if (type === 'views') {
-                est = `Estimated Views: ${Math.floor(budget / 10)}`;
-            }
-            document.getElementById('estimation').textContent = est;
-        });
-
-        // Logout
-        function logout() {
-            signOut(auth);
-        }
-
-        // Initial Load
-        loadDirectLinks(); // For direct links section
-    </script>
+    loadVideos().catch(err=>{
+      console.error(err);
+      els.loading.style.display = "";
+      els.loading.textContent = "Failed to load. Check Firestore database + rules.";
+    });
+  </script>
 </body>
 </html>
